@@ -1,0 +1,42 @@
+{
+  "name": "WSS_server",
+  "version": "0.0.1",
+  "description": "A minimal WebSocket Sessions server implementing a bi-directional JSON-RPC 2.0 interface.",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "homepage": "https://github.com/monicanagent/cypherpoker.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monicanagent/cypherpoker.js"
+  },
+  "bugs": {
+    "url": "https://github.com/monicanagent/cypherpoker.js/issues"
+  },
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "doc": "jsdoc -r * -d ./docs/",
+    "docs": "jsdoc -r * -d ./docs/"
+  },
+  "keywords": [
+    "websocket",
+    "session",
+    "server",
+    "json-rpc",
+    "jsonrpc",
+    "2.0",
+    "http",
+    "ws",
+    "proxy"
+  ],
+  "author": {
+    "name": "Patrick Bay (Monican Agent)",
+    "url": "https://github.com/monicanagent"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "request": "^2.87.0",
+    "ws": "^5.2.0"
+  }
+}
