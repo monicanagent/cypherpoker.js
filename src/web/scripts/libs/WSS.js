@@ -1,17 +1,6 @@
 /**
 * @file WebSocket Session interface.
 */
-var ready = true;
-
-try {
-   var temp = EventDispatcher;
-   temp = EventPromise;
-   temp = RPC;
-   temp = TextEncoder;
-} catch (err) {
-   ready = false;
-   console.error ("One or more external JavaScript files appear(s) to be missing...\n"+err);
-}
 
 /**
 * @class A WebSocket Session client interface used to connect to peers. Requires
@@ -125,6 +114,17 @@ class WSS extends EventDispatcher {
    }
 
    /**
+   * @property {Array} peers A list of currently connected peers, as managed by
+   * this instance.
+   */
+   get peers() {
+      if (this["_peers"] == undefined) {
+         this._peers = new Array();
+      }
+      return (this._peers);
+   }
+
+   /**
    * Initiates a WebSocket Session by performing a handshake and subsequent
    * connection to the WSS server.
    *
@@ -156,7 +156,6 @@ class WSS extends EventDispatcher {
          this._xhr.open("POST", this.handshakeServerAddr);
          var event = await RPC("WSS_Handshake", {"user_token":this.userToken}, this._xhr);
          if (typeof(event.target.response["error"]) == "object") {
-            console.log ("Throwing new error now...");
             throw (new Error("Server responded with an error ("+event.target.response.error.code+"): "+event.target.response.error.message));
          } else {
             this._serverToken = event.target.response.result.server_token;
@@ -201,6 +200,14 @@ class WSS extends EventDispatcher {
          //console.log ("Are they the same? "+(this._privateID == generated_pid));
       } else {
          throw (new Error("No private ID returned in WSS_Connect response."));
+      }
+      if ((rpc_result_obj.result["connect"] != undefined) && (rpc_result_obj.result["connect"] != null)) {
+         var connectedPeersList = rpc_result_obj.result["connect"];
+         if (typeof(connectedPeersList) == "object") {
+            connectedPeersList.forEach (function (currentValue, index, sourcArr) {
+               this.peers.push(currentValue);
+            }, this);
+         }
       }
       this.webSocket.addEventListener("message", this.handleSocketMessage);
       this.webSocket.addEventListener("close", this.handleSocketClose);
@@ -248,7 +255,7 @@ class WSS extends EventDispatcher {
          var WSSRecpObj = new Object();
          WSSRecpObj.rcp = recipients;
       } else {
-         //recipients is already an object so assume everything is in place
+         //recipients is al_wssReady an object so assume everything is in place
          WSSRecpObj = recipients;
       }
       var broadcastObj = new Object();
@@ -292,12 +299,19 @@ class WSS extends EventDispatcher {
                   event = new Event("peerconnect");
                   event.data = dataObj;
                   event._message_event = event;
+                  this.session.peers.push(dataObj.result.connect);
                   this.session.dispatchEvent(event);
                } else if (typeof(dataObj.result.disconnect) == "string") {
                   //dataObj.result.disconnect is the private ID of the disconnect
                   event = new Event("peerdisconnect");
                   event.data = dataObj;
-                  event._event = event;
+                  event._message_event = event;
+                  for (var count = 0; count < this.session.peers.length; count++) {
+                     if (this.session.peers[count] == dataObj.result.disconnect) {
+                        this.session.peers.splice(count, 1);
+                        break;
+                     }
+                  }
                   this.session.dispatchEvent(event);
                } else {
                   //unhandled session message

@@ -3,13 +3,13 @@
 * a connection.
 *
 * @example
-* Client Request -> {"jsonrpc":"2.0","method":"WSS_Connect","id":2,"params":{"user_token":"7060939278321507","server_token":"9789091435706088"}}
-* Server Response -> {"jsonrpc":"2.0","result":{"message":"open","options":{},"private_id":"021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d"},"id":2}
+* Client Request -> {"jsonrpc":"2.0","method":"WSS_Connect","id":"2,"params":{"user_token":"7060939278321507","server_token":"9789091435706088"}}
+* Server Response -> {"jsonrpc":"2.0","result":{"message":"open","options":{},"private_id":"021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d"},"id":"2"}
 * Note: SHA256("9789091435706088:7060939278321507") = "021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d";
 */
 async function WSS_Connect (sessionObj) {
    if (sessionObj.endpoint.startsWith("ws") == false) {
-      sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "Session connect must be made through a WebSocket connection.", sessionObj);
+      sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "Session must be created through a WebSocket connection.", sessionObj);
       return;
    }
    try {
@@ -45,6 +45,7 @@ async function WSS_Connect (sessionObj) {
                connectionObj.socket.addEventListener("close", handleWebSocketClose);
                resultObj.message = "open";
                resultObj.private_id = connectionObj.private_id;
+               resultObj.connect = new Array(); //include list of connected peers for new peer
                //notify other peers of new connection
                var activeSessions = namespace.websocket.allSessions(true);
                for (var count = 0; count < activeSessions.length; count++) {
@@ -54,6 +55,7 @@ async function WSS_Connect (sessionObj) {
                      messageObj.result.type = "session";
                      messageObj.result.connect = connectionObj.private_id;
                      activeSessions[count].socket.send(JSON.stringify(messageObj));
+                     resultObj.connect.push(activeSessions[count].private_id);
                   }
                }
                sendResult(resultObj, sessionObj);
@@ -75,6 +77,12 @@ async function WSS_Connect (sessionObj) {
    return(false);
 }
 
+/**
+* Handles a WebSocket close / disconnect event and notifies all active / live
+* sessions of the disconnection.
+*
+* @param {Event} event A standard WebSocket close event.
+*/
 function handleWebSocketClose(event) {
    for (var connectionID in namespace.websocket.connections) {
       for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
@@ -88,6 +96,9 @@ function handleWebSocketClose(event) {
                messageObj.result.type = "session";
                messageObj.result.disconnect = connectionObj.private_id;
                activeSessions[count2].socket.send(JSON.stringify(messageObj));
+            }
+            if (namespace.websocket.connections[connectionID].length == 0) {
+               namespace.websocket.connections[connectionID] = undefined;
             }
             return;
          }

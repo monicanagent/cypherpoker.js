@@ -51,20 +51,30 @@ var http_server;
 * @const {wsserv} ws_server The default WebSocket endpoint.
 */
 var ws_server;
+/**
+* @const {Number} [ws_ping_interval=15000] The number of milliseconds to ping connected
+* WebSockets at in order to keep them alive.
+*/
+const ws_ping_interval = 15000;
+/**
+* @const {Number} ws_ping_intervalID The interval ID of the WebSocket server
+* ping / keep-alive timer.
+*/
+var ws_ping_intervalID = null;
 
 /**
 * Defines all standard and application-specific JSON-RPC 2.0 error codes. Standard error codes are in the range -32700 to -32603 while application-specific
 * error codes are in the range -32001 to -32099. Error codes in the range -32768 to -32000 are reserved for future use.
 * @see http://www.jsonrpc.org/specification#error_object
 *
-* @property {Number} PARSE_ERROR=-32700 Generated when invalid JSON is received (the request cannot be parsed).
-* @property {Number} REQUEST_ERROR=-32600 Generated when the request is not a valid JSON-RPC 2.0 request object / batch.
-* @property {Number} METHOD_NOT_FOUND_ERROR=-32601 Generated when the requested RPC method could not be found.
-* @property {Number} INVALID_PARAMS_ERROR=-32602 Generated when the parameters supplied for the requested RPC method are invalid.
-* @property {Number} INTERNAL_ERROR=-32603 Generated when there was an internal server error when attempting to process the RPC request.
-* @property {Number} SESSION_CLOSE=-32001 Notifies the client connection that the session is about to terminate and any current tokens/credentials
-* will no longer be accepted (a new session will need to be established).
-* @property {Number} WRONG_TRANSPORT=-32002 The wrong transport was used to deliver API request (used "http" or "https" instead of "ws" or "wss").
+* @property {Number} PARSE_ERROR=-32700 Invalid JSON was received (the request cannot be parsed).
+* @property {Number} REQUEST_ERROR=-32600 The request is not a valid JSON-RPC 2.0 request.
+* @property {Number} METHOD_NOT_FOUND_ERROR=-32601 The requested RPC method does not exist.
+* @property {Number} INVALID_PARAMS_ERROR=-32602 The parameters supplied for the requested RPC method are invalid.
+* @property {Number} INTERNAL_ERROR=-32603 There was an internal server error when attempting to process the RPC request.
+* @property {Number} SESSION_CLOSE=-32001 The session is about to terminate and any current tokens / credentials will no longer be
+* accepted.
+* @property {Number} WRONG_TRANSPORT=-32002 The wrong transport was used to deliver API request (e.g. used "http" or "https" instead of "ws" or "wss").
 */
 const JSONRPC_ERRORS = {
 	PARSE_ERROR: -32700,
@@ -79,9 +89,8 @@ const JSONRPC_ERRORS = {
 /**
 * The default options for the RPC server.
 *
-* @property {String} api_dir="./api" A directory containing all available API
-* methods that may be invoked. Each API method must match a filename and
-* the entry function in that file must also have the same name.
+* @property {String} api_dir="./api" A directory containing all available API methods that may be invoked. Each API method must match
+* a filename and the entry function in that file must also have the same name.
 * @property {Number} http_port=8080 The listening port for the HTTP server.
 * @property {Number} ws_port=8090 The listening port for the WebSocket server.
 * @property {Number} max_batch_requests=5 The maximum allowable number of batched RPC calls in a single request. If more than this number
@@ -148,7 +157,9 @@ function loadAPIFunctions(...postLoadFunctions) {
 }
 
 /**
-* Registers an API function stored in a specified file in the internal {@linkcode _APIFunctions} array.
+* Registers an API function handler stored in a specified file in the internal {@linkcode _APIFunctions} array.
+*
+* @param {String} filename The full path of the file to register as an API handler.
 */
 function registerAPIFunction(fileName) {
   var folderPrefix = rpc_options.api_dir;
@@ -183,6 +194,9 @@ function registerAPIFunction(fileName) {
 
 /**
 * Handles all uncaught exceptions, allowing the server to keep running and responding to requests.
+* Additional error handling / tracking / reporting can be added here.
+*
+* @listens global -> uncaughtException
 */
 process.on('uncaughtException', (err) => {
   console.error(err.stack);
@@ -309,7 +323,7 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
   }
   if (_APIFunctions[requestMethod] == undefined) {
      if (requestMethod.trim().startsWith("rpc:")) {
-        //an optional proposal for the JSON-RPC 2.0 spec
+        //an optional proposal for the JSON-RPC 2.0 spec (system extensions)
         sendError(JSONRPC_ERRORS.REQUEST_ERROR, "System extensions (\"rpc:\") are not implemented.", sessionObj);
      } else {
         sendError(JSONRPC_ERRORS.METHOD_NOT_FOUND_ERROR, "Method \""+requestMethod+"\" does not exist.", sessionObj);
@@ -384,7 +398,6 @@ function sendError(code, message, sessionObj, data) {
     //handle single response
     switch (sessionObj.endpoint) {
       case "http":
-      console.log ("Responding with: "+JSON.stringify(responseData));
         setDefaultHeaders(sessionObj.serverResponse);
         sessionObj.serverResponse.end(JSON.stringify(responseData));
         break;
@@ -465,7 +478,6 @@ function sendResult(result, sessionObj) {;
         sessionObj.serverResponse.end(JSON.stringify(responseData));
         break;
       case "ws":
-        console.log ("responding with: "+JSON.stringify(responseData));
         sessionObj.serverResponse.send(JSON.stringify(responseData));
         break;
       case "wss":
@@ -479,9 +491,9 @@ function sendResult(result, sessionObj) {;
 
 
 /**
-* Builds a basic JSON-RPC message object.
+* Builds a JSON-RPC message object.
 *
-* @param {String} version="2.0" The JSON-RPC version to make the object.
+* @param {String} [version="2.0"] The JSON-RPC version to designate the object as.
 * Currently only JSON-RPC 2.0 message formatting is supported and other versions
 * will throw an error. If this parameter is null, the default value is assumed.
 * @param {Boolean} [isResult=true] True if this is a result object or
@@ -530,6 +542,38 @@ function setDefaultHeaders(serverResponse) {
 }
 
 /**
+* Empty (no operation) function provided as a parameter to the WebSocket ping
+* function in {@link ping}.
+*/
+function noop() {}
+
+/**
+* Invoked when a WebSocket client pong is received in response to a {@link ping}.
+* Note that this function is invoked in the context of the responding WebSocket
+* instance.
+*/
+function heartbeat() {
+   //console.log ("Received pong from: "+this._socket.remoteAddress);
+   this.isAlive = true;
+}
+
+/**
+* Pings all connnected WebSocket clients to ensure that they're still alive
+* and active. This function is usually invoked through a timer created by the
+* {@link startWSServer} function. Any WebSocket connnections that do not respond to
+* pings are automatically closed.
+*/
+function ping() {
+   ws_server.clients.forEach(function each(ws) {
+    if (ws.isAlive === false) {
+      return (ws.terminate());
+    }
+    ws.isAlive = false;
+    ws.ping(noop);
+   });
+}
+
+/**
 * Checks a JSON-RPC 2.0 request object for the existence of a specific parameter.
 *
 * @param {Object} requestObj The JSON-RPC 2.0 request object to check for a parameter.
@@ -568,26 +612,6 @@ function startHTTPServer() {
    }
 }
 
-var ws_ping_intervalID = null;
-
-function noop() {
-}
-
-function heartbeat() {
-   //console.log ("Received pong from: "+this._socket.remoteAddress);
-   this.isAlive = true;
-}
-
-function ping() {
-   ws_server.clients.forEach(function each(ws) {
-    if (ws.isAlive === false) {
-      return (ws.terminate());
-    }
-    ws.isAlive = false;
-    ws.ping(noop);
-   });
-}
-
 /**
 * Attempts to start the JSON-RPC 2.0 WebSocket server using the default {@link rpc_options}. The {@link onStartWSServer} function is invoked when
 * the server is successfully started.
@@ -601,7 +625,7 @@ function startWSServer() {
        ws_server = new websocket.Server({ port: rpc_options.ws_port });
        ws_server.on("listening", onStartWSServer);
        ws_server.on("connection", onWSConnection);
-       ws_ping_intervalID = setInterval(ping, 10000);
+       ws_ping_intervalID = setInterval(ping, ws_ping_interval);
    	} catch (err) {
    		console.error (err);
    	}
@@ -611,10 +635,12 @@ function startWSServer() {
 /**
 * Invoked when a WebSocket connection is established on the WebSocket server.
 *
+* @param {WebSocket} wsInstance The WebSocket instance that was just connected.
+* @param {Object} request The request object included with the new connection.
 * @listens ws_server -> connection
 */
 function onWSConnection (wsInstance, request) {
-  console.log (`Established WebSocket connection on -> ${request.connection.remoteAddress}`);
+  //console.log (`Established WebSocket connection on -> ${request.connection.remoteAddress}`);
   wsInstance._req = request;
   wsInstance.isAlive = true;
   wsInstance.on('pong', heartbeat);
@@ -637,12 +663,20 @@ function onStartWSServer () {
 	console.log (`JSON-RPC 2.0 WebSocket server listening on port ${rpc_options.ws_port}.`);
 }
 
+/**
+* Function invoked when a single WebSocket connection is closed / disconnected.
+*/
 function handleWSDisconnect() {
-   console.log ("WebSocket connection closed");
+   //console.log ("WebSocket connection closed");
 }
 
+/**
+* Handles a WebSocket request by creating a session object and invoking
+* {@link processRPCRequest}.
+*
+* @param {Object} requestData The raw, unparsed request body.
+*/
 function handleWSRequest(requestData) {
-  console.log ("WebSocket received: "+requestData);
   var sessionObj = new Object();
   sessionObj.endpoint = "ws";
   sessionObj.serverRequest = this;
@@ -688,8 +722,9 @@ function adjustEnvironment() {
       console.log ("Detected Zeit (NOW) runtime environment.")
       rpc_options.http_port = -1; //disable HTTP server altogether
       rpc_options.ws_port = 80; //WebSocket server can only listen on port 80 (forwarded from a secure connection)
-      rpc_options.http_only_handshake = false; //we can only use WebSockets for handshakes (since HTTP server is disabled)
+      rpc_options.http_only_handshake = false; //enable WebSockets for handshakes (since HTTP server is disabled)
    }
+   //update environment prior to full startup here as necessary...
 }
 
 adjustEnvironment(); //adjust for local runtime environment

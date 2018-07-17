@@ -33,23 +33,23 @@
 
 
 .logo #cypherpoker {
-   background: #D0D0D0;
-   padding: 10px 5px 10px 15px;
-   border-radius: 15px 0px 0px 15px;
+    background: #000000;
+    padding: 10px 5px 10px 15px;
+    border-radius: 15px 0px 0px 15px;
 }
 
 .logo #cypherpoker #text {
-  color: #FFFFFF;
-  filter: drop-shadow(0px 0px 3px black);
+    color: #FFFFFF;
+    filter: drop-shadow(0px 0px 4px white);
 }
 
 .logo #JS {
-   background: #FF9800;
-   padding: 10px 15px 10px 5px;
-   border-radius: 0px 15px 15px 0px;
+    background: #ffd400;
+    padding: 10px 15px 10px 5px;
+    border-radius: 0px 15px 15px 0px;
 }
 
 .logo #JS #text {
-  color: #FFFFFF;
-  filter: drop-shadow(0px 0px 3px white);
+    color: #000000;
+    filter: drop-shadow(0px 0px 3px white);
 }
