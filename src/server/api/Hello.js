@@ -1,9 +1,11 @@
 /**
-* @api A simple response to "Hello".
+* @file API example of a simple response to "Hello".
 *
-* <b>Note that the entry function MUST be the same as the filename and the
-* RPC method (all three must match).</b>
+* @example
+* Client Request -> {"jsonrpc":"2.0","method":"Hello","id":"0","params":{}}
+* Server Response -> {"jsonrpc":"2.0","result":{", World!"},"id":"0"}
+*
 */
-function Hello (sessionObj) {
+async function Hello (sessionObj) {
   sendResult(", World!", sessionObj);
 }
