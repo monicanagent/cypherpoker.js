@@ -1,0 +1,5876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Global</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Global</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2></h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="_APIFunctions"><span class="type-signature">(constant) </span>_APIFunctions<span class="type-signature"> :Object</span></h4>
+
+
+
+
+<div class="description">
+    Enumerated functions found in the API directory as specified in <a href="global.html#rpc_options"><code>rpc_options</code></a>.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line134">line 134</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="http_server"><span class="type-signature">(constant) </span>http_server<span class="type-signature"> :<a href="global.html#httpserv">httpserv</a></span></h4>
+
+
+
+
+<div class="description">
+    The default HTTP endpoint.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#httpserv">httpserv</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line46">line 46</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="JSONRPC_ERRORS"><span class="type-signature">(constant) </span>JSONRPC_ERRORS<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Defines all standard and application-specific JSON-RPC 2.0 error codes. Standard error codes are in the range -32700 to -32603 while application-specific
+error codes are in the range -32001 to -32099. Error codes in the range -32768 to -32000 are reserved for future use.
+</div>
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>PARSE_ERROR</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32700
+                
+                </td>
+            
+
+            <td class="description last">Invalid JSON was received (the request cannot be parsed).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>REQUEST_ERROR</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32600
+                
+                </td>
+            
+
+            <td class="description last">The request is not a valid JSON-RPC 2.0 request.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>METHOD_NOT_FOUND_ERROR</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32601
+                
+                </td>
+            
+
+            <td class="description last">The requested RPC method does not exist.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>INVALID_PARAMS_ERROR</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32602
+                
+                </td>
+            
+
+            <td class="description last">The parameters supplied for the requested RPC method are invalid.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>INTERNAL_ERROR</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32603
+                
+                </td>
+            
+
+            <td class="description last">There was an internal server error when attempting to process the RPC request.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>SESSION_CLOSE</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32001
+                
+                </td>
+            
+
+            <td class="description last">The session is about to terminate and any current tokens / credentials will no longer be
+accepted.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>WRONG_TRANSPORT</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    -32002
+                
+                </td>
+            
+
+            <td class="description last">The wrong transport was used to deliver API request (e.g. used "http" or "https" instead of "ws" or "wss").</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line79">line 79</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://www.jsonrpc.org/specification#error_object">http://www.jsonrpc.org/specification#error_object</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="rpc_options"><span class="type-signature"></span>rpc_options<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    The default options for the RPC server.
+</div>
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>api_dir</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    "./api"
+                
+                </td>
+            
+
+            <td class="description last">A directory containing all available API methods that may be invoked. Each API method must match
+a filename and the entry function in that file must also have the same name.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>http_port</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    8080
+                
+                </td>
+            
+
+            <td class="description last">The listening port for the HTTP server.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ws_port</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    8090
+                
+                </td>
+            
+
+            <td class="description last">The listening port for the WebSocket server.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>max_batch_requests</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    5
+                
+                </td>
+            
+
+            <td class="description last">The maximum allowable number of batched RPC calls in a single request. If more than this number
+of calls are encountered in a request batch a JSONRPC_INTERNAL_ERROR error is thrown.7</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>http_headers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#HTTP_Headers_Array">HTTP_Headers_Array</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Default headers to include in HTTP / HTTPS responses. Each array element is an object
+containing a name / value pair.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>exposed_objects</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#Exposed_Server_Objects">Exposed_Server_Objects</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Internal server references to expose to external API functions. Note that each internal
+reference may be assigned an alias instead of its actual name.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>api_timelimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    3000
+                
+                </td>
+            
+
+            <td class="description last">The time limit, in milliseconds, to allow external API functions to execute.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>http_only_handshake</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Defines whether session handshakes are done only through HTTP/HTTPS (true),
+or if they can be done through the WebSocket server (false).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>max_ws_per_ip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    3
+                
+                </td>
+            
+
+            <td class="description last">The maximum number of concurrent WebSocket connections to allow from a single IP.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line107">line 107</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="ws_ping_interval"><span class="type-signature">(constant) </span>ws_ping_interval<span class="type-signature"> :Number</span></h4>
+
+
+
+
+<div class="description">
+    The number of milliseconds to ping connected
+WebSockets at in order to keep them alive.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>15000</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line54">line 54</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="ws_ping_intervalID"><span class="type-signature">(constant) </span>ws_ping_intervalID<span class="type-signature"> :Number</span></h4>
+
+
+
+
+<div class="description">
+    The interval ID of the WebSocket server
+ping / keep-alive timer.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Number</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line59">line 59</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="ws_server"><span class="type-signature">(constant) </span>ws_server<span class="type-signature"> :<a href="global.html#wsserv">wsserv</a></span></h4>
+
+
+
+
+<div class="description">
+    The default WebSocket endpoint.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#wsserv">wsserv</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line50">line 50</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="adjustEnvironment"><span class="type-signature"></span>adjustEnvironment<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adjusts various settings and properties based on the detected runtime environment. For example,
+Zeit (NOW) deployments require only a single WebSocket connection that must be on port 80 (this
+may change).
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line719">line 719</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="allSessions"><span class="type-signature"></span>allSessions<span class="signature">(activeOnly<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns an array of all currently registered and (optionally) active sesssionsbeing handled by the server.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>activeOnly</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">If true, only live or active sessions (i.e.those that have successfully established a handshake and connected), are returned,otherwise all registered (but not necessarily connected), sessions are returned.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line153">line 153</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A list of all registered and (optionally) active sessions currentlybeing handled by the server.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="buildJSONRPC"><span class="type-signature"></span>buildJSONRPC<span class="signature">(version<span class="signature-attributes">opt</span>, isResult<span class="signature-attributes">opt</span>, includeUniqueID<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Builds a JSON-RPC message object.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>version</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "2.0"
+                
+                </td>
+            
+
+            <td class="description last">The JSON-RPC version to designate the object as.
+Currently only JSON-RPC 2.0 message formatting is supported and other versions
+will throw an error. If this parameter is null, the default value is assumed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isResult</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">True if this is a result object or
+notification, false if it's an error.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>includeUniqueID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">A uniquely generated message ID
+will be generated if true otherwise no ID is included (e.g. notification).</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line504">line 504</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="handleHTTPRequest"><span class="type-signature"></span>handleHTTPRequest<span class="signature">(requestObj, responseObj)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Handles data received through the HTTP endpoint and invokes <a href="global.html#processRPCRequest">processRPCRequest</a> when a full request is received.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>requestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">HTTP request object <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">https://nodejs.org/api/http.html#http_class_http_incomingmessage</a></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>responseObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">HTTP response object <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">https://nodejs.org/api/http.html#http_class_http_serverresponse</a></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line693">line 693</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="handleWebSocketClose"><span class="type-signature"></span>handleWebSocketClose<span class="signature">(event)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Handles a WebSocket close / disconnect event and notifies all active / livesessions of the disconnection.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>event</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Event</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A standard WebSocket close event.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Connect.js.html">api/WSS_Connect.js</a>, <a href="api_WSS_Connect.js.html#line86">line 86</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="handleWSDisconnect"><span class="type-signature"></span>handleWSDisconnect<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Function invoked when a single WebSocket connection is closed / disconnected.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line669">line 669</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="handleWSRequest"><span class="type-signature"></span>handleWSRequest<span class="signature">(requestData)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Handles a WebSocket request by creating a session object and invoking
+<a href="global.html#processRPCRequest">processRPCRequest</a>.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>requestData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The raw, unparsed request body.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line679">line 679</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="handshakeOK"><span class="type-signature"></span>handshakeOK<span class="signature">(sessionObj)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Verifies whether a handshake for a specific session has been successfully established.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The session object associated with the incoming request.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line122">line 122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    True if the session specified by the parameter has been successfullyestablished, false if the information doesn't match a live internal session record.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="heartbeat"><span class="type-signature"></span>heartbeat<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Invoked when a WebSocket client pong is received in response to a <a href="global.html#ping">ping</a>.
+Note that this function is invoked in the context of the responding WebSocket
+instance.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line555">line 555</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="invokeAPIFunction"><span class="type-signature"></span>invokeAPIFunction<span class="signature">(sessionObj, requestNum<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Invokes an external API function as requested by a RPC call.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">An object containing data for the current sesssion.
+The contents of this object will differ depending on the type of endpoint that received the original request.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
+"ws" - WebSocket<br/>
+"wss" - secure WebSocket<br/>
+"http" - HTTP<br/>
+"https" - secure HTTP</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The full, parsed JSON-RPC 2.0 object as received in the original request.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverRequest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestNum</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">The index of the batched request within sessionObj.requestObj to process if the request is a batched request. If null or omitted then the requests is processed as
+a single request.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line315">line 315</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="loadAPIFunctions"><span class="type-signature"></span>loadAPIFunctions<span class="signature">(&hellip;postLoadFunctions<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Loads and verifies all API functions in the directory specified in <a href="global.html#rpc_options"><code>rpc_options</code></a> and optionally invokes one or more functions when completed.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>postLoadFunctions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Any function(s) to invoke once the API functions have been loaded and verified.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line144">line 144</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="makeConnectionID"><span class="type-signature"></span>makeConnectionID<span class="signature">(sessionObj)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a connection identifier based on information provided via an active WebSocketwithin a session object.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A session object such as that generated by a WSS JSON-RPC 2.0server.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A connection identifier based on the remote (client) endpoint'sprotocol family (IPv4 or IPv6), and IP. The port is omitted since it may change.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="makePrivateID"><span class="type-signature"></span>makePrivateID<span class="signature">(server_token, user_token)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Creates a private session identifier from given server and user tokens.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>server_token</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The (ideally) randomly generated per-connection /per-WebSocket ID generated by the server for the associated user.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>user_token</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The (ideally) randomly generated token generatedby the user / client.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line108">line 108</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The SHA256 hash of the server token concatenated with a semi-colonand the user token: <code>SHA256(server_token + ":" + user_token)</code>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="noop"><span class="type-signature"></span>noop<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Empty (no operation) function provided as a parameter to the WebSocket ping
+function in <a href="global.html#ping">ping</a>.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line548">line 548</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onStartHTTPServer"><span class="type-signature"></span>onStartHTTPServer<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Function invoked by <a href="global.html#startHTTPServer">startHTTPServer</a> when the HTTP server has been successfully started.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line655">line 655</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onStartWSServer"><span class="type-signature"></span>onStartWSServer<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Function invoked by <a href="global.html#startWSServer">startWSServer</a> when the WebSocket server has been successfully started.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line662">line 662</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onWSConnection"><span class="type-signature"></span>onWSConnection<span class="signature">(wsInstance, request)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Invoked when a WebSocket connection is established on the WebSocket server.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>wsInstance</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">WebSocket</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The WebSocket instance that was just connected.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The request object included with the new connection.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line642">line 642</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+<h5>Listens to Events:</h5>
+<ul>
+    <li>event:ws_server -> connection</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="paramExists"><span class="type-signature"></span>paramExists<span class="signature">(requestObj, param, nullAllowed<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Checks a JSON-RPC 2.0 request object for the existence of a specific parameter.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>requestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The JSON-RPC 2.0 request object to check for a parameter.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>param</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The parameter name to check for.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nullAllowed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">If true, null values are considered as existing, otherwise they are considered as non-existent.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line585">line 585</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    True if the specified parameter exists, false otherwise.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="ping"><span class="type-signature"></span>ping<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Pings all connnected WebSocket clients to ensure that they're still alive
+and active. This function is usually invoked through a timer created by the
+<a href="global.html#startWSServer">startWSServer</a> function. Any WebSocket connnections that do not respond to
+pings are automatically closed.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line566">line 566</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="processRPCRequest"><span class="type-signature"></span>processRPCRequest<span class="signature">(requestData, sessionObj)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Main RPC request handler for all endpoints. Successfully parsed requests are passed to the <a href="global.html#invokeAPIFunction">invokeAPIFunction</a> otherwise an
+error is immediately returned.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>requestData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The raw, unparsed request body.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object containing data for the current sesssion.
+The contents of this object will differ depending on the type of endpoint that received the original request.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
+"ws" - WebSocket<br/>
+"wss" - secure WebSocket<br/>
+"http" - HTTP<br/>
+"https" - secure HTTP</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The full, parsed JSON-RPC 2.0 object as received in the original request.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverRequest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line251">line 251</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="registerAPIFunction"><span class="type-signature"></span>registerAPIFunction<span class="signature">(filename)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Registers an API function handler stored in a specified file in the internal <a href="global.html#_APIFunctions"><code>_APIFunctions</code></a> array.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>filename</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The full path of the file to register as an API handler.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line164">line 164</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="sendError"><span class="type-signature"></span>sendError<span class="signature">(code, message, sessionObj, data<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Generates a final JSON-RPC 2.0 error object and sends it to the requestor via the source endpoint.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>code</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A RPC error result code to include in the response. This code is non-standard and is defined on a per-application basis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">A human-readable error message to include in the response.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An object containing data for the current sesssion.
+The contents of this object will differ depending on the type of endpoint that received the original request.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
+"ws" - WebSocket<br/>
+"wss" - secure WebSocket<br/>
+"http" - HTTP<br/>
+"https" - secure HTTP</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The full, parsed JSON-RPC 2.0 object as received in the original request.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverRequest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>batchResponses</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object containing batched responses if the original request was a batched request.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">Any additional relevant data to include in the response.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line362">line 362</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="sendResult"><span class="type-signature"></span>sendResult<span class="signature">(result, sessionObj)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Generates a final JSON-RPC 2.0 response (result) object and sends it to the requestor via the source endpoint.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>result</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The result object to include with the JSON-RPC response object, usually the result of the RPC call.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sessionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object containing data for the current sesssion.
+The contents of this object will differ depending on the type of endpoint that received the original request.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
+"ws" - WebSocket<br/>
+"wss" - secure WebSocket<br/>
+"http" - HTTP<br/>
+"https" - secure HTTP</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The full, parsed JSON-RPC 2.0 object as received in the original request.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverRequest</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>batchResponses</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An object containing batched responses if the original request was a batched request.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line438">line 438</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDefaultHeaders"><span class="type-signature"></span>setDefaultHeaders<span class="signature">(serverResponse)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adds the default HTTP headers, as defined in rpc_options.http_headers,
+to a HTTP / HTTPS response object.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>serverResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The
+<a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">
+ServerResponse</a> object to add default headers to.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line535">line 535</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="startHTTPServer"><span class="type-signature"></span>startHTTPServer<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Attempts to start the JSON-RPC 2.0 HTTP server using the default <a href="global.html#rpc_options">rpc_options</a>. The <a href="global.html#onStartHTTPServer">onStartHTTPServer</a> function is invoked when
+the server is successfully started. The <a href="global.html#handleHTTPRequest">handleHTTPRequest</a> function handles requests.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line605">line 605</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="startWSServer"><span class="type-signature"></span>startWSServer<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Attempts to start the JSON-RPC 2.0 WebSocket server using the default <a href="global.html#rpc_options">rpc_options</a>. The <a href="global.html#onStartWSServer">onStartWSServer</a> function is invoked when
+the server is successfully started.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line619">line 619</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="validateJSONRPC"><span class="type-signature"></span>validateJSONRPC<span class="signature">(dataObj)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Verifies whether a data object is a valid JSON-RPC 2.0 request. (@see http://www.jsonrpc.org/specification)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dataObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The parsed object to check for validity.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line212">line 212</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A description of the validation failure, or null if the validation passed.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Type Definitions</h3>
+
+        
+                
+<h4 class="name" id="Exposed_Server_Objects">Exposed_Server_Objects</h4>
+
+
+
+
+<div class="description">
+    Server objects exposed to API modules.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>{
+ namespace:namespace,
+ console:console,
+ module:module,
+ crypto:crypto,
+ sendResult:sendResult,
+ sendError:sendError,
+ buildJSONRPC:buildJSONRPC,
+ paramExists:paramExists,
+ JSONRPC_ERRORS:JSONRPC_ERRORS</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line14">line 14</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="HTTP_Headers_Array">HTTP_Headers_Array</h4>
+
+
+
+
+<div class="description">
+    HTTP response headers used with HTTP / HTTPS endpoints.
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Array</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-default">Default Value:</dt>
+    <dd class="tag-default"><ul class="dummy">
+            <li>[{"Access-Control-Allow-Origin" : "*"},
+ {"Content-Type" : "application/json"}]</li>
+        </ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line8">line 8</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="httpserv">httpserv</h4>
+
+
+
+
+<div class="description">
+    A HTTP endpoint ("http" module).
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">http</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="wsserv">wsserv</h4>
+
+
+
+
+<div class="description">
+    A WebSocket endpoint ("ws" module).
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">ws</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line29">line 29</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Jul 18 2018 04:12:19 GMT-0400 (DST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
