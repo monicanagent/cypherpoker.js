@@ -20,15 +20,17 @@ async function WSS_Handshake (sessionObj) {
    var connectionID = namespace.websocket.makeConnectionID(sessionObj);
    var num_activeconnections = 0; //number of currently active WebSocket connections namespace.websocketly
    for (var item in namespace.websocket.connections) {
-      //we also need to ook at multiple connections from the same IP (if allowed)...
-      for (var count = 0; count < namespace.websocket.connections[item].length; count++) {
-         var websocketObj = namespace.websocket.connections[item][count];
-         if (websocketObj.user_token == requestParams.user_token) {
-            //when the IP is the same then the user token can't be!
-            sendError(JSONRPC_ERRORS.SESSION_CLOSE, "User token already exists for your IP.", sessionObj);
-            return;
+      if ((namespace.websocket.connections[item] != undefined) && (namespace.websocket.connections[item] != null)) {
+         //we also need to ook at multiple connections from the same IP (if allowed)...
+         for (var count = 0; count < namespace.websocket.connections[item].length; count++) {
+            var websocketObj = namespace.websocket.connections[item][count];
+            if (websocketObj.user_token == requestParams.user_token) {
+               //when the IP is the same then the user token can't be!
+               sendError(JSONRPC_ERRORS.SESSION_CLOSE, "User token already exists for your IP.", sessionObj);
+               return;
+            }
+            num_activeconnections++;
          }
-         num_activeconnections++;
       }
    }
    var server_token = String(Math.random()).split("0.").join(""); //unique, per-connection (per-socket) server token

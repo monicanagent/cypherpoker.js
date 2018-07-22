@@ -84,25 +84,31 @@ async function WSS_Connect (sessionObj) {
 * @param {Event} event A standard WebSocket close event.
 */
 function handleWebSocketClose(event) {
-   for (var connectionID in namespace.websocket.connections) {
-      for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
-         var connectionObj = namespace.websocket.connections[connectionID][count];
-         if (connectionObj.socket == event.target) {
-            namespace.websocket.connections[connectionID].splice(count, 1);
-            //notify other peers of new connection -- disconnection session should now be removed
-            var activeSessions = namespace.websocket.allSessions(true);
-            for (var count2 = 0; count2 < activeSessions.length; count2++) {
-               var messageObj = buildJSONRPC();
-               messageObj.result.type = "session";
-               messageObj.result.disconnect = connectionObj.private_id;
-               activeSessions[count2].socket.send(JSON.stringify(messageObj));
+   try{
+      for (var connectionID in namespace.websocket.connections) {
+         if ((namespace.websocket.connections[connectionID] != undefined) && (namespace.websocket.connections[connectionID] != null)) {
+            for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
+               var connectionObj = namespace.websocket.connections[connectionID][count];
+               if (connectionObj.socket == event.target) {
+                  namespace.websocket.connections[connectionID].splice(count, 1);
+                  //notify other peers of new connection -- disconnection session should now be removed
+                  var activeSessions = namespace.websocket.allSessions(true);
+                  for (var count2 = 0; count2 < activeSessions.length; count2++) {
+                     var messageObj = buildJSONRPC();
+                     messageObj.result.type = "session";
+                     messageObj.result.disconnect = connectionObj.private_id;
+                     activeSessions[count2].socket.send(JSON.stringify(messageObj));
+                  }
+                  if (namespace.websocket.connections[connectionID].length == 0) {
+                     namespace.websocket.connections[connectionID] = undefined;
+                  }
+                  return;
+               }
             }
-            if (namespace.websocket.connections[connectionID].length == 0) {
-               namespace.websocket.connections[connectionID] = undefined;
-            }
-            return;
          }
       }
+   } catch (err) {
+      console.error(err.stack);
    }
 }
 

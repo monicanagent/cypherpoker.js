@@ -335,7 +335,10 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
     vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
     var context = vm.createContext(vmContext);
     vm.runInContext(script, context, {timeout:rpc_options.api_timelimit});
-    context[requestMethod](sessionObj);
+    context[requestMethod](sessionObj).catch(err => {
+       sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "An internal server error occurred while processing your request.", sessionObj);
+       console.error ("API invocation error: \n"+err.stack);
+    });
   }
 }
 
