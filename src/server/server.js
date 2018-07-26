@@ -102,7 +102,7 @@ const JSONRPC_ERRORS = {
 * @property {Number} api_timelimit=3000 The time limit, in milliseconds, to allow external API functions to execute.
 * @property {Boolean} http_only_handshake=false Defines whether session handshakes are done only through HTTP/HTTPS (true),
 * or if they can be done through the WebSocket server (false).
-* @property {Number} max_ws_per_ip=3 The maximum number of concurrent WebSocket connections to allow from a single IP.
+* @property {Number} max_ws_per_ip=5 The maximum number of concurrent WebSocket connections to allow from a single IP.
 */
 var rpc_options = {
   api_dir: "./api",
@@ -127,7 +127,7 @@ var rpc_options = {
   },
   api_timelimit: 3000,
   http_only_handshake: false,
-  max_ws_per_ip: 3
+  max_ws_per_ip: 5
 }
 rpc_options.exposed_objects.rpc_options = rpc_options; // expose the options too (circular reference!)
 
