@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: libs/EventDispatcher.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: libs/EventDispatcher.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Extensible class intended to (nearly) mimic standard DOM event dispatchers.
+*/
+/**
+* @class Extend this class to enable standard event dispatcher functionality
+* in non-native (DOM) objects.
+*
+* &lt;p>&lt;b>&lt;i>This class requires ECMAScript 2017 support.&lt;/i>&lt;/b>&lt;/p>
+*
+* @example
+*
+* class myEventDispatcher extends EventDispatcher {
+*  constructor() {
+*   this.dispatchEvent(new Event("created"));
+*  }
+* }
+*
+* @mixin
+* @mixes Object
+* @see https://www.w3.org/TR/uievents/
+*/
+class EventDispatcher {
+
+   constructor () {
+       this._registrations = new Object();
+   }
+
+   /**
+   * Returns all registered listeners for a specific event type.
+   *
+   * @param {String} type The event type to return registered listeners for.
+   *
+   * @return {Array} A list of registered event listener objects for the specific event.
+   * Each object contains a &lt;code>listener&lt;/code> function reference and an
+   * execution &lt;code>context&lt;/code> reference.
+   */
+   getListeners (type) {
+       if ((this._registrations[type] == undefined) || (this._registrations[type] == null)) {
+          this._registrations[type] = new Array();
+       }
+       return (this._registrations[type]);
+   }
+
+   /**
+   * Registers a new event listener with the extending class instance.
+   *
+   * @param {String} type The event type to register.
+   * @param {Function} listener The listening function to invoke on the event.
+   * @param {Object} [context=null] Unlike the traditional "addEventListener" parameter, this is
+   * the context or scope in which to invoke the listening function (since we can't use capture phases).
+   * If null, the listener is invoked in the context of the EventDispatcher instance.
+   */
+   addEventListener (type, listener, eventContext = null) {
+       var listeners= this.getListeners(type);
+       for (var count=0; count &lt; listeners.length; count++) {
+          if (listeners[count].listener == listener) {
+             return;
+          }
+       }
+       var listenerObj = new Object();
+       listenerObj.listener = listener;
+       listenerObj.context = eventContext;
+       listeners.push(listenerObj);
+   }
+
+   /**
+   * Removes an event listener from the extending instance. The standard capture phase
+   * parameter is ignored.
+   *
+   * @param {String} type The event type to remove the function from.
+   * @param {Function} listener The listening function to remove.
+   *
+   * @augments EventDispatcher
+   */
+   removeEventListener (type, listener) {
+       var listeners= this.getListeners(type);
+       for (var count=0; count &lt; listeners.length; count++) {
+          if (listeners[count].listener == listener) {
+             listeners.splice(count, 1);
+             return;
+          }
+       }
+   }
+
+   dispatchEvent (evt) {
+       var listeners = this.getListeners(evt.type).slice();
+       for (var i= 0; i &lt; listeners.length; i++) {
+         if (listeners[i].context != null) {
+            listeners[i].listener.call(listeners[i].context, evt);
+         } else {
+            listeners[i].listener.call(this, evt);
+         }
+       }
+       return !evt.defaultPrevented;
+   }
+
+   toString() {
+      return ("[object EventDispatcher]");
+   }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:jointable">jointable</a></li><li><a href="CypherPoker.html#event:jointablerequest">jointablerequest</a></li><li><a href="CypherPoker.html#event:jointabletimeout">jointabletimeout</a></li><li><a href="CypherPoker.html#event:leavetable">leavetable</a></li><li><a href="CypherPoker.html#event:newtable">newtable</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jul 26 2018 00:22:50 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
