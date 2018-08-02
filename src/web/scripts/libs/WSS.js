@@ -137,6 +137,7 @@ class WSS extends EventDispatcher {
    *
    * @throws {Error} Thrown when a valid handshake / socket server address was
    * not supplied, or the connection could not be established.
+   * @todo Add better connection error handling.
    */
    async connect(socketServerAddress, useHTTPHandshake=false) {
       if (typeof(socketServerAddress) == "string") {
@@ -155,6 +156,8 @@ class WSS extends EventDispatcher {
          this._xhr = new XMLHttpRequest();
          this._xhr.open("POST", this.handshakeServerAddr);
          var event = await RPC("WSS_Handshake", {"user_token":this.userToken}, this._xhr);
+         //console.log ("xhr handshake response: ");
+         //console.dir(event.target.response);
          if (typeof(event.target.response["error"]) == "object") {
             throw (new Error("Server responded with an error ("+event.target.response.error.code+"): "+event.target.response.error.message));
          } else {
@@ -163,6 +166,8 @@ class WSS extends EventDispatcher {
       } else {
          this._websocket = new WebSocket(this.handshakeServerAddr);
          event = await this.webSocket.onEventPromise("open");
+         //console.log ("ws handshake response: ");
+         //console.dir(event.target.data);
          if (this._websocket.readyState != this._websocket.OPEN) {
             throw (new Error("Couldn't connect WebSocket at: " + this.handshakeServerAddr));
          }
@@ -178,6 +183,8 @@ class WSS extends EventDispatcher {
       if (this.webSocket == null) {
          this._websocket = new WebSocket(this.socketServerAddr);
          event = await this.webSocket.onEventPromise("open");
+         //console.log ("ws open response: ");
+         //console.dir(event.target.data);
          if (this._websocket.readyState != this._websocket.OPEN) {
             throw (new Error("Couldn't connect WebSocket at: " + this.socketServerAddr));
          }
