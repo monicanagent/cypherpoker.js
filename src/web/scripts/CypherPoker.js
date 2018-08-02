@@ -110,7 +110,7 @@ class CypherPoker extends EventDispatcher {
    /**
    * An object containing properties and references required by CypherPoker.JS that
    * refer to a table or group of peers.
-   * @typedef {Object} CypherPoker.TableObject
+   * @typedef {Object} TableObject
    * @property {String} ownerPID The private ID of the owner / creator of the table.
    * @property {String} tableID The pseudo-randomly generated, unique table ID of the table.
    * @property {String} tableName The name given to the table by the owner.
