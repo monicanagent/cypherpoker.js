@@ -1,21 +1,23 @@
 /**
-* @file Main index JavaScript file responsible for loading additional
-* external scripts.
+* @file JavaScript file responsible for loading additional external scripts. Also
+* provides functionality for additional dynamic loading of scripts and JSON
+* data.
 */
 
 /**
-* @property {String} _settingsURL The URL of the main settings JSON file.
+* @property {String} _settingsURL="./scripts/settings.json" The URL of the main
+* settings JSON file.
 * @private
 */
 const _settingsURL = "./scripts/settings.json";
 /**
-* @property {Boolean} _useCache Will force script-based loads to bypass
+* @property {Boolean} _useCache=false Will force script-based loads to bypass
 * local browser caches if false.
 * @private
 */
 const _useCache = false;
 /**
-* @property {CypherPoker} A reference to the main CypherPoker.JS instance.
+* @property {CypherPoker} cypherpoker=null A reference to the main CypherPoker.JS instance.
 * @private
 */
 var cypherpoker = null;
@@ -36,6 +38,10 @@ const _require = [
    {"url":"./scripts/libs/WSS.js"},
    {"url":"./scripts/libs/WorkerHost.js"},
    {"url":"./scripts/libs/SRACrypto.js"},
+   {"url":"./scripts/libs/BigInteger.min.js"},
+   {"url":"./scripts/CypherPokerGame.js"},
+   {"url":"./scripts/CypherPokerPlayer.js"},
+   {"url":"./scripts/CypherPokerCard.js"},
    {"url":"./scripts/CypherPoker.js",
     "onload":() => {
       //EventDispatcher and EventPromise must already exist here!

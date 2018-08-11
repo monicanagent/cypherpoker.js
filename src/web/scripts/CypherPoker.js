@@ -31,6 +31,22 @@
 */
 class CypherPoker extends EventDispatcher {
 
+   /**
+   * An object containing properties and references required by CypherPoker.JS that
+   * refer to a table or group of peers.
+   * @typedef {Object} CypherPoker#TableObject
+   * @property {String} ownerPID The private ID of the owner / creator of the table.
+   * @property {String} tableID The pseudo-randomly generated, unique table ID of the table.
+   * @property {String} tableName The name given to the table by the owner.
+   * @property {Array} requiredPID Indexed array of private IDs of peers required to join this room before it's
+   * considered full or ready. The wildcard asterisk (<code>"*"</code>) can be used to signify any PID.
+   * @property {Array} joinedPID Indexed array of private IDs that have been accepted by the owner, usually in a
+   * <code>tablejoin</code> CypherPoker peer-to-peer message. This array should ONLY contain valid
+   * private IDs (no wildcards).
+   * @property {Object} tableInfo Additional information to be included with the table. Use this object rather than
+   * a {@link TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
+   */
+
     //Event definitions:
 
     /**
@@ -106,22 +122,6 @@ class CypherPoker extends EventDispatcher {
     * @type {Object}
     * @property {TableObject} table The table that has timed out.
     */
-
-   /**
-   * An object containing properties and references required by CypherPoker.JS that
-   * refer to a table or group of peers.
-   * @typedef {Object} TableObject
-   * @property {String} ownerPID The private ID of the owner / creator of the table.
-   * @property {String} tableID The pseudo-randomly generated, unique table ID of the table.
-   * @property {String} tableName The name given to the table by the owner.
-   * @property {Array} requiredPID Indexed array of private IDs of peers required to join this room before it's
-   * considered full or ready. The wildcard asterisk (<code>"*"</code>) can be used to signify any PID.
-   * @property {Array} joinedPID Indexed array of private IDs that have been accepted by the owner, usually in a
-   * <code>tablejoin</code> CypherPoker peer-to-peer message. This array should ONLY contain valid
-   * private IDs (no wildcards).
-   * @property {Object} tableInfo Additional information to be included with the table. Use this object rather than
-   * a {@link TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
-   */
 
    /**
    * Creates a new CypherPoker.JS instance.
@@ -852,8 +852,7 @@ class CypherPoker extends EventDispatcher {
       var messageType = message.cpMsg;
       var ownEvent = new Event(messageType);
       ownEvent.data = event.data;
-      this.debug("CypherPoker.handleP2PMessage("+event+")");
-      this.debug("   Type: "+messageType);
+      this.debug("CypherPoker.handleP2PMessage("+event+") => \""+messageType+"\"");
       switch (messageType) {
          case "tablenew":
             if (this.captureNewTables) {

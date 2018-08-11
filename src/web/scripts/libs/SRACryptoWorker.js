@@ -11,17 +11,6 @@ try {
    }
 } catch (err) {
 }
-/**
-* @typedef {Object} keypair An encryption/decryption key pair and associated
-* prime value. Contains:<br/><br/>
-* <code><b>encKey</b></code>: A string representation of the encryption key.<br/>
-* <code><b>decKey</b></code>: A String representation of the decryption key.<br/>
-* <code><b>prime</b></code>: A string representation of the associated prime number.<br/>
-* <br/>
-* All values are either in hexadecimal (pre-pended with "0x"), or decimal. Keys
-* may be swapped prior to first use if desired.
-* @private
-*/
 
 /**
 * Handles all externally received messages from the host.
@@ -246,7 +235,7 @@ function generateRandomKeypair(primeVal, radix) {
       }
    }
    if (radix == 16) {
-      return ({"keypair":{"encKey":"0x"+encKey.toString(radix), "decKey":"0x"+decKey.toString(radix), "prime":"0x"+bi_prime.toString(16)}});
+      return ({"encKey":"0x"+encKey.toString(radix), "decKey":"0x"+decKey.toString(radix), "prime":"0x"+bi_prime.toString(16)});
    } else {
       return ({"encKey":encKey.toString(radix), "decKey":decKey.toString(radix), "prime":bi_prime.toString(10)});
    }

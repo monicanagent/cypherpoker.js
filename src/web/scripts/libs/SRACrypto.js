@@ -14,6 +14,19 @@ let _numHosts = 0; //current number of WorkerHost instances
 */
 class SRACrypto {
 
+   /**
+   * An encryption/decryption key pair and associated prime value. A <code>null</code>
+   * object indicates that the keypair is being generated. All values
+   * are either in hexadecimal (pre-pended with "0x"), or decimal. Keys may be
+   * swapped prior to first use if desired.
+   *
+   * @typedef {Object} keypair
+   * @property {String} encKey A string representation of the encryption key.
+   * @property {String} decKey A String representation of the decryption key.
+   * @property {String} prime A string representation of the associated prime number.
+   *
+   *
+   */
 
    /**
    * Creates an instance of the SRACrypto class.
@@ -158,7 +171,7 @@ class SRACrypto {
    * async function decryptAsync(encryptedCardsArray, encryptingKeypairObject) {
    *  var decCards = await doDecrypt(encryptedCardsArray, encryptingKeypairObject);
    *  for (var count=0; count<decCards.length; count++) {
-   *    console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);
+   *    console.log ("Card #"+count+" "+encryptedCardsArray[count]+" decypted to "+decCards[count]);
    *  }
    * }
    *
@@ -185,10 +198,9 @@ class SRACrypto {
    * }
    *
    * //encCards and keypair were pre-generated in a previous step
-   * decryptAsync(encCards, keypair).then(resultObj => {
-   *    var decCards = resultObj.data.result;
+   * decryptAsync(encCards, keypair).then(decCards => {
    *    for (var count=0; count<decCards.length; count++) {
-   *     console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);
+   *     console.log ("Card #"+count+" "+encCards[count]+" decypted to "+decCards[count]);
    *    }
    * })
    *
@@ -207,10 +219,9 @@ class SRACrypto {
    * }
    *
    * //encCards and keypair were pre-generated in a previous step
-   * decryptAsync(encCards, keypair).then(resultObj => {
-   *    var decCards = resultObj.data.result;
-   *    for (var count=0; count<decCards.length; count++) {
-   *     console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);
+   * decryptAsync(encCards, keypair).then(results => {
+   *    for (var count=0; count<results.length; count++) {
+   *     console.log ("Card #"+count+" "+encCards[count]+" decrypted to "+results[count].data.result);
    *    }
    * })
    */

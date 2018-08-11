@@ -46,7 +46,7 @@ class EventDispatcher {
    *
    * @param {String} type The event type to register.
    * @param {Function} listener The listening function to invoke on the event.
-   * @param {Object} [context=null] Unlike the traditional "addEventListener" parameter, this is
+   * @param {Object} [context=null] Unlike the traditional <code>addEventListener</code> parameter, this is
    * the context or scope in which to invoke the listening function (since we can't use capture phases).
    * If null, the listener is invoked in the context of the EventDispatcher instance.
    */
