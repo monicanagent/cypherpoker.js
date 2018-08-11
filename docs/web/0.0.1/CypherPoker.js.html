@@ -72,7 +72,7 @@ class CypherPoker extends EventDispatcher {
    * &lt;code>tablejoin&lt;/code> CypherPoker peer-to-peer message. This array should ONLY contain valid
    * private IDs (no wildcards).
    * @property {Object} tableInfo Additional information to be included with the table. Use this object rather than
-   * a {@link TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
+   * a {@link CypherPoker#TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
    */
 
     //Event definitions:
@@ -91,7 +91,7 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data The JSON-RPC 2.0 object containing the announcement.
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the notification sender.
-    * @property {TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
     */
     /**
     * An external peer is making a request to join one of our tables.
@@ -101,7 +101,7 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data The JSON-RPC 2.0 object containing the request.
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the request sender.
-    * @property {TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
     */
     /**
     * A notification that a new peer (possibly us), is joining another
@@ -112,7 +112,7 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data The JSON-RPC 2.0 object containing the table update.
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the notification sender.
-    * @property {TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
     */
     /**
     * The associated table's required private IDs have all joined and the table
@@ -120,7 +120,7 @@ class CypherPoker extends EventDispatcher {
     *
     * @event CypherPoker#tableready
     * @type {Event}
-    * @property {TableObject} table The table associated with the notification.
+    * @property {CypherPoker#TableObject} table The table associated with the notification.
     */
     /**
     * A table member is sending a message to other table members.
@@ -130,7 +130,7 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data The JSON-RPC 2.0 object containing the message information.
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the message sender.
-    * @property {TableObject} data.result.data The table associated with the message.
+    * @property {CypherPoker#TableObject} data.result.data The table associated with the message.
     * @property {*} data.result.data.message The message being sent.
     */
     /**
@@ -141,14 +141,14 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data The JSON-RPC 2.0 object containing the table being left.
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the notification sender.
-    * @property {TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
     */
     /**
     * A join request to another owner's table has timed out without a response.
     *
     * @event CypherPoker#tablejointimeout
     * @type {Object}
-    * @property {TableObject} table The table that has timed out.
+    * @property {CypherPoker#TableObject} table The table that has timed out.
     */
 
    /**
@@ -398,7 +398,7 @@ class CypherPoker extends EventDispatcher {
    * network. If false, use the {@link CypherPoker#announceTable} function to manually announce the
    * returned table.
    *
-   * @return {TableObject} A newly created CypherPoker.JS table as specified by
+   * @return {CypherPoker#TableObject} A newly created CypherPoker.JS table as specified by
    * the parameters.
    */
    createTable(tableName, players, tableInfo=null, tableID=null, activateBeacon=true) {
@@ -436,7 +436,7 @@ class CypherPoker extends EventDispatcher {
       }
       newTableObj.tableInfo = tableInfo;
       newTableObj.toString = function () {
-        return ("[object TableObject]");
+        return ("[object CypherPoker#TableObject]");
       }
       this._joinedTables.push(newTableObj);
       this._openTables = true;
@@ -452,7 +452,7 @@ class CypherPoker extends EventDispatcher {
    * associated beacon timer is found, it is automatically stopped when
    * the &lt;code>requiredPID&lt;/code> list of the table is empty.
    *
-   * @param {TableObject} tableObj The table to announce. If the table's
+   * @param {CypherPoker#TableObject} tableObj The table to announce. If the table's
    * &lt;code>requiredPID&lt;/code> array is empty, the request is rejected.
    * @param {CypherPoker} [context=null] The CypherPoker instance to execute the function
    * in (typically specified as part of a timer). If &lt;code>null&lt;/code>, the current
@@ -479,9 +479,9 @@ class CypherPoker extends EventDispatcher {
    /**
    * Checks whether the supplied argument is a valid CypherPoker.JS table object.
    *
-   * @param {TableObject} [tableObj=null] The object to examine.
+   * @param {CypherPoker#TableObject} [tableObj=null] The object to examine.
    *
-   * @return {Boolean} True if the supplied object appears to be a valid {@link TableObject}
+   * @return {Boolean} True if the supplied object appears to be a valid {@link CypherPoker#TableObject}
    * suitable for use with CypherPoker.JS
    */
    isTableValid(tableObj=null) {
@@ -519,10 +519,10 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Evaluates whether a table is ready or not. A table is considered
-   * ready if it is a valid {@link TableObject}, has one or more joined private
+   * ready if it is a valid {@link CypherPoker#TableObject}, has one or more joined private
    * IDs and no required private IDs.
    *
-   * @param {TableObject} tableObj The table to evaluate.
+   * @param {CypherPoker#TableObject} tableObj The table to evaluate.
    *
    * @return {Boolean} True if the table is ready.
    */
@@ -539,7 +539,7 @@ class CypherPoker extends EventDispatcher {
    /**
    * Requests to join another owner's table.
    *
-   * @property {TableObject} A CypherPoker.JS table (object) to request to join.
+   * @property {CypherPoker#TableObject} A CypherPoker.JS table (object) to request to join.
    * @property {Number} [replyTimeout=20000] A time, in milliseconds, to wait for the reply
    * before considering the request as having timed out.
    *
@@ -586,7 +586,7 @@ class CypherPoker extends EventDispatcher {
             }
          }
          tableObj.toString = function() {
-           return ("[object TableObject]");
+           return ("[object CypherPoker#TableObject]");
          }
          this._joinTableRequests.push(tableObj);
          this.sendJoinTableRequest(tableObj);
@@ -600,7 +600,7 @@ class CypherPoker extends EventDispatcher {
    /**
    * Sends a message to the joined peers of a table.
    *
-   * @param {TableObject} tableObj The table to send the message to.
+   * @param {CypherPoker#TableObject} tableObj The table to send the message to.
    * @param {*} message The message to send. Cannot be null or undefined.
    *
    * @return {Boolean} True if the message was delivered to the peer-to-peer networking
@@ -636,7 +636,7 @@ class CypherPoker extends EventDispatcher {
    /**
    * Sends a "tablejoinrequest" message to a table's owner.
    *
-   * @param {TableObject} tableObj The table of the owner to send a join request to.
+   * @param {CypherPoker#TableObject} tableObj The table of the owner to send a join request to.
    * @private
    */
    sendJoinTableRequest(tableObj) {
@@ -650,7 +650,7 @@ class CypherPoker extends EventDispatcher {
    * Responds to a timeout on a "tablejoinrequest" message, removing the
    * table from the &lt;code>_joinTableRequests&lt;/code> array.
    *
-   * @param {TableObject} tableObj The table reference for which a
+   * @param {CypherPoker#TableObject} tableObj The table reference for which a
    * @param {CypherPoker} context The CypherPoker instance to execute the function
    * in as specified in the calling timer.
    * @fires CypherPoker#tablejointimeout
@@ -678,7 +678,7 @@ class CypherPoker extends EventDispatcher {
    * Leaves a table that was joined. This table must be tracked internally
    * by this instance as having been joined.
    *
-   * @param {TableObject} tableObj The table to leave.
+   * @param {CypherPoker#TableObject} tableObj The table to leave.
    *
    * @return {Boolean} True if the leave notification was delievered to the
    * peer-to-peer networking interface, false if there was a problem
@@ -773,10 +773,10 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Copies the core properties of a source table object to another object. The
-   * target object will be identifiable as a {@link TableObject} after
+   * target object will be identifiable as a {@link CypherPoker#TableObject} after
    * the copy.
    *
-   * @param {TableObject} sourceTable The table from which to copy from.
+   * @param {CypherPoker#TableObject} sourceTable The table from which to copy from.
    * @param {Object} targetObject The target object to copy the core properties
    * of &lt;code>sourceTable&lt;/code> to.
    */
@@ -788,7 +788,7 @@ class CypherPoker extends EventDispatcher {
       targetObject.joinedPID = sourceTable.joinedPID;
       targetObject.tableInfo = sourceTable.tableInfo;
       targetObject.toString = function() {
-         return ("[object TableObject]");
+         return ("[object CypherPoker#TableObject]");
       }
    }
 
@@ -815,7 +815,7 @@ class CypherPoker extends EventDispatcher {
    * All required private IDs must already have joined the table prior to calling
    * this function.
    *
-   * @param {TableObject} tableObj The table from which to create a new game.
+   * @param {CypherPoker#TableObject} tableObj The table from which to create a new game.
    * @param {Object} playerInfo Additional information about us to send
    * to other players at the table when they signal that their game is ready.
    *
@@ -839,7 +839,7 @@ class CypherPoker extends EventDispatcher {
    * Dispatches a "tableready" event when the associated table is considered
    * ready (see: {@link CypherPoker#isTableReady}).
    *
-   * @param {TableObject} tableObj The table to evaluate and include with the
+   * @param {CypherPoker#TableObject} tableObj The table to evaluate and include with the
    * the event if ready.
    *
    * @return {Boolean} True if the table is ready and the event was dispatched.
@@ -931,7 +931,7 @@ class CypherPoker extends EventDispatcher {
                   //someone else has joined the owner's table
                   this._joinedTables[count] = newTable;
                   newTable.toString = function() {
-                     return ("[object TableObject]");
+                     return ("[object CypherPoker#TableObject]");
                   }
                   this.dispatchEvent(ownEvent);
                   this.dispatchTableReadyEvent(newTable);
@@ -948,7 +948,7 @@ class CypherPoker extends EventDispatcher {
                       clearTimeout(requestObj.joinTimeoutID);
                       delete requestObj.joinTimeoutID;
                       newTable.toString = function() {
-                        return ("[object TableObject]");
+                        return ("[object CypherPoker#TableObject]");
                       }
                       this._joinedTables.push(newTable);
                       this.dispatchEvent(ownEvent);
@@ -999,7 +999,7 @@ class CypherPoker extends EventDispatcher {
    * the newest.
    *
    * @param {Object} tableResult A JSON-RPC 2.0 &lt;code>result&lt;/code> object containing
-   * a valid {@link TableObject} in its &lt;code>data&lt;/code> property.
+   * a valid {@link CypherPoker#TableObject} in its &lt;code>data&lt;/code> property.
    * @return {Boolean} True if the table was succesfully captured, false if it was
    * out of limit(s) or otherwise unqualified.
    * @private
@@ -1028,7 +1028,7 @@ class CypherPoker extends EventDispatcher {
       var newTable = new Object();
       this.copyTable(tableResult.data, newTable);
       newTable.toString = function() {
-         return ("[object TableObject]");
+         return ("[object CypherPoker#TableObject]");
       }
       this.debug("CypherPoker.captureTable("+newTable+")");
       newTable.ownerPID = tableResult.from; //make sure only owner can announce their own table
@@ -1127,7 +1127,7 @@ class CypherPoker extends EventDispatcher {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 22:04:21 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 23:00:22 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
