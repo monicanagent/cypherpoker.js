@@ -42,6 +42,19 @@ let _numHosts = 0; //current number of WorkerHost instances
 */
 class SRACrypto {
 
+   /**
+   * An encryption/decryption key pair and associated prime value. A &lt;code>null&lt;/code>
+   * object indicates that the keypair is being generated. All values
+   * are either in hexadecimal (pre-pended with "0x"), or decimal. Keys may be
+   * swapped prior to first use if desired.
+   *
+   * @typedef {Object} keypair
+   * @property {String} encKey A string representation of the encryption key.
+   * @property {String} decKey A String representation of the decryption key.
+   * @property {String} prime A string representation of the associated prime number.
+   *
+   *
+   */
 
    /**
    * Creates an instance of the SRACrypto class.
@@ -186,7 +199,7 @@ class SRACrypto {
    * async function decryptAsync(encryptedCardsArray, encryptingKeypairObject) {
    *  var decCards = await doDecrypt(encryptedCardsArray, encryptingKeypairObject);
    *  for (var count=0; count&lt;decCards.length; count++) {
-   *    console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);
+   *    console.log ("Card #"+count+" "+encryptedCardsArray[count]+" decypted to "+decCards[count]);
    *  }
    * }
    *
@@ -213,10 +226,9 @@ class SRACrypto {
    * }
    *
    * //encCards and keypair were pre-generated in a previous step
-   * decryptAsync(encCards, keypair).then(resultObj => {
-   *    var decCards = resultObj.data.result;
+   * decryptAsync(encCards, keypair).then(decCards => {
    *    for (var count=0; count&lt;decCards.length; count++) {
-   *     console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);
+   *     console.log ("Card #"+count+" "+encCards[count]+" decypted to "+decCards[count]);
    *    }
    * })
    *
@@ -235,10 +247,9 @@ class SRACrypto {
    * }
    *
    * //encCards and keypair were pre-generated in a previous step
-   * decryptAsync(encCards, keypair).then(resultObj => {
-   *    var decCards = resultObj.data.result;
-   *    for (var count=0; count&lt;decCards.length; count++) {
-   *     console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);
+   * decryptAsync(encCards, keypair).then(results => {
+   *    for (var count=0; count&lt;results.length; count++) {
+   *     console.log ("Card #"+count+" "+encCards[count]+" decrypted to "+results[count].data.result);
    *    }
    * })
    */
@@ -303,13 +314,13 @@ class SRACrypto {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 02 2018 16:03:39 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 22:04:22 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

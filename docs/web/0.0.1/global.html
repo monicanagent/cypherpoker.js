@@ -449,13 +449,13 @@
 
         
                 
-<h4 class="name" id="TableObject">TableObject</h4>
+<h4 class="name" id="keypair">keypair</h4>
 
 
 
 
 <div class="description">
-    An object containing properties and references required by CypherPoker.JS thatrefer to a table or group of peers.
+    An encryption/decryption key pair and associated prime value. A <code>null</code>object indicates that the keypair is being generated. All valuesare either in hexadecimal (pre-pended with "0x"), or decimal. Keys may beswapped prior to first use if desired.
 </div>
 
 
@@ -500,7 +500,7 @@
 
         <tr>
             
-                <td class="name"><code>ownerPID</code></td>
+                <td class="name"><code>encKey</code></td>
             
 
             <td class="type">
@@ -516,14 +516,14 @@
 
             
 
-            <td class="description last">The private ID of the owner / creator of the table.</td>
+            <td class="description last">A string representation of the encryption key.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>tableID</code></td>
+                <td class="name"><code>decKey</code></td>
             
 
             <td class="type">
@@ -539,14 +539,14 @@
 
             
 
-            <td class="description last">The pseudo-randomly generated, unique table ID of the table.</td>
+            <td class="description last">A String representation of the decryption key.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>tableName</code></td>
+                <td class="name"><code>prime</code></td>
             
 
             <td class="type">
@@ -562,76 +562,7 @@
 
             
 
-            <td class="description last">The name given to the table by the owner.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>requiredPID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indexed array of private IDs of peers required to join this room before it'sconsidered full or ready. The wildcard asterisk (<code>"*"</code>) can be used to signify any PID.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>joinedPID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indexed array of private IDs that have been accepted by the owner, usually in a<code>tablejoin</code> CypherPoker peer-to-peer message. This array should ONLY contain validprivate IDs (no wildcards).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>tableInfo</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Additional information to be included with the table. Use this object rather thana <a href="global.html#TableObject">TableObject</a> at the root level since it is dynamic (may cause unexpected behaviour).</td>
+            <td class="description last">A string representation of the associated prime number.</td>
         </tr>
 
     
@@ -670,7 +601,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPoker.js.html">CypherPoker.js</a>, <a href="CypherPoker.js.html#line110">line 110</a>
+        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -700,13 +631,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 02 2018 16:03:39 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 22:04:22 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

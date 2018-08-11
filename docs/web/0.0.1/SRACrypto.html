@@ -313,7 +313,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line264">line 264</a>
+        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line275">line 275</a>
     </li></ul></dd>
     
 
@@ -423,7 +423,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line256">line 256</a>
+        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line267">line 267</a>
     </li></ul></dd>
     
 
@@ -626,7 +626,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line217">line 217</a>
+        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line228">line 228</a>
     </li></ul></dd>
     
 
@@ -685,11 +685,11 @@
 
     <pre class="prettyprint"><code>//similar to the example above but using a promise to resolve ordered resultsvar SRA = new SRACrypto(4);//encrypt 52 "cards" (quadratic residues) with a given keypairfunction doEncrypt(cards, keypairObject) {    var promise = new Promise((resolve, reject) => {      var encCards = new Array(cards.length);      for (var count=0; count &lt; cards.length; count++) {        SRA.invoke("encrypt", {value: cards[count], keypair: keypairObject}, count).then(event =>        {           encCards[event.data.requestID] = event.data.result;           for (var count2 = startNum; count2 &lt; decCards.length; count2++) {             if (isNaN(ordereredResults[count2])) {                return;             }           }           //promise is resolved only when all cards have been stored           resolve (encCards);         });       }   });   return (promise);}//cards and keypair were pre-generated in a previous stepdoEncrypt(cards, keypair).then(encCards => { for (var count=0; count &lt; encCards.length; count++ )   console.log ("Card #"+count+" "+cards[count]+" encrypted to "+encCards[count]); }})</code></pre>
 
-    <pre class="prettyprint"><code>//using an intermediate async function to perform similar functionality as abovevar SRA = new SRACrypto(4);//decrypt a deck of single-encrypted cardsfunction doDecrypt(encCards, keypair) {  var promise = new Promise((resolve, reject) => {     var decCards = new Array(encCards.length);     for (var count=0; count &lt; encCards.length; count++) {        SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}, count).then(event =>        {           decCards[event.data.requestID] = event.data.result;           for (var count2 = startNum; count2 &lt; decCards.length; count2++) {              if (isNaN(ordereredResults[count2])) {                 return;              }           }           resolve (ordereredResults);        }     });    }  });  return (promise);}async function decryptAsync(encryptedCardsArray, encryptingKeypairObject) { var decCards = await doDecrypt(encryptedCardsArray, encryptingKeypairObject); for (var count=0; count&lt;decCards.length; count++) {   console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]); }}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair);</code></pre>
+    <pre class="prettyprint"><code>//using an intermediate async function to perform similar functionality as abovevar SRA = new SRACrypto(4);//decrypt a deck of single-encrypted cardsfunction doDecrypt(encCards, keypair) {  var promise = new Promise((resolve, reject) => {     var decCards = new Array(encCards.length);     for (var count=0; count &lt; encCards.length; count++) {        SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}, count).then(event =>        {           decCards[event.data.requestID] = event.data.result;           for (var count2 = startNum; count2 &lt; decCards.length; count2++) {              if (isNaN(ordereredResults[count2])) {                 return;              }           }           resolve (ordereredResults);        }     });    }  });  return (promise);}async function decryptAsync(encryptedCardsArray, encryptingKeypairObject) { var decCards = await doDecrypt(encryptedCardsArray, encryptingKeypairObject); for (var count=0; count&lt;decCards.length; count++) {   console.log ("Card #"+count+" "+encryptedCardsArray[count]+" decypted to "+decCards[count]); }}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair);</code></pre>
 
-    <pre class="prettyprint"><code>var SRA = new SRACrypto(4);//a smaller async example of the above, this time using Promises.all to//resolve the queued results but still using requestIDs for orderingasync function decryptAsync(encCards, keypair) {  var promises = new Array();  for (var count=0; count &lt; encCards.length; count++) {     promises.push(SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}, count));  }  var resultPromises = await Promise.all(promises);  //at this point we know that all promises have been fulfilled  var decCards = new Array(resultPromises.length);  for (var count=0; count &lt; resultPromises.length; count++) {     decCards[resultPromises[count].data.requestID] = resultPromises[count].data.result;  } return (decCards);}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair).then(resultObj => {   var decCards = resultObj.data.result;   for (var count=0; count&lt;decCards.length; count++) {    console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);   }})</code></pre>
+    <pre class="prettyprint"><code>var SRA = new SRACrypto(4);//a smaller async example of the above, this time using Promises.all to//resolve the queued results but still using requestIDs for orderingasync function decryptAsync(encCards, keypair) {  var promises = new Array();  for (var count=0; count &lt; encCards.length; count++) {     promises.push(SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}, count));  }  var resultPromises = await Promise.all(promises);  //at this point we know that all promises have been fulfilled  var decCards = new Array(resultPromises.length);  for (var count=0; count &lt; resultPromises.length; count++) {     decCards[resultPromises[count].data.requestID] = resultPromises[count].data.result;  } return (decCards);}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair).then(decCards => {   for (var count=0; count&lt;decCards.length; count++) {    console.log ("Card #"+count+" "+encCards[count]+" decypted to "+decCards[count]);   }})</code></pre>
 
-    <pre class="prettyprint"><code>var SRA = new SRACrypto(4);//an even smaller example of the above without using a requestIDvar promises = new Array();async function decryptAsync(encCards, keypair) {  var promises = new Array();  for (var count=0; count &lt; encCards.length; count++) {     promises.push(SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}));  }  var resultPromises = await Promise.all(promises);  return (resultPromises);}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair).then(resultObj => {   var decCards = resultObj.data.result;   for (var count=0; count&lt;decCards.length; count++) {    console.log ("Card #"+count+" "+cards[count]+" encrypted to "+decCards[count]);   }})</code></pre>
+    <pre class="prettyprint"><code>var SRA = new SRACrypto(4);//an even smaller example of the above without using a requestIDvar promises = new Array();async function decryptAsync(encCards, keypair) {  var promises = new Array();  for (var count=0; count &lt; encCards.length; count++) {     promises.push(SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}));  }  var resultPromises = await Promise.all(promises);  return (resultPromises);}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair).then(results => {   for (var count=0; count&lt;results.length; count++) {    console.log ("Card #"+count+" "+encCards[count]+" decrypted to "+results[count].data.result);   }})</code></pre>
 
 
 
@@ -751,7 +751,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line242">line 242</a>
+        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line253">line 253</a>
     </li></ul></dd>
     
 
@@ -795,13 +795,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 02 2018 16:03:39 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 22:04:23 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
