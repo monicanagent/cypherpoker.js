@@ -184,8 +184,6 @@ class WSS extends EventDispatcher {
          this._xhr = new XMLHttpRequest();
          this._xhr.open("POST", this.handshakeServerAddr);
          var event = await RPC("WSS_Handshake", {"user_token":this.userToken}, this._xhr);
-         //console.log ("xhr handshake response: ");
-         //console.dir(event.target.response);
          if (typeof(event.target.response["error"]) == "object") {
             throw (new Error("Server responded with an error ("+event.target.response.error.code+"): "+event.target.response.error.message));
          } else {
@@ -193,13 +191,15 @@ class WSS extends EventDispatcher {
          }
       } else {
          this._websocket = new WebSocket(this.handshakeServerAddr);
+         this.webSocket.session = this;
+         this.webSocket.addEventListener("error", event => {
+            //trigger following "await" statement (error will be thrown after that)
+            this.webSocket.dispatchEvent(new Event("open"));
+         });
          event = await this.webSocket.onEventPromise("open");
-         //console.log ("ws handshake response: ");
-         //console.dir(event.target.data);
          if (this._websocket.readyState != this._websocket.OPEN) {
             throw (new Error("Couldn't connect WebSocket at: " + this.handshakeServerAddr));
          }
-         this.webSocket.session = this;
          event = await RPC("WSS_Handshake", {"user_token":this.userToken}, this.webSocket);
          var resultData = JSON.parse(event.data);
          if (typeof(resultData["error"]) == "object") {
@@ -210,9 +210,11 @@ class WSS extends EventDispatcher {
       }
       if (this.webSocket == null) {
          this._websocket = new WebSocket(this.socketServerAddr);
+         this.webSocket.addEventListener("error", event => {
+            //trigger following "await" statement (error will be thrown after that)
+            this.webSocket.dispatchEvent(new Event("open"));
+         });
          event = await this.webSocket.onEventPromise("open");
-         //console.log ("ws open response: ");
-         //console.dir(event.target.data);
          if (this._websocket.readyState != this._websocket.OPEN) {
             throw (new Error("Couldn't connect WebSocket at: " + this.socketServerAddr));
          }
@@ -383,13 +385,13 @@ class WSS extends EventDispatcher {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 23:00:23 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 23 2018 10:29:07 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

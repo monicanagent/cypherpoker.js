@@ -295,6 +295,124 @@
 
         
             
+<h4 class="name" id="autoBlinds"><span class="type-signature"></span>autoBlinds<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>autoBlinds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">If true, the required blind amount forthe table are posted automatically if we're playing as a blind, otherwisethe blind amount will need to be posted via the <a href="CypherPokerGame.html#placeBet">CypherPokerGame#placeBet</a> function.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line209">line 209</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
 <h4 class="name" id="bettingDone"><span class="type-signature"></span>bettingDone<span class="type-signature"></span></h4>
 
 
@@ -348,7 +466,7 @@
 
             
 
-            <td class="description last">True if all non-folded players have committed the samebet amount (new cards may be dealt or the game has completed).</td>
+            <td class="description last">True if all non-folded players have committed the samebet amount, or if all players but one have folded (new cards may be dealt or the game has completed).</td>
         </tr>
 
     
@@ -387,7 +505,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line434">line 434</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line494">line 494</a>
     </li></ul></dd>
     
 
@@ -497,7 +615,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line376">line 376</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line432">line 432</a>
     </li></ul></dd>
     
 
@@ -607,7 +725,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line465">line 465</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line570">line 570</a>
     </li></ul></dd>
     
 
@@ -834,7 +952,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line349">line 349</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line405">line 405</a>
     </li></ul></dd>
     
 
@@ -944,7 +1062,235 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line285">line 285</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line341">line 341</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="DOMElement"><span class="type-signature"></span>DOMElement<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>DOMElement</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">A reference to the DOM element associatedwith this game instance. Typically this reference is set by an external userinterface manager.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line324">line 324</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="gameDone"><span class="type-signature"></span>gameDone<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>gameDone</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">True if the current game (hand), and allassociated betting rounds have completed. Verification and otherpost-game actions can take place once a game is done.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line526">line 526</a>
     </li></ul></dd>
     
 
@@ -1102,7 +1448,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line327">line 327</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line383">line 383</a>
     </li></ul></dd>
     
 
@@ -1212,7 +1558,227 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line365">line 365</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line421">line 421</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="largestBet"><span class="type-signature"></span>largestBet<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>largestBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">BigInteger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The largest bet currently placed bya non-folded player at the table.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line556">line 556</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="minimumBet"><span class="type-signature"></span>minimumBet<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>minimumBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">BigInteger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The minimum bet that must be placed byus during this round of betting in order to continue playing.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line547">line 547</a>
     </li></ul></dd>
     
 
@@ -1322,7 +1888,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line316">line 316</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line372">line 372</a>
     </li></ul></dd>
     
 
@@ -1432,7 +1998,117 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line307">line 307</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line363">line 363</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="pot"><span class="type-signature"></span>pot<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pot</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">BigInteger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The amount currently in the pot for the game.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line193">line 193</a>
     </li></ul></dd>
     
 
@@ -1542,7 +2218,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line298">line 298</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line354">line 354</a>
     </li></ul></dd>
     
 
@@ -1921,7 +2597,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1237">line 1237</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1358">line 1358</a>
     </li></ul></dd>
     
 
@@ -2059,7 +2735,7 @@
             
                 <td class="default">
                 
-                    true
+                    false
                 
                 </td>
             
@@ -2105,7 +2781,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1183">line 1183</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1296">line 1296</a>
     </li></ul></dd>
     
 
@@ -2267,7 +2943,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1061">line 1061</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1167">line 1167</a>
     </li></ul></dd>
     
 
@@ -2375,7 +3051,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line603">line 603</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line708">line 708</a>
     </li></ul></dd>
     
 
@@ -2483,7 +3159,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line586">line 586</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line691">line 691</a>
     </li></ul></dd>
     
 
@@ -2802,7 +3478,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line998">line 998</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1104">line 1104</a>
     </li></ul></dd>
     
 
@@ -2959,7 +3635,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line546">line 546</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line651">line 651</a>
     </li></ul></dd>
     
 
@@ -3116,7 +3792,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line526">line 526</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line631">line 631</a>
     </li></ul></dd>
     
 
@@ -3273,7 +3949,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line508">line 508</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line613">line 613</a>
     </li></ul></dd>
     
 
@@ -3430,7 +4106,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line566">line 566</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line671">line 671</a>
     </li></ul></dd>
     
 
@@ -3538,7 +4214,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line620">line 620</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line725">line 725</a>
     </li></ul></dd>
     
 
@@ -3698,7 +4374,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1116">line 1116</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1222">line 1222</a>
     </li></ul></dd>
     
 
@@ -3997,7 +4673,7 @@
                 </td>
             
 
-            <td class="description last">If true, the <a href="CypherPokerPlayer.html#currentBet">CypherPokerPlayer#currentBet</a> amountis set to 0.</td>
+            <td class="description last">If true, the <a href="CypherPokerPlayer.html#totalBet">CypherPokerPlayer#totalBet</a> amountis set to 0.</td>
         </tr>
 
     
@@ -4116,7 +4792,93 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line227">line 227</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line267">line 267</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="restartGame"><span class="type-signature">(async) </span>restartGame<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Attempts to restart the game by resetting all cards and player selections,shifting player roles, and finally starting the game (if we're the current dealer).
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1313">line 1313</a>
     </li></ul></dd>
     
 
@@ -4345,7 +5107,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line642">line 642</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line747">line 747</a>
     </li></ul></dd>
     
 
@@ -4431,7 +5193,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line274">line 274</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line314">line 314</a>
     </li></ul></dd>
     
 
@@ -4488,6 +5250,228 @@
 
     
         <h3 class="subsection-title">Events</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamebet">gamebet</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A bet has been placed by another player.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>amount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The amount of the bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that placed the bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the received bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the received bet.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line128">line 128</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+<h5>Listeners of This Event:</h5>
+<ul>
+    <li><a href="CypherPokerUI.html#onBetPlaced">CypherPokerUI#onBetPlaced</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
 
         
             
@@ -4696,6 +5680,11 @@
 
 
 
+
+<h5>Listeners of This Event:</h5>
+<ul>
+    <li><a href="CypherPokerUI.html#onCardDeal">CypherPokerUI#onCardDeal</a></li>
+</ul>
 
 
 
@@ -5500,7 +6489,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line128">line 128</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line138">line 138</a>
     </li></ul></dd>
     
 
@@ -5518,6 +6507,11 @@
 
 
 
+
+<h5>Listeners of This Event:</h5>
+<ul>
+    <li><a href="CypherPokerUI.html#onGameEnd">CypherPokerUI#onGameEnd</a></li>
+</ul>
 
 
 
@@ -6579,13 +7573,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 23:00:24 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 23 2018 10:29:07 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

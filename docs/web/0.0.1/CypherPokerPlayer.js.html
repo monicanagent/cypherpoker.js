@@ -26,7 +26,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
+            <pre class="prettyprint source linenums"><code>totalBet/**
 * @file Information management for an individual CypherPoker.JS player.
 *
 * @version 0.0.1
@@ -97,6 +97,9 @@ class CypherPokerPlayer extends EventDispatcher {
    * becomes the big blind for the associated game.
    */
    get isBigBlind() {
+      if (this._isBigBlind == undefined) {
+         this._isBigBlind = false;
+      }
       return (this._isBigBlind);
    }
 
@@ -109,6 +112,9 @@ class CypherPokerPlayer extends EventDispatcher {
    * becomes the small blind for the associated game.
    */
    get isSmallBlind() {
+      if (this._isSmallBlind == undefined) {
+         this._isSmallBlind = false;
+      }
       return (this._isSmallBlind);
    }
 
@@ -163,20 +169,20 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
    /**
-   * @property {BigInteger} currentBet The bet amount most recently placed by the player
+   * @property {BigInteger} totalBet The total bet amount placed by the player in the current game (hand)
    * in the smallest denomination of the target currency (e.g. Satoshis if using Bitcoin, pennies
    * is using dollars, etc.) When setting this value, a &lt;code>Number&lt;/code> or &lt;code>String&lt;/code>
    * may be used which will be cast to a &lt;code>BigInteger&lt;/code> object.
    */
-   get currentBet() {
-      if (this._currentBet == undefined) {
-         this._currentBet = bigInt(0);
+   get totalBet() {
+      if (this._totalBet == undefined) {
+         this._totalBet = bigInt(0);
       }
-      return (this._currentBet);
+      return (this._totalBet);
    }
 
-   set currentBet(betAmount) {
-      this._currentBet = new bigInt(betAmount);
+   set totalBet(betAmount) {
+      this._totalBet = new bigInt(betAmount);
    }
 
    /**
@@ -232,6 +238,7 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
 }
+totalBet
 </code></pre>
         </article>
     </section>
@@ -242,13 +249,13 @@ class CypherPokerPlayer extends EventDispatcher {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Aug 10 2018 23:00:23 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Aug 23 2018 10:29:07 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
