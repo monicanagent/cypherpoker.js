@@ -1,4 +1,4 @@
-/**
+totalBet/**
 * @file Information management for an individual CypherPoker.JS player.
 *
 * @version 0.0.1
@@ -69,6 +69,9 @@ class CypherPokerPlayer extends EventDispatcher {
    * becomes the big blind for the associated game.
    */
    get isBigBlind() {
+      if (this._isBigBlind == undefined) {
+         this._isBigBlind = false;
+      }
       return (this._isBigBlind);
    }
 
@@ -81,6 +84,9 @@ class CypherPokerPlayer extends EventDispatcher {
    * becomes the small blind for the associated game.
    */
    get isSmallBlind() {
+      if (this._isSmallBlind == undefined) {
+         this._isSmallBlind = false;
+      }
       return (this._isSmallBlind);
    }
 
@@ -135,20 +141,20 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
    /**
-   * @property {BigInteger} currentBet The bet amount most recently placed by the player
+   * @property {BigInteger} totalBet The total bet amount placed by the player in the current game (hand)
    * in the smallest denomination of the target currency (e.g. Satoshis if using Bitcoin, pennies
    * is using dollars, etc.) When setting this value, a <code>Number</code> or <code>String</code>
    * may be used which will be cast to a <code>BigInteger</code> object.
    */
-   get currentBet() {
-      if (this._currentBet == undefined) {
-         this._currentBet = bigInt(0);
+   get totalBet() {
+      if (this._totalBet == undefined) {
+         this._totalBet = bigInt(0);
       }
-      return (this._currentBet);
+      return (this._totalBet);
    }
 
-   set currentBet(betAmount) {
-      this._currentBet = new bigInt(betAmount);
+   set totalBet(betAmount) {
+      this._totalBet = new bigInt(betAmount);
    }
 
    /**
@@ -204,3 +210,4 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
 }
+totalBet

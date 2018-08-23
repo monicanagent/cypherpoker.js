@@ -42,13 +42,37 @@ class CypherPokerCard {
    }
 
    /**
+   * Adds a graphical representation of the card to the HTML DOM.
+   *
+   * @param {HTMLElement} parentElement The parent or containing element within
+   * which to add the card graphic.
+   * @param {String} [URIProp="imageURI"] The dynamic property of this instance that
+   * contains the URI of the card image with which to construct the child element.
+   */
+   addToDOM(parentElement, URIProp="imageURI") {
+      if (this[URIProp] == undefined) {
+         throw (new Error("Card image URI property \""+URIProp+"\" not defined."));
+      }
+      if ((this[URIProp] == null) || (this[URIProp] == "")) {
+         //nothing to do
+         return;
+      }
+      var cardElement = document.createElement("img");
+      cardElement.setAttribute("class", "card");
+      cardElement.setAttribute("src", this[URIProp]);
+      parentElement.appendChild(cardElement);
+   }
+
+   /**
    * @private
    */
    toString() {
-      if (this.name == undefined) {
-         return ("[object CypherPokerCard]");
-      } else {
+      if (this.shortname != undefined) {
+         return ("[object CypherPokerCard "+this.shortname+"]");
+      } else if (this.name != undefined) {
          return ("[object CypherPokerCard \""+this.name+"\"]");
+      } else {
+         return ("[object CypherPokerCard]");
       }
    }
 }

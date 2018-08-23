@@ -21,6 +21,11 @@ const _useCache = false;
 * @private
 */
 var cypherpoker = null;
+/**
+* @property {CypherPokerUI} ui=null A reference to the CypherPokerUI instance
+* @private
+*/
+var ui = null;
 
 /**
 * @property {Array} _require Indexed array of required external scripts,
@@ -42,25 +47,32 @@ const _require = [
    {"url":"./scripts/CypherPokerGame.js"},
    {"url":"./scripts/CypherPokerPlayer.js"},
    {"url":"./scripts/CypherPokerCard.js"},
+   {"url":"./scripts/CypherPokerUI.js",
+      "onload": () => {
+         //UI is contained in #game element
+         var gameElement = document.querySelector("#game");
+         ui = new CypherPokerUI(gameElement);
+      }
+   },
    {"url":"./scripts/CypherPoker.js",
-    "onload":() => {
-      //EventDispatcher and EventPromise must already exist here!
-      loadJSON(_settingsURL).onEventPromise("load").then(promise => {
-         if (promise.target.response != null) {
-            cypherpoker = new CypherPoker(promise.target.response);
-            cypherpoker.js = cypherpoker;
-            cp = cypherpoker;
-            cypherpoker.start().then(result => {
-               console.log ("CypherPoker.JS instance fully started and connected.");
-            }).catch(err => {
-               console.error ("CypherPoker.JS instance couldn't connect to peer-to-peer network:\n"+err.stack);
-            });
-         } else {
-            alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
-            throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
-         }
-      });
-    }
+      "onload": () => {
+         //EventDispatcher and EventPromise must already exist here!
+         loadJSON(_settingsURL).onEventPromise("load").then(promise => {
+            if (promise.target.response != null) {
+               cypherpoker = new CypherPoker(promise.target.response);
+               ui.cypherpoker = cypherpoker; //connect the instance to the UI
+               cypherpoker.start().then(result => {
+                  console.log ("CypherPoker.JS instance fully started and connected.");
+               }).catch(err => {
+                  ui.showDialog(err.message);
+                  console.error(err.stack);
+               });
+            } else {
+               alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
+               throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
+            }
+         });
+      }
    }
 ]
 

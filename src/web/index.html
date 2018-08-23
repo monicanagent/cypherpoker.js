@@ -1,27 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
+
     <title>CypherPoker.JS</title>
     <link rel="shortcut icon" href="cypherpoker_icon.ico" type="image/x-icon" />
-    <link rel="icon" href="cypherpoker_icon.ico" type="image/png" />
+    <link rel="icon" href="cypherpoker_icon.png" type="image/png" />
     <!-- Inline favicon -->
     <!-- link href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggJFjYAS5da1QAAARdJREFUOMuVk62OwkAUhT/KgsIRsEhA4DBU8gQYDIpgwKD2ETap2myC4QkQFQRVLE+AxIEhPAGO3TY5K9pJd+k0wCQn83Pv+SZzZwbgA/gGonsVCkSum11P9AN4JBPZtN2i6xU5jj2eeO2AxQJJsQ6HFwHTaWo28v0nAf1+1mw0GDwAtFr5ZqNqNQdQqTw2SygMUblsAZxOzwEkFAR3gG73ebNRux0DHIDRiJfbZBL3DkCjYU86HuF8tsc6nT8A388mSLDbwWplBwRBOo4AXS7/z9jrof0ebTZoPM7WoFSyvINmEw2HqF6P5xK63eKx66L1Gs1m2WsMbe/c89Ld5vP8v/AGfALvph6mFYuwXMa1qNWsZRDw9Qsb9Wg3w+A8tgAAAABJRU5ErkJggg==" rel="icon" type="image/x-icon" / -->
 
     <!-- Meta definitions -->
     <meta charset="UTF-8" />
     <meta name="application-name" content="CypherPoker.JS" />
-    <meta name="description" content="Implementation of cryptographic, peer-to-peer poker (Mental Poker)." />
+    <meta name="description" content="Cryptographic peer-to-peer poker (Mental Poker)." />
     <meta name="author" content="Patrick Bay (Monican Agent)" />
-    <meta name="keywords" content="CypherPoker, poker, peer-to-peer, p2p, crypto, cryptography, cryptocurrency, gaming, online, web, javascript" />
+    <meta name="keywords" content="CypherPoker.JS, poker, mental, peer-to-peer, p2p, crypto, cryptography, SRA, cryptocurrency, Bitcoin, Ethereum, Ether, gaming, online, web, javascript" />
 
     <!-- Styles -->
     <link href="./styles/index.css" rel="stylesheet">
 
-    <!-- Scripts (others are dynamically loaded and added below by index.js)  -->
+    <!-- Index script (others are dynamically loaded and added below by index.js)  -->
     <script src="./scripts/index.js" type="text/javascript" language="javascript"></script>
+
   </head>
+
   <body>
+
+      <!--
+        Main / default dialog element controlled by the CypherPokerUI instance.
+      -->
+      <dialog id="mainDialog" class="dialog" open="true">
+         <p>Connecting to peer-to-peer network...</p>
+      </dialog>
+
+      <!--
+         CypherPoker.JS logo.
+      -->
       <div class="logo"><span id="cypherpoker"><span id="text">CypherPoker</span></span><span id="JS"><span id="text">.JS</span></span></div>
-      <div id="cypherpoker" class="gameContainer"></div>
+
+      <!--
+         Main lobby element controlled by the CypherPokerUI instance.
+      -->
+      <div id="lobby" class="lobbyContainer">
+
+         Create Table:
+         <div id="createGameForm" name="createGameForm" class="createGameFormContainer">
+            <input type="text" id="playerAlias" name="playerAlias" placeholder="Player alias for table" /><br/>
+            <input type="text" id="tableName" name="tableName" placeholder="Table name" /><br/>
+            <input type="number" id="numPlayers" name="numPlayers" placeholder="Number of players" step="1" min="2" /><br/>
+            <!-- use text fields instead of numbers in order to support cryptocurrency (large) values -->
+            <input type="text" id="bigBlindAmount" name="bigBlindAmount" placeholder="Big blind amount" step="1" min="2" /><br/>
+            <input type="text" id="smallBlindAmount" name="smallBlindAmount" placeholder="Small blind amount" step="1" min="1" /><br/>
+            <br/>
+            <button id="createGameButton" class="lobbyButton">CREATE TABLE</button>
+         </div>
+         <br/>
+
+         Join Table:
+         <div id="tableList" name="tableList" class="tableListContainer">
+            <!-- New table buttons are created here by the CypherPokerUI.onNewTableAnnouncement function -->
+         </div>
+      </div>
+
+      <!--
+         Prototype game element cloned for each new game. A reference to this parent element is passed
+         to the CypherPokerUI constructor. It should start and remain hidden / invisible unless you're editing
+         the base design.
+      -->
+      <div id="game" class="gameContainer" hidden="true">
+         <div id="publicCards" class="publicCardsContainer"></div>
+         <div id="privateCards" class="privateCardsContainer"></div>
+         <span id="totalBetLabel" class="gameLabel">Total bet for this hand: </span><span id="totalBet" name="totalBet" class="gameAmount">0</span><br/>
+         <span id="potLabel" class="gameLabel">Pot: </span><span id="potAmount" name="potAmount" class="gameAmount">0</span><br/>
+         <br/>
+         <input type="number" id="betAmount" name="betAmount" class="betAmountInput" placeholder="Bet Amount" step="1" />
+         <button id="betButton" class="gameButton" disabled="true">BET</button>
+         <button id="foldButton" class="gameButton" disabled="true">FOLD</button>
+         <button id="newHandButton" class="newHandButton" disabled="true">NEW HAND</button>
+      </div>
+
    </body>
 </html>

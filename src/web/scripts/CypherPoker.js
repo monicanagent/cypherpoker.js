@@ -122,6 +122,13 @@ class CypherPoker extends EventDispatcher {
     * @type {Object}
     * @property {CypherPoker#TableObject} table The table that has timed out.
     */
+    /**
+    * A new {@link CypherPokerGame} instance has been created.
+    *
+    * @event CypherPoker#newgame
+    * @type {Object}
+    * @property {CypherPokerGame} game The newly created game instance.
+    */
 
    /**
    * Creates a new CypherPoker.JS instance.
@@ -190,13 +197,13 @@ class CypherPoker extends EventDispatcher {
       try {
          var result = await this.p2p.connect(this.settings.p2p.connectURL);
          this._connected = true;
+         var event = new Event("start");
+         this.dispatchEvent(event);
       } catch (err) {
-         this.debug(err, "err");
          result = null;
          this._connected = false;
+         throw(new Error("Couldn't connect to peer-to-peer network."));
       }
-      var event = new Event("start");
-      this.dispatchEvent(event);
       return (result);
    }
 
@@ -793,7 +800,7 @@ class CypherPoker extends EventDispatcher {
    *
    * @return {CypherPokerGame} A new game instance associated with the table
    * or <code>null</code> if one couldn't be created.
-   * @fires CypherPoker#tablenew
+   * @fires CypherPoker#newgame
    */
    createGame(tableObj, playerInfo=null) {
       this.debug("CypherPoker.createGame("+tableObj+")");
@@ -804,6 +811,9 @@ class CypherPoker extends EventDispatcher {
          throw (new Error("All required PIDs not yet joined."));
       }
       var newGame = new CypherPokerGame(this, tableObj, playerInfo);
+      var event=new Event("newgame");
+      event.game = newGame;
+      this.dispatchEvent(event);
       return (newGame);
    }
 

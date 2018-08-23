@@ -156,8 +156,6 @@ class WSS extends EventDispatcher {
          this._xhr = new XMLHttpRequest();
          this._xhr.open("POST", this.handshakeServerAddr);
          var event = await RPC("WSS_Handshake", {"user_token":this.userToken}, this._xhr);
-         //console.log ("xhr handshake response: ");
-         //console.dir(event.target.response);
          if (typeof(event.target.response["error"]) == "object") {
             throw (new Error("Server responded with an error ("+event.target.response.error.code+"): "+event.target.response.error.message));
          } else {
@@ -165,13 +163,15 @@ class WSS extends EventDispatcher {
          }
       } else {
          this._websocket = new WebSocket(this.handshakeServerAddr);
+         this.webSocket.session = this;
+         this.webSocket.addEventListener("error", event => {
+            //trigger following "await" statement (error will be thrown after that)
+            this.webSocket.dispatchEvent(new Event("open"));
+         });
          event = await this.webSocket.onEventPromise("open");
-         //console.log ("ws handshake response: ");
-         //console.dir(event.target.data);
          if (this._websocket.readyState != this._websocket.OPEN) {
             throw (new Error("Couldn't connect WebSocket at: " + this.handshakeServerAddr));
          }
-         this.webSocket.session = this;
          event = await RPC("WSS_Handshake", {"user_token":this.userToken}, this.webSocket);
          var resultData = JSON.parse(event.data);
          if (typeof(resultData["error"]) == "object") {
@@ -182,9 +182,11 @@ class WSS extends EventDispatcher {
       }
       if (this.webSocket == null) {
          this._websocket = new WebSocket(this.socketServerAddr);
+         this.webSocket.addEventListener("error", event => {
+            //trigger following "await" statement (error will be thrown after that)
+            this.webSocket.dispatchEvent(new Event("open"));
+         });
          event = await this.webSocket.onEventPromise("open");
-         //console.log ("ws open response: ");
-         //console.dir(event.target.data);
          if (this._websocket.readyState != this._websocket.OPEN) {
             throw (new Error("Couldn't connect WebSocket at: " + this.socketServerAddr));
          }
