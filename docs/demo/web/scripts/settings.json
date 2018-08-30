@@ -1,7 +1,7 @@
 {
    "p2p":{
       "create":"return (new WSS())",
-      "connectURL":"ws://localhost:8090"
+      "connectURL":"wss://wssserver-fkodogqovp.now.sh/"
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",
