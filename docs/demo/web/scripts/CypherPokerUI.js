@@ -17,8 +17,8 @@ class CypherPokerUI {
    /**
    * @property {Object} UISelectors Name/value pairs for general UI elements and their
    * associated CSS-style DOM selectors.
-   * @property {String} UISelectors.dialog The main or primary dialog element.
-   * @property {String} UISelectors.lobby The main lobby container element.
+   * @property {String} UISelectors.dialog="#mainDialog" The main or primary dialog element.
+   * @property {String} UISelectors.lobby="#lobby" The main lobby container element.
    */
    get UISelectors() {
       return({
@@ -31,13 +31,13 @@ class CypherPokerUI {
    * @property {Object} lobbyUISelectors Name/value pairs for lobby UI elements and their
    * associated CSS-style DOM selectors. Note that these selectors are relative to/children of the
    * main lobby element defined in {@link CypherPokerUI#UISelectors}<code>.lobby</code>.
-   * @property {String} lobbyUISelectors.createGameButton The lobby's create game button.
-   * @property {String} lobbyUISelectors.createPlayerAlias The player alias field in the create table form.
-   * @property {String} lobbyUISelectors.createTableName The table name field in the create table form.
-   * @property {String} lobbyUISelectors.createNumPlayers The number of players field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.createBigBlind The big blind amount field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.createSmallBlind The big blind amount field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.tableList The lobby's announced table list.
+   * @property {String} lobbyUISelectors.createGameButton="#createGameForm>#createGameButton" The lobby's create game button.
+   * @property {String} lobbyUISelectors.createPlayerAlias="#createGameForm>#playerAlias" The player alias field in the create table form.
+   * @property {String} lobbyUISelectors.createTableName="#createGameForm>#tableName" The table name field in the create table form.
+   * @property {String} lobbyUISelectors.createNumPlayers="#createGameForm>#numPlayers" The number of players field for the new table in the create table form.
+   * @property {String} lobbyUISelectors.createBigBlind="#createGameForm>#bigBlindAmount" The big blind amount field for the new table in the create table form.
+   * @property {String} lobbyUISelectors.createSmallBlind="#createGameForm>#smallBlindAmount" The big blind amount field for the new table in the create table form.
+   * @property {String} lobbyUISelectors.tableList="#tableList" The lobby's announced table list.
    */
    get lobbyUISelectors() {
       return({
@@ -55,14 +55,14 @@ class CypherPokerUI {
    * @property {Object} gameUISelectors Name/value pairs for game UI elements and their
    * associated CSS-style DOM selectors. Note that these selectors are relative to/children of
    * each game element cloned from the {@link CypherPokerUI#protoGameElement}.
-   * @property {String} gameUISelectors.betButton The game's bet button.
-   * @property {String} gameUISelectors.foldButton The game's fold button.
-   * @property {String} gameUISelectors.newHandButton The game's new hand button.
-   * @property {String} gameUISelectors.totalBet The game's total bet amount display element.
-   * @property {String} gameUISelectors.potAmount The game's pot amount input element.
-   * @property {String} gameUISelectors.betAmount The game's bet amount input element.
-   * @property {String} gameUISelectors.publicCards The game's public cards container element.
-   * @property {String} gameUISelectors.privateCards The game's private cards container element.
+   * @property {String} gameUISelectors.betButton="#betButton" The game's bet button.
+   * @property {String} gameUISelectors.foldButton="#foldButton" The game's fold button.
+   * @property {String} gameUISelectors.newHandButton="#newHandButton" The game's new hand button.
+   * @property {String} gameUISelectors.totalBet="#totalBet" The game's total bet amount display element.
+   * @property {String} gameUISelectors.potAmount="#potAmount" The game's pot amount input element.
+   * @property {String} gameUISelectors.betAmount="#betAmount" The game's bet amount input element.
+   * @property {String} gameUISelectors.publicCards="#publicCards" The game's public cards container element.
+   * @property {String} gameUISelectors.privateCards="#privateCards" The game's private cards container element.
    */
    get gameUISelectors() {
       return({
@@ -496,16 +496,17 @@ class CypherPokerUI {
    *
    * @param {CypherPokerGame} gameRef A reference to the game containing the
    * <code>DOMElement</code> to clear.
-   * @param {Number} [delay=4000] A pause, in milliseconds, to wait before
+   * @param {Number} [delay=0] A pause, in milliseconds, to wait before
    * resetting the game UI.
    * @param {CypherPokerUI} [context=null] The UI context in which to execute the
    * delayed function. If <code>null</code>, the context resolves to <code>this</code>
    *
    */
-   resetGameUI(gameRef, delay=4000, context=null) {
+   resetGameUI(gameRef, delay=0, context=null) {
       if (context == null) {
          context = this;
       }
+      context.debug("resetGameUI("+gameRef+", "+delay+", "+context+")");
       if (delay > 0) {
          setTimeout(context.resetGameUI, delay, gameRef, 0, context);
       }
