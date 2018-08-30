@@ -192,7 +192,9 @@ class CypherPokerPlayer extends EventDispatcher {
    * @property {Array} keychain Indexed array of {@link keypair}
    * objects used by the player. These are stored in ascending order with index 0
    * being the newest keypair. For other players in a game, this array will
-   * typically remain empty until the end of the game (verification).
+   * typically remain empty until the end of the game (verification). After a game
+   * ends this array should be archived if needed as it is usually reset at the
+   * start of a new game (hand).
    * @readonly
    */
    get keychain() {
@@ -200,6 +202,14 @@ class CypherPokerPlayer extends EventDispatcher {
          this._keychain = new Array();
       }
       return (this._keychain);
+   }
+
+   /**
+   * Irrevocably resets the {@link CypherPokerPlayer#keychain} array (to an
+   * empty array).
+   */
+   resetKeychain() {
+      this._keychain = new Array();
    }
 
    /**
