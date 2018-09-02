@@ -134,3 +134,35 @@ body {
    width:300px;
    height:auto;
 }
+
+.historyCard {
+   margin-top:-65px;
+   margin-bottom:-65px;
+   margin-left:-51px;
+   margin-right:-51px;
+   width:150px;
+   height:auto;
+}
+
+.historyHandName {
+   font-size: 14px;
+   font-weight: bold;
+}
+
+.historyHandOwner {
+   font-size: 10px;
+}
+
+.header {
+   font-size:16px;
+}
+
+.handHistoryContainer {
+   overflow-x: scroll;
+   overflow-y: scroll;
+   width: 400px;
+   height: 100%;
+   top: 0px;
+   right: 0px;
+   position: absolute;
+}

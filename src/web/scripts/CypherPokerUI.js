@@ -63,6 +63,7 @@ class CypherPokerUI {
    * @property {String} gameUISelectors.betAmount="#betAmount" The game's bet amount input element.
    * @property {String} gameUISelectors.publicCards="#publicCards" The game's public cards container element.
    * @property {String} gameUISelectors.privateCards="#privateCards" The game's private cards container element.
+   * @property {String} gameUISelectors.handHistory="#handHistory" The game's hand history container element.
    */
    get gameUISelectors() {
       return({
@@ -73,7 +74,8 @@ class CypherPokerUI {
          "potAmount":"#potAmount",
          "betAmount":"#betAmount",
          "publicCards":"#publicCards",
-         "privateCards":"#privateCards"
+         "privateCards":"#privateCards",
+         "handHistory":"#handHistory"
       });
    }
 
@@ -203,6 +205,7 @@ class CypherPokerUI {
       gameRef.addEventListener("gamedeal", this.onCardDeal, this);
       gameRef.addEventListener("gamebet", this.onBetPlaced, this);
       gameRef.addEventListener("gameend", this.onGameEnd, this);
+      gameRef.addEventListener("gamescored", this.onGameScored, this);
       this.disable(betButton);
    }
 
@@ -476,9 +479,6 @@ class CypherPokerUI {
       this.showDialog("Game is done!");
       var game = event.game;
       var table = event.table;
-      //copy game results there...
-
-      //...then restart the game.
       this.disable(game.DOMElement.querySelector(this.gameUISelectors.betButton));
       this.disable(game.DOMElement.querySelector(this.gameUISelectors.foldButton));
       if (game.getNextPlayer(game.getDealer().privateID).privateID == game.ownPID) {
@@ -488,7 +488,56 @@ class CypherPokerUI {
          this.resetGameUI(game);
          game.restartGame();
       }
-      //process game results here
+   }
+
+   /**
+   * Event handler invoked when an associated game instance reports that it has been
+   * scored.
+   *
+   * @param {Event} event An event object.
+   *
+   * @listens CypherPokerGame#event:gamescored
+   */
+   onGameScored(event) {
+      this.debug("CypherPokerUI.onGameScored("+event+")");
+      try {
+         var analysis = event.analyzer.analysis;
+         var allHands = analysis.hands;
+         var winningHands = analysis.winningHands;
+         var winningPlayers = analysis.winningPlayers;
+         var historyHTML = document.createElement("div");
+         historyHTML.setAttribute("class", "handHistoryItemContainer");
+         var headerElement = document.createElement("span");
+         headerElement.setAttribute("class", "handHistoryItemHeader");
+         if (winningHands.length > 1) {
+            headerElement.innerHTML = "Best Hands<br/>";
+         } else {
+            headerElement.innerHTML = "Best Hand<br/>";
+         }
+         for (var count = 0; count < winningHands.length; count++) {
+            var winningHand = winningHands[count];
+            var winningPlayer = winningPlayers[count];
+            var hand = winningHand.hand;
+            headerElement.innerHTML += "<span class=\"historyHandName\">"+winningHand.name+"</span><br/>";
+            if (winningPlayer.privateID == event.game.ownPID) {
+               headerElement.innerHTML += "<span class=\"historyHandOwner\">Ours</span><br/>";
+            } else {
+               headerElement.innerHTML += "<span class=\"historyHandOwner\">Player: "+winningPlayer.privateID+"</span><br/>";
+            }
+            var cardContainerElement = document.createElement("div");
+            cardContainerElement.setAttribute("class", "handHistoryItemCards");
+            for (var count2 = 0; count2 < hand.length; count2++) {
+               var card = hand[count2];
+               card.addToDOM(cardContainerElement, "historyCard");
+            }
+         }
+         historyHTML.appendChild(headerElement);
+         historyHTML.appendChild(cardContainerElement);
+         var targetElement = event.game.DOMElement.querySelector(this.gameUISelectors.handHistory);
+         targetElement.appendChild(historyHTML);
+      } catch (err) {
+         console.error(err);
+      }
    }
 
    /**

@@ -11,7 +11,36 @@
 * @class Monitors and analyzes a CypherPoker game (hand) for cryptographic correctness
 * and ranks the completed hands of the game to determine the winner.
 */
-class CypherPokerAnalyzer {
+class CypherPokerAnalyzer extends EventDispatcher {
+
+   /**
+   * The cards captured for an associated game are about to be been analyzed.
+   *
+   * @event CypherPokerAnalyzer#analyzing
+   * @type {Event}
+   * @property {CypherPokerAnalyzer} analyzer A reference to this instance.
+   * @property {CypherPokerAnalyzer#analysis} analysis A reference to the current analysis.
+   * property.
+   */
+   /**
+   * The cards captured for an associated game have been fully analyzed. A successful
+   * analysis is usually followed by scoring.
+   *
+   * @event CypherPokerAnalyzer#analyzed
+   * @type {Event}
+   * @property {CypherPokerAnalyzer} analyzer A reference to this instance.
+   * @property {CypherPokerAnalyzer#analysis} analysis A reference to the current analysis.
+   * property.
+   */
+   /**
+   * The cards captured for an associated game have been scored and ranked (post analysis).
+   *
+   * @event CypherPokerAnalyzer#scored
+   * @type {Event}
+   * @property {CypherPokerAnalyzer} analyzer A reference to this instance.
+   * @property {CypherPokerAnalyzer#analysis} analysis A reference to the current analysis.
+   * property.
+   */
 
    /**
    * Creates a new instance.
@@ -19,10 +48,11 @@ class CypherPokerAnalyzer {
    * @param {CypherPokerGame} game The game instance with which this instance
    * is to be associated. Event listeners are added to the {@link CypherPokerGame}
    * instance at this time so the analyzer should usually be instantiated at the
-   * very beginning of a new game (hand).
+   * beginning of a new game (hand).
    *
    */
    constructor(game) {
+      super();
       this._game = game;
       this.game.addEventListener("gamecardsencrypt", this.onEncryptCards, this);
       this.game.addEventListener("gamedealmsg", this.onGameDealMessage, this);
@@ -59,6 +89,7 @@ class CypherPokerAnalyzer {
    * @private
    */
    onKCSTimeout(context, game) {
+      this._analysis.complete = true;
       throw (new Error("Not all players have committed their keychains in time (table ID: "+game.table.tableID+")"));
    }
 
@@ -91,7 +122,7 @@ class CypherPokerAnalyzer {
    }
 
    /**
-   * @property {Array} communityCards=[] An array of {@link CypherPokerCard}
+   * @property {Array} communityCards An array of {@link CypherPokerCard}
    * instances of the community cards reported by the final decryptors.
    *
    * @readonly
@@ -137,6 +168,8 @@ class CypherPokerAnalyzer {
    * {@link CypherPokerAnalyzer#game} instance
    * (the {@link CypherPokerGame#cardDecks}<code>faceup</code> property),
    * or an empty array if none exists.
+   *
+   * @readonly
    */
    get mappedDeck() {
       if (this._mappedDeck == undefined) {
@@ -212,12 +245,17 @@ class CypherPokerAnalyzer {
    * {@link CypherPokerCard} instances.
    * @property {Array} analysis.public Array of verified public {@link CypherPokerCard}
    * instances.
+   * @property {Boolean} analysis.complete=false Set to true when the hand has been
+   * fully validated as far as possible.
+   * @property {Error} analysis.error=null The analysis error object, if one exists.
    */
    get analysis() {
       if (this._analysis == undefined) {
          this._analysis = new Object();
          this._analysis.private = new Object();
          this._analysis.public = new Array();
+         this._analysis.complete = false;
+         this._analysis.error = null;
       }
       return (this._analysis);
    }
@@ -385,7 +423,6 @@ class CypherPokerAnalyzer {
          }
       } else {
          //player has decrypted card(s)
-         console.log ("Storing external partial decryptions: "+selected);
          if (resultObj.data.payload.private) {
             //private cards
             this.storeDeal(dealingPlayer.privateID, fromPlayer.privateID, selected, true, true);
@@ -433,10 +470,24 @@ class CypherPokerAnalyzer {
       if (this.allKeychainsCommitted) {
          //all keychains committed, we can clear the timeout and start the analysis
          clearTimeout(this._keychainCommitTimeout);
+         event = new Event("analyzing");
+         event.analyzer = this;
+         event.analysis = this.analysis;
+         this.dispatchEvent(event);
          this._analysis = await this.analyzeCards();
+         event = new Event("analyzed");
+         event.analyzer = this;
+         event.analysis = this.analysis;
+         this.dispatchEvent(event);
          this._analysis = await this.scoreHands(this._analysis);
-         console.log ("Final analysis:");
-         console.dir (this.analysis);
+         this._analysis.complete = true;
+         this._analysis.error = null;
+         event = new Event("scored");
+         event.analyzer = this;
+         event.analysis = this.analysis;
+         this.dispatchEvent(event);
+         //console.log ("Final analysis:");
+         //console.dir (this.analysis);
 
       }
       return (true);
@@ -484,6 +535,8 @@ class CypherPokerAnalyzer {
          if (this.compareDecks(currentDeck, compareDeck) == false) {
             var error = new Error("Deck encryption at stage "+count+" by \""+this.deck[count].fromPID+"\" failed.");
             error.code = 1;
+            this._analysis.error = error;
+            this._analysis.complete = true;
             throw (error);
          }
          previousDeck = currentDeck;
@@ -522,11 +575,15 @@ class CypherPokerAnalyzer {
                if (count > 0) {
                   var error = new Error("Multiple sequential \"select\" sequences in deal.");
                   error.code = 2;
+                  this._analysis.error = error;
+                  this._analysis.complete = true;
                   throw (error);
                }
                if (this.removeFromDeck(cards, encryptedDeck) == false) {
                   var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+fromPID+"\".");
                   error.code = 2;
+                  this._analysis.error = error;
+                  this._analysis.complete = true;
                   throw (error);
                }
             } else if ((previousType == "select") && (type == "decrypt") && (count < (dealArray.length - 1))) {
@@ -547,6 +604,8 @@ class CypherPokerAnalyzer {
                   if (card == null) {
                      var error = new Error("Final decryption (deal "+count+") by \""+fromPID+"\" does not map: "+promiseResults[count2].data.result);
                      error.code = 2;
+                     this._analysis.error = error;
+                     this._analysis.complete = true;
                      throw (error);
                   }
                   if (previousPrivate) {
@@ -558,6 +617,8 @@ class CypherPokerAnalyzer {
                if (this.removeFromDeck(cards, encryptedDeck) == false) {
                   var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+fromPID+"\".");
                   error.code = 2;
+                  this._analysis.error = error;
+                  this._analysis.complete = true;
                   throw (error);
                }
             } else {
@@ -576,6 +637,8 @@ class CypherPokerAnalyzer {
                      if (card == null) {
                         var error = new Error("Final decryption (deal "+count+") by \""+fromPID+"\" does not map: "+promiseResults[count2].data.result);
                         error.code = 2;
+                        this._analysis.error = error;
+                        this._analysis.complete = true;
                         throw (error);
                      }
                      if (privateDeal) {
@@ -613,6 +676,8 @@ class CypherPokerAnalyzer {
                   if (this.compareDecks(compareDeck, cards) == false) {
                      var error = new Error("Previous round ("+count+") of decryption by \""+fromPID+"\" does not match computed results.");
                      error.code = 2;
+                     this._analysis.error = error;
+                     this._analysis.complete = true;
                      throw (error);
                   }
                }
@@ -623,34 +688,385 @@ class CypherPokerAnalyzer {
    }
 
    /**
+   * Returns all of the available 5-hand permutations for a set of supplied cards.
+   *
+   * @param {Array} cardsArr Values or {@link CypherPokerCard} instance for
+   * which to produce permutatuions, up to a maximum of 7 elements.
+   *
+   * @return {Array} Each array element contains a unique 5-card permutation
+   * from the input set. If there are less than 6 cards provided, only one
+   * permutation is returned.
+   *
+   * @private
+   */
+   createCardPermutations(cardsArr) {
+      var permArray = new Array();
+      if (cardsArr.length <= 5) {
+         //only one hand permutation available
+         permArray.push (cardsArr);
+      } else if (cardsArr.length == 6) {
+         //only private card 2 (index 1)
+         permArray.push ([cardsArr[1], cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[5]]);
+         //only private card 1 (index 0)
+         permArray.push ([cardsArr[0], cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[5]]);
+         //both private cards
+         permArray.push ([cardsArr[1], cardsArr[0], cardsArr[3], cardsArr[4], cardsArr[5]]);
+         permArray.push ([cardsArr[1], cardsArr[2], cardsArr[0], cardsArr[4], cardsArr[5]]);
+         permArray.push ([cardsArr[1], cardsArr[2], cardsArr[3], cardsArr[0], cardsArr[5]]);
+         permArray.push ([cardsArr[1], cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[0]]);
+      } else {
+         //no private cards
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[5], cardsArr[6]]);
+         //private card 1 (index 0)
+         permArray.push ([cardsArr[0], cardsArr[3], cardsArr[4], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[0], cardsArr[4], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[0], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[0], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[5], cardsArr[0]]);
+         //private card 2 (index 1)
+         permArray.push ([cardsArr[1], cardsArr[3], cardsArr[4], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[1], cardsArr[4], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[1], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[1], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[5], cardsArr[1]]);
+         //both private cards
+         permArray.push ([cardsArr[0], cardsArr[1], cardsArr[4], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[0], cardsArr[3], cardsArr[1], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[0], cardsArr[3], cardsArr[4], cardsArr[1], cardsArr[6]]);
+         permArray.push ([cardsArr[0], cardsArr[3], cardsArr[4], cardsArr[5], cardsArr[1]]);
+         permArray.push ([cardsArr[2], cardsArr[0], cardsArr[1], cardsArr[5], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[0], cardsArr[4], cardsArr[1], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[0], cardsArr[4], cardsArr[5], cardsArr[1]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[0], cardsArr[1], cardsArr[6]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[0], cardsArr[5], cardsArr[1]]);
+         permArray.push ([cardsArr[2], cardsArr[3], cardsArr[4], cardsArr[0], cardsArr[1]]);
+      }
+      return (permArray);
+   }
+
+   /**
+   * Generates player card permutations for analysis and scores the
+   * hands.
+   *
+   * @param {Object} cardsObj A player card object matching the format of the
+   * {@link CypherPokerAnalyzer#analysis} object.
+   *
    * @private
    */
    async scoreHands(cardsObj) {
       var playersObj = cardsObj.private;
+      cardsObj.hands = new Object();
       var playerHands = new Object();
+      var highestScore = -1;
+      var highestHand = new Array;
+      var winningPlayers = new Array();
+      var winningHands = new Array();
       for (var privateID in playersObj) {
          var player = this.game.getPlayer(privateID);
          //private ID may actually be some other object property (e.g. onEventPromise)
          if (player != null) {
             var fullCards = playersObj[privateID].concat(cardsObj.public);
-            playerHands[privateID] = this.createCardPermutations(fullCards);
+            cardsObj.hands[privateID] = new Array();
+            var perms = this.createCardPermutations(fullCards);
+            for (var count = 0; count < perms.length; count++) {
+               var handObj = new Object();
+               handObj.hand = perms[count];
+               handObj.score = -1; //default (not scored)
+               this.scoreHand (handObj);
+               cardsObj.hands[privateID].push(handObj);
+               if (handObj.score == highestScore) {
+                  //this may be a split pot; see below
+                  winningPlayers.push(player);
+                  winningHands.push(handObj);
+               } else if (handObj.score > highestScore) {
+                  //new best hand
+                  winningPlayers = new Array();
+                  winningHands = new Array();
+                  winningPlayers.push(player);
+                  winningHands.push(handObj);
+                  highestScore = handObj.score;
+               }
+            }
          }
       }
+      if (winningPlayers.length > 1) {
+         //need to look at both private cards since we currently have a potential split pot
+         var newWinningPlayers = new Array();
+         var newWinningHands = new Array();
+         var highestScore = 0;
+         for (count = 0; count < winningPlayers.length; count++) {
+            var winningHand = winningHands[count]; //indexes match with winningPlayers
+            var hand = winningHand.hand;
+            var player = winningPlayers[count];
+            var playerPID = player.privateID;
+            var privateCard1 = this.analysis.private[playerPID][0];
+            var privateCard2 = this.analysis.private[playerPID][1];
+            //adjust score for highest card value
+            if (privateCard1.highvalue > privateCard2.highvalue) {
+               var currentScore = (privateCard1.highvalue * 10) + privateCard2.highvalue;
+            } else {
+               currentScore = (privateCard2.highvalue * 10) + privateCard1.highvalue;
+            }
+            winningHand.score = currentScore;
+            if (currentScore > highestScore) {
+               highestScore = currentScore;
+               newWinningPlayers = new Array();
+               newWinningHands = new Array();
+               newWinningPlayers.push(player);
+               newWinningHands.push(winningHand);
+            } else if (currentScore == highestScore) {
+               //both private card values are the same -- split pot
+               newWinningPlayers.push(player);
+               newWinningHands.push(winningHand);
+            }
+         }
+         winningPlayers = newWinningPlayers;
+         winningHands = newWinningHands;
+      }
+      cardsObj.winningPlayers = winningPlayers;
+      cardsObj.winningHands = winningHands;
       return (cardsObj);
    }
 
    /**
+   * Scores a 5 cards (or fewer) poker hand. The higher the score the
+   * better the hand.
+   *
+   * @param {Object} handObj A hand permutation and score object.
+   * @param {Array} handObj.hand Array of {@link CypherPokerCard} instances
+   * comprising the hand to score.
+   * @param {Number} handObj.score=-1 Calculated score of final hand. -1 means
+   * that the hand is not scored.
+   *
    * @private
    */
-   createCardPermutations(cardsArr) {
-      var permArray = new Array();
-      if (cardsArr.length < 5) {
-         //only one hand permutation available
-         permArray.push (cardsArr);
-      } else {
-         //todo: create permutations of 5 cards
+   scoreHand(handObj) {
+      if ((handObj.hand == undefined) || (handObj.hand == null)) {
+         return;
       }
-      return (cardsArr);
+      handObj.score = -1;
+      //create groups sorted by suits and values
+      var suitGroups = new Object();
+      var valueGroups = new Object();
+      for (count = 0; count < handObj.hand.length; count++) {
+         var currentCard = handObj.hand[count];
+         var suit = currentCard.suit;
+         var value = currentCard.value;
+         if (suitGroups[suit] == undefined) {
+            suitGroups[suit] = new Array();
+         }
+         if (valueGroups[value] == undefined) {
+            valueGroups[value] = new Array();
+         }
+         suitGroups[suit].push(currentCard);
+         valueGroups[value].push(currentCard);
+      }
+      //convert group objects to arrays of arrays
+      suitGroups = Object.entries(suitGroups);
+      valueGroups = Object.entries(valueGroups);
+      var flush = false;
+      //evaluate for flush (only 1 suit and 5 cards):
+      if ((suitGroups.length == 1) && (handObj.hand.length == 5)) {
+         flush = true;
+      }
+      //evaluate straight:
+      var straight = false;
+      var royalflush = false;
+      var acesHigh = true;
+      var valuesArr = new Array();
+      var handValue = 0; //the base numeric value of the hand
+      var valueMultiplier = 1; //the multiplier applied to handValue to determine the score
+      var valueAdjust = 0; //the amount to adjust the hand value in the final calculation
+      for (var count = 0; count < handObj.hand.length; count++) {
+         valuesArr.push(handObj.hand[count].value);
+      };
+      var straightVal = this.straightType(valuesArr);
+      if ((straightVal == 10) && flush) {
+         straight = true;
+         royalflush = true;
+      } else if (straightVal > 0) {
+         straight = true;
+      }
+      if (royalflush) {
+         valueMultiplier = 1000000000;
+         handObj.name = "Royal Flush";
+      } else if (straight && flush) {
+         if (straightVal == 1) {
+            //this is a straight starting with an ace
+            acesHigh = false;
+         }
+         valueMultiplier = 100000000;
+         handObj.name = "Straight Flush";
+      } else if ((valueGroups.length == 2) && (handObj.hand.length >= 5)) {
+         if ((valueGroups[0][1].length == 4) || (valueGroups[1][1].length == 4)) {
+            valueMultiplier = 10000000;
+            for (count = 0; count < valueGroups.length; count++) {
+               if (valueGroups[count][1].length != 4) {
+                  var cardSum = this.getCardSum(valueGroups[count][1]);
+                  //remove multiplied values for cards that are not in the hand
+                  //otherwise they can cause significant scoring problems
+                  valueAdjust = (cardSum * valueMultiplier * -1) + cardSum;
+               }
+            }
+            handObj.name = "Four of a Kind";
+         }
+         if ((valueGroups[0][1].length == 3) || (valueGroups[1][1].length == 3)) {
+            valueMultiplier = 1000000;
+            handObj.name = "Full House";
+         }
+      } else if (flush && (straight==false)) {
+         valueMultiplier = 100000;
+         handObj.name = "Flush";
+      } else if (straight && (flush == false)) {
+         if (straightVal == 1) {
+            //this is a straight starting with an ace
+            acesHigh = false;
+         }
+         valueMultiplier = 10000;
+         handObj.name = "Straight";
+      } else if (valueGroups.length == 3) {
+         if ((valueGroups[0][1].length == 3) || (valueGroups[1][1].length == 3) || (valueGroups[2][1].length == 3)) {
+            valueMultiplier = 1000;
+            for (count = 0; count < valueGroups.length; count++) {
+               if (valueGroups[count][1].length != 3) {
+                  var cardSum = this.getCardSum(valueGroups[count][1]);
+                  valueAdjust = (cardSum * valueMultiplier * -1) + cardSum;
+               }
+            }
+            handObj.name = "Three of a Kind";
+         } else {
+            valueMultiplier = 100;
+            handObj.name = "Two Pairs";
+            for (count = 0; count < valueGroups.length; count++) {
+               if (valueGroups[count][1].length != 2) {
+                  var cardSum = this.getCardSum(valueGroups[count][1]);
+                  valueAdjust = (cardSum * valueMultiplier * -1) + cardSum;
+               }
+            }
+         }
+      } else if ((valueGroups.length == 4) || (valueGroups.length == 1)) {
+         //valueGroups.length == 1 on flop
+         valueMultiplier = 15;
+         for (count = 0; count < valueGroups.length; count++) {
+            if (valueGroups[count][1].length != 2) {
+               var cardSum = this.getCardSum(valueGroups[count][1]);
+               valueAdjust = (cardSum * valueMultiplier * -1) + cardSum;
+            }
+         }
+         handObj.name = "One Pair";
+      } else {
+         handObj.name = "High Card";
+      }
+      if (valueMultiplier > 1) {
+         for (count = 0; count < handObj.hand.length; count++) {
+            if (acesHigh) {
+               handValue += handObj.hand[count].highvalue;
+            } else {
+               handValue += handObj.hand[count].value;
+            }
+         }
+      } else {
+         //high card (secondary scan is required for additional card)
+         handValue = 0;
+         for (count = 0; count < handObj.hand.length; count++) {
+            if (handValue < handObj.hand[count].highvalue) {
+               handValue = handObj.hand[count].highvalue;
+            }
+         }
+      }
+      handObj.score = (handValue * valueMultiplier) + valueAdjust;
+   }
+
+   /**
+   * Evaluates an unordered series of card values to determine what type of
+   * straight they comprise.
+   *
+   * @param {Array} cardValues Unordered sequence of card values to analyze.
+   *
+   * @return {Number} A 0 is returned if the input is not a straight, otherwise
+   * the lowest value in the straight is returned (e.g. if <code>cardValues=[4,3,5,6,7]</code>
+   * then 3 is returned).
+   *
+   * @private
+   */
+   straightType(cardValues) {
+      if (cardValues.length < 5) {
+         //need 5 cards for a straight
+         return (0);
+      }
+      //check for ace through 9
+      for (var count = 1; count < 10; count++) {
+         if (this.compareDecks(cardValues, [count, count+1, count+2, count+3, count+4])) {
+            return (count);
+         }
+      }
+      //check for high ace with a 10 (is there a more elegant way to do this in the "for" loop?)
+      if (this.compareDecks(cardValues, [10,11,12,13,1])) {
+         return (10);
+      }
+      //not a straight
+      return (0);
+   }
+
+   /**
+   *  Sum the {@link CypherPokerCard} instances provided.
+   *
+   * @param {Array} cards Indexed array of {@link CypherPokerCard} instances to sum.
+   * @param {Boolean} [high=true] If true, the card's <code>highvalue</code> is used to
+   * calculate the sum otherwise its <code>value</code> is used.
+   * @return {Number} The numeric sum of the card values.
+   * @private
+   */
+   getCardSum(cards, high=true) {
+      var sum = new Number(0);
+      for (var count = 0; count < cards.length; count++) {
+         if (high) {
+            sum += cards[count].highvalue;
+         } else {
+            sum += cards[count].value;
+         }
+      }
+      return (sum);
+   }
+
+   /**
+   * Stores a card deal -- new cards have either been selected or partially
+   * decrypted -- to the {@link CypherPokerAnalyzer#deals} array.
+   *
+   * @param {String} dealingPID The private ID of the dealer of the cards (i.e.
+   * the player that selected them).
+   * @param {String} fromPID The private ID of the player that last operated
+   * on the cards (selected or decrypted them).
+   * @param {Array} cards An array of numeric string values representing the
+   * selected or partially decrypted cards.
+   * @param {Booolean} isPrivate If true, the <code>cards</code> array contains
+   * private / hole card values, otherwise they are community / public cards.
+   * @param {Boolean} isDecryption If true, the <code>cards</code> array
+   * contains partially decrypted values otherwise it contains the initial,
+   * fully encrypted selections.
+   *
+   * @private
+   */
+   storeDeal(dealingPID, fromPID, cards, isPrivate, isDecryption) {
+      if (this.deals[dealingPID] == undefined) {
+         this.deals[dealingPID] = new Array();
+      }
+      var dealObj = this.deals[dealingPID];
+      var cardsCopy = Array.from(cards);
+      var infoObj = new Object();
+      infoObj.fromPID = fromPID;
+      if (isDecryption) {
+         infoObj.type = "decrypt";
+      } else {
+         infoObj.type = "select";
+      }
+      if (isPrivate) {
+         infoObj.private = true;
+      } else {
+         infoObj.private = false;
+      }
+      infoObj.cards = cardsCopy;
+      this.deals[dealingPID].push(infoObj);
    }
 
    /**
@@ -666,6 +1082,8 @@ class CypherPokerAnalyzer {
    * <code>deckArr</code> (i.e. only one unique match for each value existed).
    * False is returned if the removed items don't match the expected set but
    * <code>deckArr</code> may still be modified.
+   *
+   * @private
    */
    removeFromDeck(removeItems, deckArr) {
       var itemsToRemove = removeItems.length;
@@ -691,8 +1109,13 @@ class CypherPokerAnalyzer {
    * Compares two card decks of either plaintext mappings or encrypted
    * card values, regardless of their order.
    *
+   * @param {Array} deckArr1 First array of numeric strings to compare.
+   * @param {Array} deckArr2 Second array of numeric strings to compare.
+   *
    * @return {Boolean} True if both decks have exactly the same elements (regardless of order),
    * false if there's a difference.
+   *
+   * @private
    */
    compareDecks(deck1Arr, deck2Arr) {
       if (deck1Arr.length != deck2Arr.length)  {
@@ -720,45 +1143,6 @@ class CypherPokerAnalyzer {
    }
 
    /**
-   * Stores a card deal -- new cards have either been selected or partially
-   * decrypted -- to the {@link CypherPokerAnalyzer#deals} array.
-   *
-   * @param {String} dealingPID The private ID of the dealer of the cards (i.e.
-   * the player that selected them).
-   * @param {String} fromPID The private ID of the player that last operated
-   * on the cards (selected or decrypted them).
-   * @param {Array} cards An array of numeric string values representing the
-   * selected or partially decrypted cards.
-   * @param {Booolean} isPrivate If true, the <code>cards</code> array contains
-   * private / hole card values, otherwise they are community / public cards.
-   * @param {Boolean} isDecryption If true, the <code>cards</code> array
-   * contains partially decrypted values otherwise it contains the initial,
-   * fully encrypted selections.
-   */
-   storeDeal(dealingPID, fromPID, cards, isPrivate, isDecryption) {
-      this.game.debug("CypherPokerAnalyzer.storeDeal(\""+dealingPID+"\",\""+fromPID+"\","+cards+", "+isPrivate+", "+isDecryption+")");
-      if (this.deals[dealingPID] == undefined) {
-         this.deals[dealingPID] = new Array();
-      }
-      var dealObj = this.deals[dealingPID];
-      var cardsCopy = Array.from(cards);
-      var infoObj = new Object();
-      infoObj.fromPID = fromPID;
-      if (isDecryption) {
-         infoObj.type = "decrypt";
-      } else {
-         infoObj.type = "select";
-      }
-      if (isPrivate) {
-         infoObj.private = true;
-      } else {
-         infoObj.private = false;
-      }
-      infoObj.cards = cardsCopy;
-      this.deals[dealingPID].push(infoObj);
-   }
-
-   /**
    * @private
    */
    toString() {
@@ -771,5 +1155,4 @@ class CypherPokerAnalyzer {
       output.analysis = this.analysis;
       return (JSON.stringify(output));
    }
-
 }

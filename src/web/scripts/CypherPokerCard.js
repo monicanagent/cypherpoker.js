@@ -46,10 +46,11 @@ class CypherPokerCard {
    *
    * @param {HTMLElement} parentElement The parent or containing element within
    * which to add the card graphic.
+   * @param {String} [cardClass="card"] Custom class to apply to the card element.
    * @param {String} [URIProp="imageURI"] The dynamic property of this instance that
    * contains the URI of the card image with which to construct the child element.
    */
-   addToDOM(parentElement, URIProp="imageURI") {
+   addToDOM(parentElement, cardClass="card", URIProp="imageURI") {
       if (this[URIProp] == undefined) {
          throw (new Error("Card image URI property \""+URIProp+"\" not defined."));
       }
@@ -58,7 +59,7 @@ class CypherPokerCard {
          return;
       }
       var cardElement = document.createElement("img");
-      cardElement.setAttribute("class", "card");
+      cardElement.setAttribute("class", cardClass);
       cardElement.setAttribute("src", this[URIProp]);
       parentElement.appendChild(cardElement);
    }

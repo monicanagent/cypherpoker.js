@@ -83,6 +83,18 @@ class CypherPokerGame extends EventDispatcher {
    * @property {CypherPoker#TableObject} table The table associated with the game instance.
    */
    /**
+   * An encryption operation has been completed by us or another player. Note
+   * that the current dealer generates the current faceup deck.
+   *
+   * @event CypherPokerGame#gamecardsencrypt
+   * @type {Event}
+   * @property {Array} selected Array of numeric strings representing the
+   * partially encrypted card values.
+   * @property {CypherPokerPlayer} player The player that sent the encrypted cards.
+   * @property {CypherPokerGame} game The game instance associated with the message.
+   * @property {CypherPoker#TableObject} table The table associated with the message.
+   */
+   /**
    * We have selected private cards which are about to be sent to other players
    * for decryption.
    * The selected cards have been removed from the
@@ -190,16 +202,15 @@ class CypherPokerGame extends EventDispatcher {
    * @property {CypherPoker#TableObject} table The table associated with the message.
    */
    /**
-   * An encryption operation has been completed by us or another player. Note
-   * that the current dealer generates the current faceup deck.
+   * The most recently completed game (hand) has been analyzed and scored.
    *
-   * @event CypherPokerGame#gamecardsencrypt
+   * @event CypherPokerGame#gamescored
    * @type {Event}
-   * @property {Array} selected Array of numeric strings representing the
-   * partially encrypted card values.
-   * @property {CypherPokerPlayer} player The player that sent the encrypted cards.
-   * @property {CypherPokerGame} game The game instance associated with the message.
-   * @property {CypherPoker#TableObject} table The table associated with the message.
+   * @property {CypherPokerAnalyzer} analyzer The analyzer instance reporting the results.
+   * @property {CypherPokerGame} game The game instance from which the results were generated.
+   * Note that the game may have been reset (lost most data), prior to the completion of the analysis.
+   * @property {CypherPoker#TableObject} table The table associated with the game instance. As with
+   * the <code>game</code> property, the table may have changed prior to the completion of the analysis.
    */
 
    /**
@@ -243,6 +254,7 @@ class CypherPokerGame extends EventDispatcher {
       this.assignPlayerRoles(null); //table owner becomes initial dealer
       this.cypherpoker.p2p.addEventListener("message", this.handleP2PMessage, this);
       this._analyzer = new CypherPokerAnalyzer(this); //start the analyzer right away
+      this._analyzer.addEventListener("scored", this.onGameAnalyzed, this);
    }
 
    /**
@@ -1011,7 +1023,7 @@ class CypherPokerGame extends EventDispatcher {
    * @returns {Promise} A resolved promise returns an array of strings representing the
    * encrypted and shuffled cards. A rejected promise returns an {@link Error} object.
    *
-   * @fires CypherPokerGame.gamecardsencrypt
+   * @fires CypherPokerGame#gamecardsencrypt
    * @async
    * @private
    */
@@ -1458,6 +1470,7 @@ class CypherPokerGame extends EventDispatcher {
       context._gameParams = new Object();
       context._analyzer.removeGameListeners();
       context._analyzer = new CypherPokerAnalyzer(context);
+      context._analyzer.addEventListener("scored", context.onGameAnalyzed, context);
       try {
          var event = await context.sendGameParams(true);
          event = await context.generateKeypair();
@@ -1821,6 +1834,23 @@ class CypherPokerGame extends EventDispatcher {
             //not a recognized CypherPoker.JS game message type
             break;
       }
+   }
+
+   /**
+   * Event listener invoked when the associated {@link CypherPokerGame#analyzer}
+   * dispatched a "scored" event.
+   *
+   * @param {CypherPokerEvent#event:scored} event An event object.
+   * @fires CypherPokerGame#gamescored
+   * @private
+   */
+   onGameAnalyzed(event) {
+      event.analyzer.removeEventListener("scored", this.onGameAnalyzed);
+      var newEvent = new Event("gamescored");
+      newEvent.analyzer = event.analyzer;
+      newEvent.game = this;
+      newEvent.table = this;
+      this.dispatchEvent(newEvent);
    }
 
    /**
