@@ -91,6 +91,7 @@ class CypherPokerUI {
    * @property {String} gameUISelectors.betAmount="#betAmount" The game's bet amount input element.
    * @property {String} gameUISelectors.publicCards="#publicCards" The game's public cards container element.
    * @property {String} gameUISelectors.privateCards="#privateCards" The game's private cards container element.
+   * @property {String} gameUISelectors.handHistory="#handHistory" The game's hand history container element.
    */
    get gameUISelectors() {
       return({
@@ -101,7 +102,8 @@ class CypherPokerUI {
          "potAmount":"#potAmount",
          "betAmount":"#betAmount",
          "publicCards":"#publicCards",
-         "privateCards":"#privateCards"
+         "privateCards":"#privateCards",
+         "handHistory":"#handHistory"
       });
    }
 
@@ -231,6 +233,7 @@ class CypherPokerUI {
       gameRef.addEventListener("gamedeal", this.onCardDeal, this);
       gameRef.addEventListener("gamebet", this.onBetPlaced, this);
       gameRef.addEventListener("gameend", this.onGameEnd, this);
+      gameRef.addEventListener("gamescored", this.onGameScored, this);
       this.disable(betButton);
    }
 
@@ -504,9 +507,6 @@ class CypherPokerUI {
       this.showDialog("Game is done!");
       var game = event.game;
       var table = event.table;
-      //copy game results there...
-
-      //...then restart the game.
       this.disable(game.DOMElement.querySelector(this.gameUISelectors.betButton));
       this.disable(game.DOMElement.querySelector(this.gameUISelectors.foldButton));
       if (game.getNextPlayer(game.getDealer().privateID).privateID == game.ownPID) {
@@ -516,7 +516,56 @@ class CypherPokerUI {
          this.resetGameUI(game);
          game.restartGame();
       }
-      //process game results here
+   }
+
+   /**
+   * Event handler invoked when an associated game instance reports that it has been
+   * scored.
+   *
+   * @param {Event} event An event object.
+   *
+   * @listens CypherPokerGame#event:gamescored
+   */
+   onGameScored(event) {
+      this.debug("CypherPokerUI.onGameScored("+event+")");
+      try {
+         var analysis = event.analyzer.analysis;
+         var allHands = analysis.hands;
+         var winningHands = analysis.winningHands;
+         var winningPlayers = analysis.winningPlayers;
+         var historyHTML = document.createElement("div");
+         historyHTML.setAttribute("class", "handHistoryItemContainer");
+         var headerElement = document.createElement("span");
+         headerElement.setAttribute("class", "handHistoryItemHeader");
+         if (winningHands.length > 1) {
+            headerElement.innerHTML = "Best Hands&lt;br/>";
+         } else {
+            headerElement.innerHTML = "Best Hand&lt;br/>";
+         }
+         for (var count = 0; count &lt; winningHands.length; count++) {
+            var winningHand = winningHands[count];
+            var winningPlayer = winningPlayers[count];
+            var hand = winningHand.hand;
+            headerElement.innerHTML += "&lt;span class=\"historyHandName\">"+winningHand.name+"&lt;/span>&lt;br/>";
+            if (winningPlayer.privateID == event.game.ownPID) {
+               headerElement.innerHTML += "&lt;span class=\"historyHandOwner\">Ours&lt;/span>&lt;br/>";
+            } else {
+               headerElement.innerHTML += "&lt;span class=\"historyHandOwner\">Player: "+winningPlayer.privateID+"&lt;/span>&lt;br/>";
+            }
+            var cardContainerElement = document.createElement("div");
+            cardContainerElement.setAttribute("class", "handHistoryItemCards");
+            for (var count2 = 0; count2 &lt; hand.length; count2++) {
+               var card = hand[count2];
+               card.addToDOM(cardContainerElement, "historyCard");
+            }
+         }
+         historyHTML.appendChild(headerElement);
+         historyHTML.appendChild(cardContainerElement);
+         var targetElement = event.game.DOMElement.querySelector(this.gameUISelectors.handHistory);
+         targetElement.appendChild(historyHTML);
+      } catch (err) {
+         console.error(err);
+      }
    }
 
    /**
@@ -655,13 +704,13 @@ class CypherPokerUI {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 29 2018 22:47:12 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Sep 02 2018 18:56:26 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

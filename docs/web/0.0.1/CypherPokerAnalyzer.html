@@ -105,7 +105,7 @@
 
             
 
-            <td class="description last">The game instance with which this instanceis to be associated. Event listeners are added to the <a href="CypherPokerGame.html">CypherPokerGame</a>instance at this time so the analyzer should usually be instantiated at thevery beginning of a new game (hand).</td>
+            <td class="description last">The game instance with which this instanceis to be associated. Event listeners are added to the <a href="CypherPokerGame.html">CypherPokerGame</a>instance at this time so the analyzer should usually be instantiated at thebeginning of a new game (hand).</td>
         </tr>
 
     
@@ -286,7 +286,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line71">line 71</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line102">line 102</a>
     </li></ul></dd>
     
 
@@ -372,6 +372,8 @@
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -397,6 +399,10 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Name/value pairs with each name matchinga player private ID and value containing an array of their verified private<a href="CypherPokerCard.html">CypherPokerCard</a> instances.</td>
         </tr>
@@ -420,8 +426,70 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">Array of verified public <a href="CypherPokerCard.html">CypherPokerCard</a>instances.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>complete</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">Set to true when the hand has beenfully validated as far as possible.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">The analysis error object, if one exists.</td>
         </tr>
 
     
@@ -467,7 +535,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line216">line 216</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line252">line 252</a>
     </li></ul></dd>
     
 
@@ -512,8 +580,6 @@
         
 
         
-        <th>Default</th>
-        
 
         <th class="last">Description</th>
     </tr>
@@ -538,12 +604,6 @@
 
             
 
-            
-                <td class="default">
-                
-                    [
-                
-                </td>
             
 
             <td class="description last">An array of <a href="CypherPokerCard.html">CypherPokerCard</a>instances of the community cards reported by the final decryptors.</td>
@@ -585,7 +645,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line99">line 99</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line130">line 130</a>
     </li></ul></dd>
     
 
@@ -703,7 +763,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line200">line 200</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line233">line 233</a>
     </li></ul></dd>
     
 
@@ -813,7 +873,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line159">line 159</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line192">line 192</a>
     </li></ul></dd>
     
 
@@ -923,7 +983,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line128">line 128</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line159">line 159</a>
     </li></ul></dd>
     
 
@@ -1041,7 +1101,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line187">line 187</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line220">line 220</a>
     </li></ul></dd>
     
 
@@ -1159,7 +1219,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line41">line 41</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line71">line 71</a>
     </li></ul></dd>
     
 
@@ -1269,7 +1329,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line174">line 174</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line207">line 207</a>
     </li></ul></dd>
     
 
@@ -1287,7 +1347,7 @@
 
         
             
-<h4 class="name" id="mappedDeck"><span class="type-signature"></span>mappedDeck<span class="type-signature"></span></h4>
+<h4 class="name" id="mappedDeck"><span class="type-signature">(readonly) </span>mappedDeck<span class="type-signature"></span></h4>
 
 
 
@@ -1379,7 +1439,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line141">line 141</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line174">line 174</a>
     </li></ul></dd>
     
 
@@ -1497,7 +1557,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line114">line 114</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line145">line 145</a>
     </li></ul></dd>
     
 
@@ -1518,114 +1578,6 @@
 
     
         <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="compareDecks"><span class="type-signature"></span>compareDecks<span class="signature">()</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Compares two card decks of either plaintext mappings or encryptedcard values, regardless of their order.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line697">line 697</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    True if both decks have exactly the same elements (regardless of order),false if there's a difference.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Boolean</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
 
         
             
@@ -1734,7 +1686,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line278">line 278</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line316">line 316</a>
     </li></ul></dd>
     
 
@@ -1773,186 +1725,6 @@
     <dd>
         
 <span class="param-type"><a href="CypherPokerCard.html">CypherPokerCard</a></span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="removeFromDeck"><span class="type-signature"></span>removeFromDeck<span class="signature">(removeItems, deckArr)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Remove a set of items from a deck.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>removeItems</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Array of strings matching card values to removefrom <code>deckArr</code></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>deckArr</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Array of strings matching card values and representinga deck. Items found in <code>removeItems</code> will be removed directlyfrom this array.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line670">line 670</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    True if the correct number of items were removed from<code>deckArr</code> (i.e. only one unique match for each value existed).False is returned if the removed items don't match the expected set but<code>deckArr</code> may still be modified.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Boolean</span>
 
 
     </dd>
@@ -2022,7 +1794,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line229">line 229</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line267">line 267</a>
     </li></ul></dd>
     
 
@@ -2051,12 +1823,20 @@
 
 
         
+    
+
+    
+
+    
+        <h3 class="subsection-title">Events</h3>
+
+        
             
 
     
 
     
-    <h4 class="name" id="storeDeal"><span class="type-signature"></span>storeDeal<span class="signature">(dealingPID, fromPID, cards, isPrivate, isDecryption)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="event:analyzed">analyzed</h4>
     
 
     
@@ -2064,21 +1844,36 @@
 
 
 <div class="description">
-    Stores a card deal -- new cards have either been selected or partiallydecrypted -- to the <a href="CypherPokerAnalyzer.html#deals">CypherPokerAnalyzer#deals</a> array.
+    The cards captured for an associated game have been fully analyzed. A successfulanalysis is usually followed by scoring.
 </div>
 
 
 
 
 
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
 
 
 
 
-    <h5>Parameters:</h5>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
     
 
-<table class="params">
+<table class="props">
     <thead>
     <tr>
         
@@ -2100,13 +1895,13 @@
 
         <tr>
             
-                <td class="name"><code>dealingPID</code></td>
+                <td class="name"><code>analyzer</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type"><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></span>
 
 
             
@@ -2116,20 +1911,20 @@
 
             
 
-            <td class="description last">The private ID of the dealer of the cards (i.e.the player that selected them).</td>
+            <td class="description last">A reference to this instance.</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>fromPID</code></td>
+                <td class="name"><code>analysis</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type"><a href="CypherPokerAnalyzer.html#analysis">CypherPokerAnalyzer#analysis</a></span>
 
 
             
@@ -2139,83 +1934,12 @@
 
             
 
-            <td class="description last">The private ID of the player that last operatedon the cards (selected or decrypted them).</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>cards</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">An array of numeric string values representing theselected or partially decrypted cards.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>isPrivate</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Booolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If true, the <code>cards</code> array containsprivate / hole card values, otherwise they are community / public cards.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>isDecryption</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">If true, the <code>cards</code> arraycontains partially decrypted values otherwise it contains the initial,fully encrypted selections.</td>
+            <td class="description last">A reference to the current analysis.property.</td>
         </tr>
 
     
     </tbody>
 </table>
-
-
 
 
 
@@ -2249,7 +1973,349 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line738">line 738</a>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line25">line 25</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:analyzing">analyzing</h4>
+    
+
+    
+
+
+
+<div class="description">
+    The cards captured for an associated game are about to be been analyzed.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>analyzer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A reference to this instance.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>analysis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerAnalyzer.html#analysis">CypherPokerAnalyzer#analysis</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A reference to the current analysis.property.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line16">line 16</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:scored">scored</h4>
+    
+
+    
+
+
+
+<div class="description">
+    The cards captured for an associated game have been scored and ranked (post analysis).
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>analyzer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A reference to this instance.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>analysis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerAnalyzer.html#analysis">CypherPokerAnalyzer#analysis</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A reference to the current analysis.property.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerAnalyzer.js.html">CypherPokerAnalyzer.js</a>, <a href="CypherPokerAnalyzer.js.html#line35">line 35</a>
     </li></ul></dd>
     
 
@@ -2279,10 +2345,6 @@
 
         
     
-
-    
-
-    
 </article>
 
 </section>
@@ -2293,13 +2355,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Aug 29 2018 22:47:13 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Sep 02 2018 18:56:26 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
