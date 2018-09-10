@@ -54,6 +54,235 @@
 
 <header>
     
+        <h2>api/CPSC_Create.js</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">Creates a proxy CypherPoker Smart Contract and defines a few utility functions.</div>
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_CPSC_Create.js.html">api/CPSC_Create.js</a>, <a href="api_CPSC_Create.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+            <h3>Example</h3>
+            
+    <pre class="prettyprint"><code>Client Request -> {
+  "jsonrpc": "2.0",
+  "method": "CPSC_Create",
+  "id": "CPSC9052131974613838",
+  "params": {
+    "contractID": "14837468275268462",
+    "players": [
+      {
+        "_registrations": {},
+        "_privateID": "9128d45d296e59642d6d149dab39b40e912bba0d3e46e30150dc59041bf954b1",
+        "_info": {
+          "alias": "me"
+        },
+        "_ready": true,
+        "_isDealer": true,
+        "_isSmallBlind": true
+        ],
+        "_hasBet": false,
+        "_dealtCards": [],
+        "_selectedCards": [
+          "0x94a32e3e65e9d4ea",
+          "0x3bd8fcbf2979960b"
+        ]
+      },
+      {
+        "_registrations": {},
+        "_privateID": "92360d014d471cc10f1c147c18170c89e90cc0f29a38fa5a95e8ab50c2f45c75",
+        "_info": {
+          "alias": "A player"
+        },
+        "_ready": true,
+        "_isDealer": false,
+        "_isBigBlind": true,
+        "_hasBet": false
+      }
+    ],
+    "prime": "0xdb71c83d5d7322a3",
+    "cardDecks": {
+      "faceup": [
+        {
+          "_mapping": "0x6db8e41eaeb99150",
+          "name": "Ace of Spades",
+          "shortname": "A♠",
+          "suit": "spades",
+          "colour": "black",
+          "value": 1,
+          "highvalue": 14,
+          "imageURI": "./assets/cards/AS.svg"
+        },
+        {
+          "_mapping": "0x6db8e41eaeb99151",
+          "name": "Two of Spades",
+          "shortname": "2♠",
+          "suit": "spades",
+          "colour": "black",
+          "value": 2,
+          "highvalue": 2,
+          "imageURI": "./assets/cards/2S.svg"
+        },
+        ...
+      ],
+      "facedown": [],
+      "dealt": [],
+      "public": []
+    },
+    "user_token": "5601058615055693",
+    "server_token": "9373082449982535"
+  }
+}Server Response -> -{
+  "jsonrpc": "2.0",
+  "result": {
+    "contract": {
+      "contractID": "14837468275268462",
+      "players": [
+        {
+          "_registrations": {},
+          "_privateID": "9128d45d296e59642d6d149dab39b40e912bba0d3e46e30150dc59041bf954b1",
+          "_info": {
+            "alias": "me"
+          },
+          "_ready": true,
+          "_isDealer": true,
+          "_isSmallBlind": true,
+          "privateID": "9128d45d296e59642d6d149dab39b40e912bba0d3e46e30150dc59041bf954b1",
+          "agreed": true
+        },
+        {
+          "_registrations": {},
+          "_privateID": "92360d014d471cc10f1c147c18170c89e90cc0f29a38fa5a95e8ab50c2f45c75",
+          "_info": {
+            "alias": "A player"
+          },
+          "_ready": true,
+          "_isDealer": false,
+          "_isBigBlind": true,
+          "privateID": "92360d014d471cc10f1c147c18170c89e90cc0f29a38fa5a95e8ab50c2f45c75",
+          "agreed": false
+        }
+      ],
+      "prime": "0xdb71c83d5d7322a3",
+      "cardDecks": {
+        "faceup": [
+          {
+            "_mapping": "0x6db8e41eaeb99150",
+            "name": "Ace of Spades",
+            "shortname": "A♠",
+            "suit": "spades",
+            "colour": "black",
+            "value": 1,
+            "highvalue": 14,
+            "imageURI": "./assets/cards/AS.svg"
+          },
+          {
+            "_mapping": "0x6db8e41eaeb99151",
+            "name": "Two of Spades",
+            "shortname": "2♠",
+            "suit": "spades",
+            "colour": "black",
+            "value": 2,
+            "highvalue": 2,
+            "imageURI": "./assets/cards/2S.svg"
+          },
+          ...
+        ],
+        "facedown": [],
+        "dealt": [],
+        "public": []
+      }
+    }
+  },
+  "id": "CPSC9052131974613838"
+}</code></pre>
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+
+<section>
+
+<header>
+    
         <h2>api/Hello.js</h2>
         
     
@@ -464,6 +693,9 @@
 <dl class="details">
 
     
+    <dt class="tag-version">Version:</dt>
+    <dd class="tag-version"><ul class="dummy"><li>0.0.1</li></ul></dd>
+    
 
     
 
@@ -545,13 +777,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#getGameContracts">getGameContracts</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Jul 26 2018 00:13:00 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 10 2018 10:43:36 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -5,7 +5,7 @@
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",
-      "bitLength": 64,
+      "bitLength": 32,
       "radix": 16
    },
    "cards":[
@@ -46,8 +46,8 @@
          {"name":"Nine of Diamonds","shortname":"9♦","suit":"diamonds","colour":"red","value":9,"highvalue":9,"imageURI":"./assets/cards/9D.svg"},
          {"name":"Ten of Diamonds","shortname":"10♦","suit":"diamonds","colour":"red","value":10,"highvalue":10,"imageURI":"./assets/cards/10D.svg"},
          {"name":"Jack of Diamonds","shortname":"J♦","suit":"diamonds","colour":"red","value":11,"highvalue":11,"imageURI":"./assets/cards/JD.svg"},
-         {"name":"Queen of Diamonds","shortname":"Q♦","suit":"diamonds","colour":"red","value":13,"highvalue":12,"imageURI":"./assets/cards/QD.svg"},
-         {"name":"King of Diamonds","shortname":"K♦","suit":"diamonds","colour":"red","value":12,"highvalue":13,"imageURI":"./assets/cards/KD.svg"},
+         {"name":"Queen of Diamonds","shortname":"Q♦","suit":"diamonds","colour":"red","value":12,"highvalue":12,"imageURI":"./assets/cards/QD.svg"},
+         {"name":"King of Diamonds","shortname":"K♦","suit":"diamonds","colour":"red","value":13,"highvalue":13,"imageURI":"./assets/cards/KD.svg"},
          {"name":"Ace of Clubs","shortname":"A♣","suit":"clubs","colour":"black","value":1,"highvalue":14,"imageURI":"./assets/cards/AC.svg"},
          {"name":"Two of Clubs","shortname":"2♣","suit":"clubs","colour":"black","value":2,"highvalue":2,"imageURI":"./assets/cards/2C.svg"},
          {"name":"Three of Clubs","shortname":"3♣","suit":"clubs","colour":"black","value":3,"highvalue":3,"imageURI":"./assets/cards/3C.svg"},

@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>CypherPokerGame<span class="signature">(cypherpokerRef, tableObj, playerInfo<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>CypherPokerGame<span class="signature">(cypherpokerRef, tableObj, playerInfo<span class="signature-attributes">opt</span>, ContractClass<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
             <div class="class-description">Manages game logic, <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instances,and other game-specific properties for CypherPoker.JS Texas Hold'em.</div>
         
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="CypherPokerGame"><span class="type-signature"></span>new CypherPokerGame<span class="signature">(cypherpokerRef, tableObj, playerInfo<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="CypherPokerGame"><span class="type-signature"></span>new CypherPokerGame<span class="signature">(cypherpokerRef, tableObj, playerInfo<span class="signature-attributes">opt</span>, ContractClass<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -196,6 +196,45 @@
             
 
             <td class="description last">Contains additional informationabout us to share with the table.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ContractClass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "CypherPokerContract"
+                
+                </td>
+            
+
+            <td class="description last">The (smart) contract interfaceto use with this game (available through the <a href="CypherPokerGame.html#contract">CypherPokerGame#contract</a> property).If <code>null</code>, no contract interface is used.</td>
         </tr>
 
     
@@ -387,7 +426,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line686">line 686</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line699">line 699</a>
     </li></ul></dd>
     
 
@@ -505,7 +544,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line279">line 279</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line283">line 283</a>
     </li></ul></dd>
     
 
@@ -615,7 +654,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line564">line 564</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line577">line 577</a>
     </li></ul></dd>
     
 
@@ -725,7 +764,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line502">line 502</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line515">line 515</a>
     </li></ul></dd>
     
 
@@ -835,7 +874,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line650">line 650</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line663">line 663</a>
     </li></ul></dd>
     
 
@@ -1062,7 +1101,117 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line475">line 475</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line488">line 488</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="contract"><span class="type-signature">(readonly) </span>contract<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>contract</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerContract.html">CypherPokerContract</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A CypherPoker (smart) contractinterface associated with this instance, usually created at instantiation.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line469">line 469</a>
     </li></ul></dd>
     
 
@@ -1172,7 +1321,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line411">line 411</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line415">line 415</a>
     </li></ul></dd>
     
 
@@ -1290,7 +1439,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line394">line 394</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line398">line 398</a>
     </li></ul></dd>
     
 
@@ -1400,7 +1549,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line596">line 596</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line609">line 609</a>
     </li></ul></dd>
     
 
@@ -1558,7 +1707,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line453">line 453</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line457">line 457</a>
     </li></ul></dd>
     
 
@@ -1668,7 +1817,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line491">line 491</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line504">line 504</a>
     </li></ul></dd>
     
 
@@ -1778,7 +1927,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line636">line 636</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line649">line 649</a>
     </li></ul></dd>
     
 
@@ -1888,7 +2037,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line617">line 617</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line630">line 630</a>
     </li></ul></dd>
     
 
@@ -1998,7 +2147,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line442">line 442</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line446">line 446</a>
     </li></ul></dd>
     
 
@@ -2108,7 +2257,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line433">line 433</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line437">line 437</a>
     </li></ul></dd>
     
 
@@ -2218,7 +2367,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line263">line 263</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line267">line 267</a>
     </li></ul></dd>
     
 
@@ -2328,7 +2477,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line424">line 424</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line428">line 428</a>
     </li></ul></dd>
     
 
@@ -2707,7 +2856,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1504">line 1504</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1517">line 1517</a>
     </li></ul></dd>
     
 
@@ -2822,7 +2971,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1416">line 1416</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1429">line 1429</a>
     </li></ul></dd>
     
 
@@ -2986,7 +3135,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1282">line 1282</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1295">line 1295</a>
     </li></ul></dd>
     
 
@@ -3094,7 +3243,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line799">line 799</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line812">line 812</a>
     </li></ul></dd>
     
 
@@ -3202,7 +3351,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line782">line 782</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line795">line 795</a>
     </li></ul></dd>
     
 
@@ -3521,7 +3670,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1219">line 1219</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1232">line 1232</a>
     </li></ul></dd>
     
 
@@ -3678,7 +3827,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line742">line 742</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line755">line 755</a>
     </li></ul></dd>
     
 
@@ -3835,7 +3984,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line722">line 722</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line735">line 735</a>
     </li></ul></dd>
     
 
@@ -3992,7 +4141,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line704">line 704</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line717">line 717</a>
     </li></ul></dd>
     
 
@@ -4149,7 +4298,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line762">line 762</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line775">line 775</a>
     </li></ul></dd>
     
 
@@ -4257,7 +4406,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line816">line 816</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line829">line 829</a>
     </li></ul></dd>
     
 
@@ -4417,7 +4566,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1337">line 1337</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1350">line 1350</a>
     </li></ul></dd>
     
 
@@ -4835,7 +4984,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line337">line 337</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line341">line 341</a>
     </li></ul></dd>
     
 
@@ -4978,7 +5127,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1444">line 1444</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1457">line 1457</a>
     </li></ul></dd>
     
 
@@ -5229,7 +5378,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line838">line 838</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line851">line 851</a>
     </li></ul></dd>
     
 
@@ -5315,7 +5464,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line384">line 384</a>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line388">line 388</a>
     </li></ul></dd>
     
 
@@ -8956,13 +9105,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Sep 02 2018 18:56:26 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 10 2018 10:41:38 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
