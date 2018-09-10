@@ -248,6 +248,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @property {Boolean} analysis.complete=false Set to true when the hand has been
    * fully validated as far as possible.
    * @property {Error} analysis.error=null The analysis error object, if one exists.
+   *
+   * @readonly
    */
    get analysis() {
       if (this._analysis == undefined) {

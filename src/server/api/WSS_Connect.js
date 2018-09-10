@@ -10,7 +10,7 @@
 async function WSS_Connect (sessionObj) {
    if (sessionObj.endpoint.startsWith("ws") == false) {
       sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "Session must be created through a WebSocket connection.", sessionObj);
-      return;
+      return (false);
    }
    try {
       if ((namespace.websocket["connections"] == undefined) || (namespace.websocket["connections"] == null)) {
@@ -28,11 +28,11 @@ async function WSS_Connect (sessionObj) {
    resultObj.options = new Object(); //for future use
    if ((namespace.websocket.connections[connectionID] == null) || (namespace.websocket.connections[connectionID] == undefined)) {
       sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
-      return;
+      return (false);
    }
    if (namespace.websocket.connections[connectionID].length == 0) {
       sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
-      return;
+      return (false);
    }
    for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
       var connectionObj = namespace.websocket.connections[connectionID][count];

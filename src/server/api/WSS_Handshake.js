@@ -9,7 +9,7 @@
 async function WSS_Handshake (sessionObj) {
    if ((sessionObj.endpoint.startsWith("http") == false)  && (rpc_options.http_only_handshake)) {
       sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "Session handshake must be made through HTTP / HTTPS service.", sessionObj);
-      return;
+      return (false);
    }
    if ((namespace.websocket["connections"] == undefined) || (namespace.websocket["connections"] == null)) {
       namespace.websocket.connections = new Object();
@@ -73,6 +73,7 @@ async function WSS_Handshake (sessionObj) {
          sendResult(responseObj, sessionObj);
       }
    }
+   return (true);
 }
 
 /**
@@ -105,9 +106,22 @@ function makeConnectionID (sessionObj) {
 * @param {String} user_token The (ideally) randomly generated token generated
 * by the user / client.
 * @return {String} The SHA256 hash of the server token concatenated with a semi-colon
-* and the user token: <code>SHA256(server_token + ":" + user_token)</code>
+* and the user token: <code>SHA256(server_token + ":" + user_token)</code>. <code>null</code>
+* is returned if either of the input parameters is invalid.
 */
 function makePrivateID (server_token, user_token) {
+   if (typeof(server_token) != "string") {
+      return (null);
+   }
+   if (typeof(user_token) != "string") {
+      return (null);
+   }
+   if (server_token.length == 0) {
+      return (null);
+   }
+   if (user_token.length == 0) {
+      return (null);
+   }
    let hash = crypto.createHash('sha256');
    hash.update(server_token + ":" +user_token);
    var hexOutput = hash.digest('hex');

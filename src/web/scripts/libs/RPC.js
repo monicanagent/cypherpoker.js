@@ -96,7 +96,7 @@ function RPC(method, params, transport, generateOnly=false, msgID=null) {
   requestObj.params = params;
   switch (transportType) {
     case "http":
-      transport.overrideMimeType("application/json");
+      transport.overrideMimeType("application/json-rpc");
       transport.responseType = "json";
       var promise = transport.onEventPromise("load");
       transport.send(JSON.stringify(requestObj));

@@ -1,15 +1,16 @@
 /**
- * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
- * @author Patrick Bay
- * @copyright MIT License
- */
+* @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
+* @version 0.0.1
+* @author Patrick Bay
+* @copyright MIT License
+*/
 
  //JSDoc typedefs:
 /**
 * HTTP response headers used with HTTP / HTTPS endpoints.
 * @typedef {Array} HTTP_Headers_Array
 * @default [{"Access-Control-Allow-Origin" : "*"},
-*  {"Content-Type" : "application/json"}]
+*  {"Content-Type" : "application/json-rpc"}]
 */
 /**
 * Server objects exposed to API modules.
@@ -75,6 +76,7 @@ var ws_ping_intervalID = null;
 * @property {Number} SESSION_CLOSE=-32001 The session is about to terminate and any current tokens / credentials will no longer be
 * accepted.
 * @property {Number} WRONG_TRANSPORT=-32002 The wrong transport was used to deliver API request (e.g. used "http" or "https" instead of "ws" or "wss").
+* @property {Number} ACTION_DISALLOWED=-32003 The action being requested is not currently allowed.
 */
 const JSONRPC_ERRORS = {
 	PARSE_ERROR: -32700,
@@ -111,7 +113,7 @@ var rpc_options = {
   max_batch_requests: 5,
   http_headers: [
 		{"Access-Control-Allow-Origin" : "*"}, //CORS header for global access
-		{"Content-Type" : "application/json"}
+		{"Content-Type" : "application/json-rpc"}
   ],
   exposed_objects: {
     namespace:namespace,
@@ -275,7 +277,7 @@ function processRPCRequest(requestData, sessionObj) {
 	} else {
     //batched requests
 		if (sessionObj.requestObj.length > rpc_options.max_batch_requests) {
-      var errString = `No more than ${rpc_options.max_batch_requests} batched requests allowed. Request has ${sessionObj.requestObj.length} methods.`;
+      var errString = `No more than ${rpc_options.max_batch_requests} batched requests allowed. Request has ${sessionObj.requestObj.length} requests.`;
 			sendError(JSONRPC_ERRORS.INTERNAL_ERROR, validationResult, sessionObj);
 			return;
 		}

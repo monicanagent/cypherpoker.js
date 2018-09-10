@@ -222,8 +222,11 @@ class CypherPokerGame extends EventDispatcher {
    * A copy of this object is available through the {@link table} reference.
    * @param {Object} [playerInfo=null] Contains additional information
    * about us to share with the table.
+   * @param {String} [ContractClass="CypherPokerContract"] The (smart) contract interface
+   * to use with this game (available through the {@link CypherPokerGame#contract} property).
+   * If <code>null</code>, no contract interface is used.
    */
-   constructor(cypherpokerRef, tableObj, playerInfo=null) {
+   constructor(cypherpokerRef, tableObj, playerInfo=null, ContractClass="CypherPokerContract") {
       super();
       try {
          //attempt to create dummy instance to ensure that class is available
@@ -255,6 +258,7 @@ class CypherPokerGame extends EventDispatcher {
       this.cypherpoker.p2p.addEventListener("message", this.handleP2PMessage, this);
       this._analyzer = new CypherPokerAnalyzer(this); //start the analyzer right away
       this._analyzer.addEventListener("scored", this.onGameAnalyzed, this);
+      this._contract = new CypherPokerContract(this);
    }
 
    /**
@@ -455,6 +459,15 @@ class CypherPokerGame extends EventDispatcher {
          this._gameParams = new Object();
       }
       return (this._gameParams);
+   }
+
+   /**
+   * @property {CypherPokerContract} contract A CypherPoker (smart) contract
+   * interface associated with this instance, usually created at instantiation.
+   * @readonly
+   */
+   get contract() {
+      return (this._contract);
    }
 
    /**
