@@ -26,8 +26,10 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
-* @file Creates a proxy CypherPoker Smart Contract and defines a few utility functions.
+            <pre class="prettyprint source linenums"><code>const bitcoin = require('bitcoinjs-lib');
+
+/**
+* @file Creates a proxy CypherPoker Smart Contract and defines a few blockchain utility functions.
 *
 * @example
 * Client Request -> {
@@ -340,11 +342,127 @@ function handleWebSocketClose(event) {
    }
 }
 
+/**
+* Retrieves a live blockchain balance for an address.
+*
+* @param {String} address The address for which to retrieve the live balance.
+* @param {String} [APIType="bitcoin"] The API endpoint configuration to use for
+* the API call. This value must match one of the definitions found in the
+* &lt;code>config.CPSC.API&lt;/code> object.
+* @param {String} [network=null] The sub-network, if applicable, from which
+* to retrieve the live balance. Valid values include "btc/main" and "btc/test3".
+* If &lt;code>null&lt;/code>, the default network specified in
+* &lt;code>config.CPSC.API[APIType].default.network&lt;/code> is used.
+*
+* @return {Promise} The resolved promise will include a native JavaScript object
+* containing the parsed response from the API endpoint. The rejected promise will
+* contain the error object.
+*/
+function getBlockchainBalance(address, APIType="bitcoin", network=null) {
+   console.log("getBlockchainBalance(\""+address+"\")")
+   var promise = new Promise(function(resolve, reject) {
+      var API = config.CPSC.API[APIType];
+      var url = API.url.balance;
+      if (network == null) {
+         network = API.default.network;
+      }
+      url = url.split("%address%").join(address).split("%network%").join(network);
+      request({
+   		url: url,
+   		method: "GET",
+   		json: true
+   	}, (error, response, body) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve(body);
+         }
+   	});
+   });
+	return (promise);
+}
+
+/**
+* Signs a BlockCypher-generated Bitcoin transaction skeleton with a keypair in WIF format.
+*
+* @param {Object} txObject The transaction skeleton object to sign.
+* @param {Object} WIF The Wallet Import Format data to use for signing.
+* @param {String} [network=null] The sub-network, if applicable, for which the
+* transaction skeleton has been created. Valid values include "btc/main" and "btc/test3".
+* If &lt;code>null&lt;/code>, the default network specified in
+* &lt;code>config.CPSC.API.bitcoin.default.network&lt;/code> is used.
+*
+* @return {Object} The signed Bitcoin transaction object (which can be sent to the network).
+*/
+function signBTCTx (txObject, WIF, network=null) {
+   console.log ("signBTCTx("+txObject+", \""+network+"\")")
+   if (network == null) {
+      network = config.CPSC.API.bitcoin.default.network;
+   }
+	if (network == "btc/test3") {
+		var keys = new bitcoin.ECPair.fromWIF(WIF, bitcoin.networks.testnet);
+	} else {
+		keys = new bitcoin.ECPair.fromWIF(WIF);
+	}
+	var pubkeys = [];
+	try {
+		var signatures  = txObject.toSign.map(function(toSign) {
+			pubkeys.push(keys.getPublicKeyBuffer().toString('hex'));
+			return (keys.sign(Buffer.from(toSign, "hex")).toDER().toString("hex"));
+		});
+		txObject.signatures = signatures;
+		txObject.pubkeys = pubkeys;
+	} catch (err) {
+		txObject = null;
+	}
+	return (txObject);
+}
+
+/**
+* Sends a signed Bitcoin transaction skeleton via the BlockCypher API.
+*
+* @param {Object} txObject The transaction to send.
+* @param {String} [network=null] The Bitcoin sub-network for which the
+* transaction is intended. Valid values include "btc/main" and "btc/test3".
+* If &lt;code>null&lt;/code>, the default network specified in
+* &lt;code>config.CPSC.API.bitcoin.default.network&lt;/code> is used.
+*
+* @return {Promise} The resolved promise will include a native JavaScript object
+* containing the parsed response from the API endpoint. The rejected promise will
+* contain the error object.
+*/
+function sendBTCTx(txObject, network=null) {
+   console.log("sendBTCTx("+txObject+", \""+network+"\")");
+   var promise = new Promise(function(resolve, reject) {
+      var API = config.CPSC.API.bitcoin;
+      var url = API.url.send;
+      if (network == null) {
+         network = API.default.network;
+      }
+      var token = API.tokens.blockcypher;
+      url = url.split("%network%").join(network).split("%token%").join(token);
+      request({
+         url: url,
+   		method: "POST",
+   		body: txObject,
+   		json: true
+   	}, (error, response, body) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve(body);
+         }
+   	});
+   });
+	return (promise);
+}
+
 if (namespace.cpsc == undefined) {
    namespace.cpsc = new Object();
 }
 
 namespace.cpsc.getGameContracts = getGameContracts;
+namespace.cpsc.getBlockchainBalance = getBlockchainBalance;
 </code></pre>
         </article>
     </section>
@@ -355,13 +473,13 @@ namespace.cpsc.getGameContracts = getGameContracts;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#getGameContracts">getGameContracts</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getGameContracts">getGameContracts</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 10 2018 10:43:35 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Sep 11 2018 19:57:18 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
