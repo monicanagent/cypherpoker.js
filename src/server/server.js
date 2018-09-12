@@ -45,11 +45,20 @@ const crypto = require("crypto");
 const namespace = new Object(); //shared API namespace (instead of global data)
 
 /**
-* @const {httpserv} http_server The default HTTP endpoint.
+* @property {String} configFile="./config.json" Location of JSON data file to load and parse into the
+* {@link config} object. May be either a filesystem path or a URL.
+*/
+const configFile = "./config.json";
+/**
+* @property {Object} config Dynamic configuration options loaded at runtime.
+*/
+var config = new Object();
+/**
+* @property {httpserv} http_server The default HTTP endpoint.
 */
 var http_server;
 /**
-* @const {wsserv} ws_server The default WebSocket endpoint.
+* @property {wsserv} ws_server The default WebSocket endpoint.
 */
 var ws_server;
 /**
@@ -58,7 +67,7 @@ var ws_server;
 */
 const ws_ping_interval = 15000;
 /**
-* @const {Number} ws_ping_intervalID The interval ID of the WebSocket server
+* @property {Number} ws_ping_intervalID The interval ID of the WebSocket server
 * ping / keep-alive timer.
 */
 var ws_ping_intervalID = null;
@@ -85,7 +94,8 @@ const JSONRPC_ERRORS = {
 	INVALID_PARAMS_ERROR: -32602,
 	INTERNAL_ERROR: -32603,
    SESSION_CLOSE: -32001,
-   WRONG_TRANSPORT: -32002
+   WRONG_TRANSPORT: -32002,
+   ACTION_DISALLOWED: -32003
 }
 
 /**
@@ -117,7 +127,9 @@ var rpc_options = {
   ],
   exposed_objects: {
     namespace:namespace,
+    config:config,
     require:require,
+    request:request,
     console:console,
     module:module,
     crypto:crypto,
@@ -137,6 +149,51 @@ rpc_options.exposed_objects.rpc_options = rpc_options; // expose the options too
 * @const {Object} _APIFunctions Enumerated functions found in the API directory as specified in {@linkcode rpc_options}.
 */
 var _APIFunctions = new Object();
+
+/**
+* Asynchronously loads and parses an external JSON configuration file, making it available
+* as the global {@link config} object.
+*
+* @param {String} [filePath={@link configFile}] The URL or filesystem path of the
+* external configuration file to load.
+*
+* @return {Promise} The promise resolves with the loaded and parsed configuration
+* object and rejects with the error when the file could not be loaded or parsed.
+*/
+function loadConfig(filePath=configFile) {
+   var promise = new Promise(function(resolve, reject) {
+      filePath = filePath.trim();
+      var isURL = false;
+      if (filePath.toLowerCase().startsWith("http://") || filePath.toLowerCase().startsWith("https://")) {
+         isURL = true;
+      }
+      if (isURL) {
+         console.log ("Loading external configuration from URL: "+filePath);
+         request({
+            url: filePath,
+            method: "GET",
+            json: true
+         }, (error, response, body) => {
+            if (error) {
+               reject(error);
+            } else {
+               config = body;
+               resolve(body);
+            }
+         });
+      } else {
+         console.log ("Loading external configuration from filesystem: "+filePath);
+         try {
+            var JSONData = fs.readFileSync(filePath);
+            config = JSON.parse(JSONData);
+            resolve (config);
+         } catch (err) {
+            reject (err);
+         }
+      }
+   });
+   return (promise);
+}
 
 /**
 * Loads and verifies all API functions in the directory specified in {@linkcode rpc_options} and optionally invokes one or more functions when completed.
@@ -732,5 +789,12 @@ function adjustEnvironment() {
    //update environment prior to full startup here as necessary...
 }
 
-adjustEnvironment(); //adjust for local runtime environment
-loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
+//load external configuration data from default location
+loadConfig().then (configObj => {
+   console.log ("Configuration data successfully loaded and parsed.");
+   adjustEnvironment(); //adjust for local runtime environment
+   loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
+}).catch (err => {
+   console.error ("Couldn't load or parse configuration data.");
+   console.error (err);
+})

@@ -1,5 +1,7 @@
+const bitcoin = require('bitcoinjs-lib');
+
 /**
-* @file Creates a proxy CypherPoker Smart Contract and defines a few utility functions.
+* @file Creates a proxy CypherPoker Smart Contract and defines a few blockchain utility functions.
 *
 * @example
 * Client Request -> {
@@ -312,8 +314,124 @@ function handleWebSocketClose(event) {
    }
 }
 
+/**
+* Retrieves a live blockchain balance for an address.
+*
+* @param {String} address The address for which to retrieve the live balance.
+* @param {String} [APIType="bitcoin"] The API endpoint configuration to use for
+* the API call. This value must match one of the definitions found in the
+* <code>config.CPSC.API</code> object.
+* @param {String} [network=null] The sub-network, if applicable, from which
+* to retrieve the live balance. Valid values include "btc/main" and "btc/test3".
+* If <code>null</code>, the default network specified in
+* <code>config.CPSC.API[APIType].default.network</code> is used.
+*
+* @return {Promise} The resolved promise will include a native JavaScript object
+* containing the parsed response from the API endpoint. The rejected promise will
+* contain the error object.
+*/
+function getBlockchainBalance(address, APIType="bitcoin", network=null) {
+   console.log("getBlockchainBalance(\""+address+"\")")
+   var promise = new Promise(function(resolve, reject) {
+      var API = config.CPSC.API[APIType];
+      var url = API.url.balance;
+      if (network == null) {
+         network = API.default.network;
+      }
+      url = url.split("%address%").join(address).split("%network%").join(network);
+      request({
+   		url: url,
+   		method: "GET",
+   		json: true
+   	}, (error, response, body) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve(body);
+         }
+   	});
+   });
+	return (promise);
+}
+
+/**
+* Signs a BlockCypher-generated Bitcoin transaction skeleton with a keypair in WIF format.
+*
+* @param {Object} txObject The transaction skeleton object to sign.
+* @param {Object} WIF The Wallet Import Format data to use for signing.
+* @param {String} [network=null] The sub-network, if applicable, for which the
+* transaction skeleton has been created. Valid values include "btc/main" and "btc/test3".
+* If <code>null</code>, the default network specified in
+* <code>config.CPSC.API.bitcoin.default.network</code> is used.
+*
+* @return {Object} The signed Bitcoin transaction object (which can be sent to the network).
+*/
+function signBTCTx (txObject, WIF, network=null) {
+   console.log ("signBTCTx("+txObject+", \""+network+"\")")
+   if (network == null) {
+      network = config.CPSC.API.bitcoin.default.network;
+   }
+	if (network == "btc/test3") {
+		var keys = new bitcoin.ECPair.fromWIF(WIF, bitcoin.networks.testnet);
+	} else {
+		keys = new bitcoin.ECPair.fromWIF(WIF);
+	}
+	var pubkeys = [];
+	try {
+		var signatures  = txObject.toSign.map(function(toSign) {
+			pubkeys.push(keys.getPublicKeyBuffer().toString('hex'));
+			return (keys.sign(Buffer.from(toSign, "hex")).toDER().toString("hex"));
+		});
+		txObject.signatures = signatures;
+		txObject.pubkeys = pubkeys;
+	} catch (err) {
+		txObject = null;
+	}
+	return (txObject);
+}
+
+/**
+* Sends a signed Bitcoin transaction skeleton via the BlockCypher API.
+*
+* @param {Object} txObject The transaction to send.
+* @param {String} [network=null] The Bitcoin sub-network for which the
+* transaction is intended. Valid values include "btc/main" and "btc/test3".
+* If <code>null</code>, the default network specified in
+* <code>config.CPSC.API.bitcoin.default.network</code> is used.
+*
+* @return {Promise} The resolved promise will include a native JavaScript object
+* containing the parsed response from the API endpoint. The rejected promise will
+* contain the error object.
+*/
+function sendBTCTx(txObject, network=null) {
+   console.log("sendBTCTx("+txObject+", \""+network+"\")");
+   var promise = new Promise(function(resolve, reject) {
+      var API = config.CPSC.API.bitcoin;
+      var url = API.url.send;
+      if (network == null) {
+         network = API.default.network;
+      }
+      var token = API.tokens.blockcypher;
+      url = url.split("%network%").join(network).split("%token%").join(token);
+      request({
+         url: url,
+   		method: "POST",
+   		body: txObject,
+   		json: true
+   	}, (error, response, body) => {
+         if (error) {
+            reject(error);
+         } else {
+            resolve(body);
+         }
+   	});
+   });
+	return (promise);
+}
+
 if (namespace.cpsc == undefined) {
    namespace.cpsc = new Object();
 }
 
 namespace.cpsc.getGameContracts = getGameContracts;
+namespace.cpsc.getBlockchainBalance = getBlockchainBalance;

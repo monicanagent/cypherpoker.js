@@ -1,0 +1,23 @@
+{
+   "CPSC": {
+      "API": {
+         "tokens": {
+            "blockcypher":"REPLACE WITH YOUR BLOCKCYPHER API TOKEN"
+         },
+         "bitcoin": {
+            "networks":[
+               "btc/main",
+               "btc/test3"
+            ],
+            "default": {
+               "network": "btc/test3",
+               "baseDenom": "satoshi"
+            },
+            "url": {
+               "balance": "https://api.blockcypher.com/v1/%network%/addrs/%address%/full",
+               "send": "https://api.blockcypher.com/v1/%network%/txs/send?token=%token%"
+            }
+         }
+      }
+   }
+}
