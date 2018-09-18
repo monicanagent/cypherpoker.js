@@ -1,0 +1,12 @@
+#top-most editorconfig file
+root = true
+
+#2 space indentation
+#some files use 3 space indentation, but I can't find a pattern.
+[*]
+end_of_line = crlf
+insert_final_newline = true
+charset = utf-8
+indent_style = space
+indent_size = 2
+
