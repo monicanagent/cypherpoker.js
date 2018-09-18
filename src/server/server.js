@@ -1,11 +1,11 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.0.1
+* @version 0.1.0
 * @author Patrick Bay
 * @copyright MIT License
 */
 
- //JSDoc typedefs:
+//JSDoc typedefs:
 /**
 * HTTP response headers used with HTTP / HTTPS endpoints.
 * @typedef {Array} HTTP_Headers_Array
@@ -17,9 +17,16 @@
 * @typedef {Object} Exposed_Server_Objects
 * @default {
 *  namespace:namespace,
+*  config:config,
+*  require:require,
+*  Buffer:Buffer,
+*  request:request,
 *  console:console,
 *  module:module,
 *  crypto:crypto,
+*  bigInt:bigInt,
+*  bitcoin:bitcoin,
+*  secp256k1:secp256k1,
 *  sendResult:sendResult,
 *  sendError:sendError,
 *  buildJSONRPC:buildJSONRPC,
@@ -42,6 +49,9 @@ const https = require("https");
 const websocket = require("ws");
 const request = require("request");
 const crypto = require("crypto");
+const bigInt = require("big-integer");
+const bitcoin = require('bitcoinjs-lib');
+const secp256k1 = require ("secp256k1"); //required for Bitcoin transaction signing
 const namespace = new Object(); //shared API namespace (instead of global data)
 
 /**
@@ -86,6 +96,7 @@ var ws_ping_intervalID = null;
 * accepted.
 * @property {Number} WRONG_TRANSPORT=-32002 The wrong transport was used to deliver API request (e.g. used "http" or "https" instead of "ws" or "wss").
 * @property {Number} ACTION_DISALLOWED=-32003 The action being requested is not currently allowed.
+* @property {Number} AUTH_FAILED=-32004 Authentication (e.g. password verification) failed.
 */
 const JSONRPC_ERRORS = {
 	PARSE_ERROR: -32700,
@@ -95,7 +106,8 @@ const JSONRPC_ERRORS = {
 	INTERNAL_ERROR: -32603,
    SESSION_CLOSE: -32001,
    WRONG_TRANSPORT: -32002,
-   ACTION_DISALLOWED: -32003
+   ACTION_DISALLOWED: -32003,
+   AUTH_FAILED: -32004
 }
 
 /**
@@ -129,10 +141,14 @@ var rpc_options = {
     namespace:namespace,
     config:config,
     require:require,
+    Buffer:Buffer,
     request:request,
     console:console,
     module:module,
+    bigInt:bigInt,
     crypto:crypto,
+    bitcoin:bitcoin,
+    secp256k1:secp256k1,
     sendResult:sendResult,
     sendError:sendError,
     buildJSONRPC:buildJSONRPC,
@@ -151,16 +167,40 @@ rpc_options.exposed_objects.rpc_options = rpc_options; // expose the options too
 var _APIFunctions = new Object();
 
 /**
+* Handles all uncaught exceptions, allowing the server to keep running and responding to requests.
+* Additional error handling / tracking / reporting can be added here.
+*
+* @listens global -> uncaughtException
+*/
+process.on('uncaughtException', (err) => {
+  console.error(err.stack);
+});
+
+/**
 * Asynchronously loads and parses an external JSON configuration file, making it available
 * as the global {@link config} object.
 *
 * @param {String} [filePath={@link configFile}] The URL or filesystem path of the
-* external configuration file to load.
+* external configuration file to load. If the <code>RPCOptions.host</code> property
+* is included (the request is being made to a shared hosting environment), this URL
+* should contain the server IP rather than the domain name.
+* @param {Object} [RPCOptions=null] If the <code>filePath</code> points to a
+* JSON-RPC 2.0 endpoint, this object contains additional properties to use
+* for the call.
+* @param {String} RPCOptions.method The RPC method to invoke in order
+* to retrieve the configuation data.
+* @param {String} [RPCOptions.params] The RPC parameters to include
+* when invoking the <code>RPCOptions.method</code>. If not defined, an empty
+* <code>params</code> object is included with the request.
+* @param {String} [RPCOptions.host] If defined, this property sets the "Host" HTTP
+* header in the request when accessing a shared hosting environment. The
+* <code>filePath</code> parameter should contain the server's IP address rather
+* than a domain name.
 *
 * @return {Promise} The promise resolves with the loaded and parsed configuration
 * object and rejects with the error when the file could not be loaded or parsed.
 */
-function loadConfig(filePath=configFile) {
+function loadConfig(filePath=configFile, RPCOptions=null) {
    var promise = new Promise(function(resolve, reject) {
       filePath = filePath.trim();
       var isURL = false;
@@ -168,19 +208,60 @@ function loadConfig(filePath=configFile) {
          isURL = true;
       }
       if (isURL) {
-         console.log ("Loading external configuration from URL: "+filePath);
-         request({
-            url: filePath,
-            method: "GET",
-            json: true
-         }, (error, response, body) => {
-            if (error) {
-               reject(error);
-            } else {
-               config = body;
-               resolve(body);
+         if (RPCOptions != null) {
+            if ((RPCOptions.method == undefined) || (RPCOptions.method == null) || (RPCOptions.method == "")) {
+               reject("No JSON-RPC 2.0 \"method\" defined for request.");
+               return;
             }
-         });
+            if (typeof(RPCOptions.params) != "object") {
+               RPCOptions.params = new Object();
+            }
+            var headers = {"Content-Type": "application/json-rpc"};
+            if (typeof(RPCOptions.host) == "string") {
+               console.log ("Loading external configuration from RPC: "+filePath+" (shared host: "+RPCOptions.host+")");
+               headers.Host = RPCOptions.host;
+            } else {
+               console.log ("Loading external configuration from RPC: "+filePath);
+            }
+            var requestObj = {
+               "jsonrpc":"2.0",
+               "id":"0",
+               "method":RPCOptions.method,
+               "params":RPCOptions.params
+            }
+            request({
+               url: filePath,
+               method: "POST",
+               body: requestObj,
+               headers: headers,
+               json:true
+            }, (error, response, body) => {
+               if (error) {
+                  reject(error);
+               } else {
+                  if ((body.error == undefined)) {
+                     config = body.result;
+                     resolve(config);
+                  } else {
+                     reject(body.error);
+                  }
+               }
+            });
+         } else {
+            console.log ("Loading external configuration from URL: "+filePath);
+            request({
+               url: filePath,
+               method: "GET",
+               json: true
+            }, (error, response, body) => {
+               if (error) {
+                  reject(error);
+               } else {
+                  config = body;
+                  resolve(body);
+               }
+            });
+         }
       } else {
          console.log ("Loading external configuration from filesystem: "+filePath);
          try {
@@ -252,21 +333,12 @@ function registerAPIFunction(fileName) {
 }
 
 /**
-* Handles all uncaught exceptions, allowing the server to keep running and responding to requests.
-* Additional error handling / tracking / reporting can be added here.
-*
-* @listens global -> uncaughtException
-*/
-process.on('uncaughtException', (err) => {
-  console.error(err.stack);
-});
-
-/**
-* Verifies whether a data object is a valid JSON-RPC 2.0 request. (@see http://www.jsonrpc.org/specification)
+* Verifies whether a data object is a valid JSON-RPC 2.0 request.
 *
 * @param {Object} dataObj The parsed object to check for validity.
 *
 * @return {String} A description of the validation failure, or null if the validation passed.
+* @see http://www.jsonrpc.org/specification
 */
 function validateJSONRPC (dataObj) {
   if ((dataObj["jsonrpc"] == null) || (dataObj["jsonrpc"] == undefined)) {
@@ -663,8 +735,10 @@ function paramExists(requestObj, param, nullAllowed = true) {
 /**
 * Attempts to start the JSON-RPC 2.0 HTTP server using the default {@link rpc_options}. The {@link onStartHTTPServer} function is invoked when
 * the server is successfully started. The {@link handleHTTPRequest} function handles requests.
+*
+* @async
 */
-function startHTTPServer() {
+async function startHTTPServer() {
    if (rpc_options.http_port < 1) {
       console.log ("HTTP server disabled.")
    } else {
@@ -786,14 +860,111 @@ function adjustEnvironment() {
       rpc_options.ws_port = 80; //WebSocket server can only listen on port 80 (forwarded from a secure connection)
       rpc_options.http_only_handshake = false; //enable WebSockets for handshakes (since HTTP server is disabled)
    }
-   //update environment prior to full startup here as necessary...
+}
+
+async function createAccountSystem() {
+   if (typeof(process.env["BLOCKCYPHER_TOKEN"]) == "string") {
+      config.CP.API.tokens.blockcypher = process.env["BLOCKCYPHER_TOKEN"];
+   }
+   if (typeof(process.env["DB_URL"]) == "string") {
+      config.CP.API.database.url = process.env["DB_URL"];
+   }
+   if (typeof(process.env["DB_HOST"]) == "string") {
+      config.CP.API.database.host = process.env["DB_HOST"];
+   }
+   if (typeof(process.env["DB_ACCESS_KEY"]) == "string") {
+      config.CP.API.database.accessKey = process.env["DB_ACCESS_KEY"];
+   }
+   if (typeof(process.env["WALLET_XPRV"]) == "string") {
+      config.CP.API.wallets.bitcoin.xprv = process.env["WALLET_XPRV"];
+   }
+   if (typeof(process.env["WALLET_TPRV"]) == "string") {
+      config.CP.API.wallets.test3.tprv = process.env["WALLET_TPRV"];
+   }
+   //try updating via command line arguments:
+   for (var count = 2; count < process.argv.length; count++) {
+      var currentArg = process.argv[count];
+      var splitArg = currentArg.split("=");
+      if (splitArg.length < 2) {
+         throw (new Error("Malformed command line argument: "+currentArg));
+      }
+      var argName = new String(splitArg[0]);
+      var joinedArr = new Array();
+      joinedArr.push (splitArg[1]);
+      //there may have been more than one "=" in the argument
+      for (count2 = 2; count2 < splitArg.length; count2++) {
+         joinedArr.push(splitArg[count2]);
+      }
+      var argValue = joinedArr.join("=");
+      switch (argName.toLowerCase()) {
+         case "blockcypher_token":
+            config.CP.API.tokens.blockcypher = argValue;
+            break;
+         case "db_url":
+            config.CP.API.database.url = argValue;
+            break;
+         case "db_host":
+            config.CP.API.database.host = argValue;
+            break;
+         case "db_access_key":
+            config.CP.API.database.accessKey = argValue;
+            break;
+         case "wallet_xprv":
+            onfig.CP.API.wallets.bitcoin.xprv = argValue;
+            break;
+         case "wallet_tprv":
+            onfig.CP.API.wallets.test3.tprv = argValue;
+            break;
+         default:
+            //unrecognized command line parameter
+            break;
+      }
+   }
+   //create HD wallets if possible
+   namespace.cp.bitcoinWallet = namespace.cp.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
+   if (namespace.cp.bitcoinWallet != null) {
+      var walletPath = config.CP.API.bitcoin.default.main.cashOutAddrPath;
+      var cashoutWallet = namespace.cp.bitcoinWallet.derivePath(walletPath);
+      console.log ("Bitcoin HD wallet (\""+walletPath+"\") configured @ "+namespace.cp.getAddress(cashoutWallet));
+   } else {
+      console.log ("Could not configure Bitcoin wallet.");
+   }
+   namespace.cp.bitcoinTest3Wallet = namespace.cp.makeHDWallet(config.CP.API.wallets.test3.tprv);
+   if (namespace.cp.bitcoinTest3Wallet != null) {
+      walletPath = config.CP.API.bitcoin.default.test3.cashOutAddrPath;
+      cashoutWallet = namespace.cp.bitcoinTest3Wallet.derivePath(walletPath);
+      console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+namespace.cp.getAddress(cashoutWallet, bitcoin.networks.testnet));
+   } else {
+      console.log ("Could not configure Bitcoin testnet wallet.");
+   }
+   console.log("Attempting to upate wallet from database service...");
+   //the second parameter is there to provide a value for the HMAC
+   var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
+   var resultObj = walletStatusObj.result;
+   var wallets = config.CP.API.wallets;
+   //force-convert values in case the database returned them as strings
+   wallets.bitcoin.startChain = Number(String(resultObj.bitcoin.main.startChain));
+   wallets.bitcoin.startIndex = Number(String(resultObj.bitcoin.main.startIndex));
+   wallets.test3.startChain = Number(String(resultObj.bitcoin.test3.startChain));
+   wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
+   console.log ("Initial Bitcoin HD wallet derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
+   console.log ("Initial Bitcoin testnet HD wallet derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
+   return (true);
 }
 
 //load external configuration data from default location
 loadConfig().then (configObj => {
    console.log ("Configuration data successfully loaded and parsed.");
+   rpc_options.exposed_objects.config = config;
    adjustEnvironment(); //adjust for local runtime environment
    loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
+   createAccountSystem().then(result => {
+      console.log ("Account system fully initialized.");
+      //we can now unlock any account-related UI
+   }).catch(error => {
+      console.error ("Couldn't initialize account system:");
+      console.error (error);
+   });
 }).catch (err => {
    console.error ("Couldn't load or parse configuration data.");
    console.error (err);

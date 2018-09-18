@@ -1,7 +1,7 @@
 {
-  "name": "WSS_server",
-  "version": "0.0.1",
-  "description": "A minimal WebSocket Sessions server implementing a bi-directional JSON-RPC 2.0 interface.",
+  "name": "CP_server",
+  "version": "0.1.0",
+  "description": "A CypherPoker.JS JSON-RPC 2.0 WebSocket Sessions server.",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -37,7 +37,10 @@
   "license": "MIT",
   "dependencies": {
     "request": "^2.87.0",
-    "bitcoinjs-lib":"^4.0.1",
-    "ws": "^5.2.0"
+    "ws": "^5.2.0",
+    "big-integer": "^1.6.36",
+    "bitcoinjs-lib": "^4.0.1",
+    "bip32": "^1.0.2",
+    "bip39": "^2.5.0"
   }
 }
