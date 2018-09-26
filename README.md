@@ -13,3 +13,5 @@ Further (code) documentation can be found here:
 
 Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.0.1/](https://monicanagent.github.io/cypherpoker.js/web/0.0.1/)<br/>
 Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.0.1/](https://monicanagent.github.io/cypherpoker.js/server/0.0.1/)
+***
+CypherPoker.JS uses [semantic versioning](https://semver.org/).
