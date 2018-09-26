@@ -302,6 +302,12 @@ class WSS extends EventDispatcher {
                event._event = event;
                this.session.dispatchEvent(event);
                break;
+            case "update":
+               event = new Event("update");
+               event.data = dataObj;
+               event._event = event;
+               this.session.dispatchEvent(event);
+               break;
             case "session":
                if (typeof(dataObj.result.connect) == "string") {
                   //dataObj.result.connect is the private ID of the new connection

@@ -1,16 +1,16 @@
 /**
 * @file The main interface to CypherPoker.JS<br/>
 * Automates peer-to-peer connectivity and instantiation of the cryptosystem,
-* manages tables, launches games, and provides accesss to other shared
+* manages accounts and tables, launches games, and provides accesss to other shared
 * functionality.
 *
-* @version 0.0.1
+* @version 0.1.0
 * @author Patrick Bay
 * @copyright MIT License
 */
 
 /**
-* @class Main CypherPoker.JS lobby, table maker, and game launcher.
+* @class Main CypherPoker.JS lobby, account manager, table maker, and game launcher.
 *
 * @example
 * var settingsObj = {
@@ -159,6 +159,8 @@ class CypherPoker extends EventDispatcher {
       //create cryptosystem
       this._crypto = Function(this.settings.crypto.create)();
       this.p2p.addEventListener("message", this.handleP2PMessage, this);
+      //restore saved accounts
+      this.restoreAccounts();
    }
 
    /**
@@ -242,6 +244,17 @@ class CypherPoker extends EventDispatcher {
    */
    get connected() {
       return (this._connected);
+   }
+
+   /**
+   * @property {Array} accounts Indexed array of {@link CypherPokerAccount} instances
+   * managed by this instance.
+   */
+   get accounts() {
+      if (this._accounts == undefined) {
+         this._accounts = new Array();
+      }
+      return (this._accounts);
    }
 
    /**
@@ -356,6 +369,64 @@ class CypherPoker extends EventDispatcher {
          this._beaconInterval = 5000;
       }
       return (this._beaconInterval);
+   }
+
+   /**
+   * Restores saved accounts from the browser's <code>localStorage</code>.
+   */
+   restoreAccounts() {
+      var storage = window.localStorage;
+      var accountsArr = storage.getItem("accounts");
+      if (accountsArr != null) {
+         accountsArr = JSON.parse(accountsArr);
+         for (var count=0; count < accountsArr.length; count++) {
+            var currentAccountData = accountsArr[count];
+            var newAccount = new CypherPokerAccount(this, currentAccountData);
+            this.accounts.push(newAccount);
+         }
+      }
+   }
+
+   /**
+   * Saves the internal {@link CypherPoker#accounts} array to the
+   * browser's <code>localStorage</code>.
+   */
+   saveAccounts() {
+      var storage = window.localStorage;
+      //strip out unnecessary and circular references
+      var saveArray = new Array();
+      for (var count=0; count < this.accounts.length; count++) {
+         saveArray.push(this.accounts[count].data);
+      }
+      storage.setItem("accounts", JSON.stringify(saveArray));
+   }
+
+   /**
+   * Creates a new cryptocurrency account for use with games.
+   *
+   * @param {String} type The cryptocurrency type of the new account. Valid
+   * values include: "bitcoin"
+   * @param {String} password The password to associate with the account.
+   * @param {String} [network=null] The network sub-type, if applicable, of
+   * the cryptocurrency <code>type</code>. For example, if <code>type</code>
+   * is "bitcoin" then <code>network</code> may be "main" or "test3".
+   *
+   * @return {Promise} The promise resolves with a new {@link CypherPokerAccount}
+   * instance or rejects with an <code>Error</code> if a problem occurs.
+   */
+   async createAccount(type, password, network=null) {
+      var account = new CypherPokerAccount(this);
+      account.type = type;
+      account.network = network;
+      account.password = password;
+      var created = await account.create();
+      if (created) {
+         this.accounts.push(account);
+         this.saveAccounts();
+         return (account);
+      } else {
+         throw (new Error("Could not create account."));
+      }
    }
 
    /**
@@ -795,14 +866,15 @@ class CypherPoker extends EventDispatcher {
    * this function.
    *
    * @param {CypherPoker#TableObject} tableObj The table from which to create a new game.
-   * @param {Object} playerInfo Additional information about us to send
+   * @param {CypherPokerAccount} account The player account to use with this game.
+   * @param {Object} [playerInfo=null] Additional information about us to send
    * to other players at the table when they signal that their game is ready.
    *
    * @return {CypherPokerGame} A new game instance associated with the table
    * or <code>null</code> if one couldn't be created.
    * @fires CypherPoker#newgame
    */
-   createGame(tableObj, playerInfo=null) {
+   createGame(tableObj, account, playerInfo=null) {
       this.debug("CypherPoker.createGame("+tableObj+")");
       if (this.isTableValid(tableObj) == false) {
          throw (new Error("Not a valid table object."));
@@ -811,7 +883,8 @@ class CypherPoker extends EventDispatcher {
          throw (new Error("All required PIDs not yet joined."));
       }
       var newGame = new CypherPokerGame(this, tableObj, playerInfo);
-      var event=new Event("newgame");
+      newGame.getPlayer(newGame.ownPID).account = account;
+      var event = new Event("newgame");
       event.game = newGame;
       this.dispatchEvent(event);
       return (newGame);

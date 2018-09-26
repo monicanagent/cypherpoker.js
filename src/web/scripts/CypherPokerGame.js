@@ -1,7 +1,7 @@
 /**
 * @file A CypherPoker.JS implementation of Texas Hold'em poker for 2+ players.
 *
-* @version 0.0.1
+* @version 0.1.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -701,6 +701,71 @@ class CypherPokerGame extends EventDispatcher {
          this._analyzer = new CypherPokerPlayer(this);
       }
       return (this._analyzer);
+   }
+
+   /**
+   * Returns a condensed array containing the copied properties of the
+   * {@link CypherPokerGame#players} array. Use the object returned by
+   * this function with <code>JSON.stringify</code> instead of using
+   * {@link CypherPokerGame#players} directly in order to prevent circular
+   * reference errors.
+   *
+   * @param {Boolean} [includeKeychains=false] If true, the {@link CypherPokerPlayer#keychain}
+   * array of each player will be included in the returned object.
+   * @param {Boolean} [includePasswords=false] If true, the {@link CypherPokerAccount#password}
+   * property of each {@link CypherPokerPlayer#account} reference will be included
+   * with the returned object.
+   *
+   * @return {Object} The condensed players array associated with this game instance.
+   */
+   getPlayers(includeKeychains=false, includePasswords=false) {
+      var returnArr = new Array();
+      for (var count=0; count < this.players.length; count++) {
+         var playerObj = this.players[count].toObject(includeKeychains, includePasswords);
+         returnArr.push(playerObj);
+      }
+      return (returnArr);
+   }
+
+   /**
+   * Returns a condensed object containing the copied properties of the
+   * {@link CypherPokerGame#cardDecks} object. Use the object returned by
+   * this function with <code>JSON.stringify</code> instead of using
+   * {@link CypherPokerGame#cardDecks} directly in order to prevent circular
+   * reference errors.
+   *
+   * @return {Object} The condensed cardDecks object associated with this game instance.
+   */
+   getCardDecks() {
+      var returnDecks = new Object();
+      returnDecks.faceup = Array.from(this.cardDecks.faceup);
+      returnDecks.facedown = Array.from(this.cardDecks.facedown);
+      returnDecks.dealt = Array.from(this.cardDecks.dealt);
+      returnDecks.public = Array.from(this.cardDecks.public);
+      return (returnDecks);
+   }
+
+   /**
+   * Returns a condensed object containing the copied properties of the
+   * {@link CypherPokerGame#table} object. Use the object returned by
+   * this function with <code>JSON.stringify</code> instead of using
+   * {@link CypherPokerGame#table} directly in order to prevent circular
+   * reference errors.
+   *
+   * @return {Object} The condensed table object associated with this game instance.
+   */
+   getTable() {
+      var returnTable = new Object();
+      returnTable.ownerPID = this.table.ownerPID;
+      returnTable.tableID = this.table.tableID;
+      returnTable.tableName = this.table.tableName;
+      returnTable.requiredPID = Array.from(this.table.requiredPID);
+      returnTable.joinedPID = Array.from(this.table.joinedPID);
+      returnTable.tableInfo = new Object();
+      for (var item in this.table.tableInfo) {
+         returnTable.tableInfo[item] = this.table.tableInfo[item];
+      }
+      return (returnTable);
    }
 
    /**

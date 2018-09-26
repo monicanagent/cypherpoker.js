@@ -1,7 +1,7 @@
-totalBet/**
+/**
 * @file Information management for an individual CypherPoker.JS player.
 *
-* @version 0.0.1
+* @version 0.1.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -51,6 +51,22 @@ class CypherPokerPlayer extends EventDispatcher {
    set ready(readySet) {
       this._ready = readySet;
    }
+
+   /**
+   * @property {CypherPokerAccount} account=null The {@link CypherPokerAccount} instance
+   * associated with this player instance.
+   */
+   get account() {
+      if (this._account == undefined) {
+         this._account = null;
+      }
+      return (this._account);
+   }
+
+   set account(accountSet) {
+      this._account = accountSet;
+   }
+
 
    /**
    * @property {Boolean} isDealer=false Set to true when the associated player
@@ -158,6 +174,22 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
    /**
+   * @property {BigInteger} balance="0" The current in-game balance. Note that
+   * this is different than the {@link CypherPokerAccount#balance} property
+   * which reflects the total balance for the account.
+   */
+   set balance(balanceSet) {
+      this._balance = bigInt(balanceSet);
+   }
+
+   get balance() {
+      if (this._balance == undefined) {
+         this._balance = bigInt(0);
+      }
+      return (this._balance);
+   }
+
+   /**
    * @property {Boolean} hasBet=false True if the player has placed a bet or
    * checked/called during the current round of betting, false if the player has
    * not yet bet or if another player has raised.
@@ -202,6 +234,46 @@ class CypherPokerPlayer extends EventDispatcher {
          this._keychain = new Array();
       }
       return (this._keychain);
+   }
+
+   /**
+   * Returns a condensed data object containing the properties of this instance.
+   * Use the returned object to <code>JSON.stringify</code> instead of the instance
+   * directly as it contains circular references.
+   *
+   * @param {Boolean} [includeKeychain=false] If true, the keychain will be included
+   * with the returned data, otherwise if will be omitted.
+   * @param {Boolean} [includeAccountPassword=false] If true, the password stored in
+   * the {@link CypherPokerPlayer#account} reference will be included in the
+   * returned data, if available.
+   *
+   * @return {Object} The condensed data object containing copies of this instance's
+   * properties.
+   */
+   toObject(includeKeychain=false, includeAccountPassword=false) {
+      var returnObj = new Object();
+      returnObj.privateID = this.privateID;
+      returnObj.info = this.info;
+      if (this.account != null) {
+         returnObj.account = this.account.toObject(includeAccountPassword);
+      } else {
+         returnObj.account = null;
+      }
+      returnObj.dealtCards = Array.from(this.dealtCards);
+      returnObj.selectedCards = Array.from(this.selectedCards);
+      returnObj.hasBet = this.hasBet;
+      returnObj.hasFolded = this.hasFolded;
+      returnObj.isDealer = this.isDealer;
+      returnObj.isSmallBlind = this.isSmallBlind;
+      returnObj.isBigBlind = this.isBigBlind;
+      returnObj.totalBet = this.totalBet.toString(10);
+      returnObj.balance = this.balance.toString(10);
+      returnObj.ready = this.ready;
+      if (includeKeychain) {
+         returnObj.keychain = Array.from(this.keychain);
+      }
+      delete returnObj.onEventPromise;
+      return (returnObj);
    }
 
    /**

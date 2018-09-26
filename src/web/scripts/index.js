@@ -46,6 +46,7 @@ const _require = [
    {"url":"./scripts/libs/BigInteger.min.js"},
    {"url":"./scripts/CypherPokerGame.js"},
    {"url":"./scripts/CypherPokerPlayer.js"},
+   {"url":"./scripts/CypherPokerAccount.js"},
    {"url":"./scripts/CypherPokerCard.js"},
    {"url":"./scripts/CypherPokerContract.js"},
    {"url":"./scripts/CypherPokerAnalyzer.js"},

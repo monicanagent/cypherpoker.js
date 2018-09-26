@@ -2,7 +2,7 @@
 * @file Monitors and analyzes a CypherPoker game (hand) for cryptographic correctness
 * and ranks the completed hands of the game to determine the winner.
 *
-* @version 0.0.1
+* @version 0.1.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -278,7 +278,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches a {@link CypherPoker#event:gamecardsencrypt} event.
    *
    * @param {Event} event A {@link CypherPoker#event:gameplayerkeychain} event object.
@@ -325,7 +325,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches a {@link CypherPoker#event:gamedecrypt} event.
    *
    * @param {Event} event A {@link CypherPoker#event:gamedecrypt} event object.
@@ -343,7 +343,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches a {@link CypherPoker#event:gamedeal} event.
    *
    * @param {Event} event A {@link CypherPoker#event:gameplayerkeychain} event object.
@@ -368,7 +368,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches either a {@link CypherPoker#event:gamedealprivate} or
    * {@link CypherPoker#event:gamedealpublic} event.
    *
@@ -389,7 +389,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches a {@link CypherPoker#event:gamedealmsg} event.
    *
    * @param {Event} event A {@link CypherPoker#event:gameplayerkeychain} event object.
@@ -437,7 +437,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches a {@link CypherPoker#event:gameanalyze} event.
    *
    * @param {Event} event A {@link CypherPoker#event:gameplayerkeychain} event object.
@@ -451,7 +451,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * Event handler invoked when the associated {@link CypherPokerAnalyzer#cypherpoker}
+   * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
    * instance dispatches a {@link CypherPoker#event:gameplayerkeychain} event.
    *
    * @param {Event} event A {@link CypherPoker#event:gameplayerkeychain} event object.

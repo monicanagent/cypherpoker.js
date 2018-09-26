@@ -39,9 +39,35 @@
       <div class="logo"><span id="cypherpoker"><span id="text">CypherPoker</span></span><span id="JS"><span id="text">.JS</span></span></div>
 
       <!--
+         Main account(s) management element.
+      -->
+      <div id="accounts" class="accountsContainer">
+         <div id="loginForm" class="loginFormContainer">
+            <select id="currentAccounts" class="currentAccountsList">
+            </select><br/>
+            Password: <input type="password" id="accountPassword" name="accountPassword" placeholder="Account password" /><br/>
+            <button id="useAccountButton" class="useAccountButton">USE ACCOUNT</button>
+            <button id="createAccountButton" class="createAccountButton">CREATE NEW ACCOUNT</button><br/>
+         </div>
+         <div id="manageForm" class="manageFormContainer">
+            Balance: <span id="accountBalance" class="accountBalanceContainer"></span>
+            <br/><button id="cashoutButton" class="cashoutButton">Cash out:</button>&nbsp;&nbsp;<input type="number" id="cashoutAmount" name="cashoutAmount" placeholder="Amount" /> to <input type="text" id="cashoutAddress" name="cashoutAddress" placeholder="Address" />
+            <br/><button id="transferButton" class="transferButton">Transfer:</button>&nbsp;&nbsp;<input type="number" id="transferAmount" name="transferAmount" placeholder="Amount" /> to <input type="text" id="transferAccount" name="transferAccount" placeholder="Account" />
+         </div>
+         <div id="createAccountForm" name="createAccountForm" class="createAccountFormContainer" hidden="true">
+            <input type="password" id="newAccountPassword" name="newAccountPassword" placeholder="New account password" /><br/>
+            <select id="newAccountType" class="newAccountList">
+              <option value="bitcoin/main">Bitcoin</option>
+              <option value="bitcoin/test3">Test Bitcoin</option>
+            </select><br/>
+            <button id="newAccountButton" class="accountButton">CREATE ACCOUNT</button>
+         </div>
+      </div>
+
+      <!--
          Main lobby element controlled by the CypherPokerUI instance.
       -->
-      <div id="lobby" class="lobbyContainer">
+      <div id="lobby" class="lobbyContainer" hidden="true">
 
          Create Table:
          <div id="createGameForm" name="createGameForm" class="createGameFormContainer">
@@ -49,8 +75,9 @@
             <input type="text" id="tableName" name="tableName" placeholder="Table name" /><br/>
             <input type="number" id="numPlayers" name="numPlayers" placeholder="Number of players" step="1" min="2" /><br/>
             <!-- use text fields instead of numbers in order to support cryptocurrency (large) values -->
-            <input type="text" id="bigBlindAmount" name="bigBlindAmount" placeholder="Big blind amount" step="1" min="2" /><br/>
-            <input type="text" id="smallBlindAmount" name="smallBlindAmount" placeholder="Small blind amount" step="1" min="1" /><br/>
+            <input type="text" id="buyInAmount" name="buyInAmount" placeholder="Buy-in amount" step="100" min="2" /><br/>
+            <input type="text" id="bigBlindAmount" name="bigBlindAmount" placeholder="Big blind amount" step="100" min="2" /><br/>
+            <input type="text" id="smallBlindAmount" name="smallBlindAmount" placeholder="Small blind amount" step="100" min="1" /><br/>
             <br/>
             <button id="createGameButton" class="lobbyButton">CREATE TABLE</button>
          </div>

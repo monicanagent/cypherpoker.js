@@ -1,7 +1,7 @@
 /**
 * @file Storage and functionality for a single CypherPoker.JS card.
 *
-* @version 0.0.1
+* @version 0.1.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -62,6 +62,24 @@ class CypherPokerCard {
       cardElement.setAttribute("class", cardClass);
       cardElement.setAttribute("src", this[URIProp]);
       parentElement.appendChild(cardElement);
+   }
+
+   /**
+   * Compares the properties of another {@link CypherPokerCard} instance to this
+   * one to determine if they're the same card.
+   *
+   * @param {CypherPokerCard} card The card instance to compare to this one.
+   *
+   * @return {Boolean} True if both cards have the same properties, false
+   * if they're different.
+   */
+   compare (card) {
+      for (var item in card) {
+         if (this[item] != card[item]) {
+            return (false);
+         }
+      }
+      return (true);
    }
 
    /**
