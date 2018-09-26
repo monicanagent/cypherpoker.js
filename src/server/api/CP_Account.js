@@ -299,12 +299,65 @@ async function CP_Account (sessionObj) {
             targetSearchObj.address = requestParams.toAccount;
             targetSearchObj.type = requestParams.type;
             targetSearchObj.network = requestParams.network;
-            var sourceAccountRes = await namespace.cp.getAccount(sourceSearchObj);
-            var targetAccountRes = await namespace.cp.getAccount(targetSearchObj);
+            try {
+               var sourceAccountRes = await namespace.cp.getAccount(sourceSearchObj);
+            } catch (err) {
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Problem finding account.", sessionObj);
+               return (false);
+            }
+            if (sourceAccountRes.length < 1) {
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "No such source account.", sessionObj);
+               return (false);
+            }
             if (checkPassword(requestParams.password, sourceAccountRes[0].pwhash) == false) {
                sendError(JSONRPC_ERRORS.AUTH_FAILED, "Authentication failed.", sessionObj);
                return (false);
             }
+            try {
+               var targetAccountRes = await namespace.cp.getAccount(targetSearchObj);
+            } catch (err) {
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Problem finding account.", sessionObj);
+               return (false);
+            }
+            if (targetAccountRes.length < 1) {
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "No such target account.", sessionObj);
+               return (false);
+            }
+            try {
+               var transferAmount = bigInt(requestParams.amount);
+            } catch (err) {
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Invalid transfer amount.", sessionObj);
+               return (false);
+            }
+            var sourceBalance = bigInt(sourceAccountRes[0].balance);
+            var targetBalance = bigInt(targetAccountRes[0].balance);
+            if (transferAmount.greater(sourceBalance)) {
+               sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Insufficient account balance.", sessionObj);
+               return (false);
+            }
+            sourceBalance = sourceBalance.minus(transferAmount);
+            targetBalance = targetBalance.plus(transferAmount);
+            sourceAccountRes[0].balance = sourceBalance.toString(10);
+            sourceAccountRes[0].updated = MySQLDateTime(new Date());
+            targetAccountRes[0].balance = targetBalance.toString(10);
+            targetAccountRes[0].updated = MySQLDateTime(new Date());
+            var saved = await namespace.cp.saveAccount(sourceAccountRes[0]);
+            if (saved == false) {
+               console.error("Account \""+sourceAccountRes[0]+"\" couldn't be updated with new balance: "+sourceAccountRes[0].balance);
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Couldn't save account information.", sessionObj);
+               return(false);
+            }
+            saved = await namespace.cp.saveAccount(targetAccountRes[0]);
+            if (saved == false) {
+               console.error("Account \""+targetAccountRes[0]+"\" couldn't be updated with new balance: "+targetAccountRes[0].balance);
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Couldn't save account information.", sessionObj);
+               return(false);
+            }
+            resultObj.address = requestParams.address;
+            resultObj.type = requestParams.type;
+            resultObj.network = requestParams.network;
+            resultObj.balance = sourceBalance.toString(10);
+            resultObj.confirmed = true;
             break;
          default:
             sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Unrecognized action.", sessionObj);
@@ -499,12 +552,14 @@ function getNewAddress(APIType="bitcoin", network=null) {
 }
 
 /**
-* Searches for and returns details about a specific account.
+* Searches for and returns the latest details about a specific account.
 *
 * @param {Object} searchObj An object specifiying the search parameters. All
 * included criteria must be met in order for a match.
 * @param {String} [searchObj.address] The cryptocurrency address of the account. This
 * is also the main account identifier.
+* @param {String} [searchObj.type] The cryptocurrency account type.
+* @param {String} [searchObj.network] The cryptocurrency sub-network type.
 *
 * @return {Promise} The resolved promise contains an array of up to two {@link AccountObject}
 * instances containing the latest activity for the account, index 0 being the most recent, or <code>null</code>
@@ -518,45 +573,42 @@ async function getAccount(searchObj) {
    var loaded = false;
    var result = await callAccountDatabase("getrecord", searchObj);
    if (result.error == undefined) {
-      loaded = true;
+      return (result.result);
    } else {
       throw (new Error(result.error));
    }
-   return (result.result);
-   if (loaded == false) {
-      //try in-memory data instead
-      if (namespace.cp.accounts == undefined) {
-         namespace.cp.accounts = new Array();
-         return (null);
-      }
-      var resultArr = new Array();
-      for (var count=(namespace.cp.accounts.length-1); count >=0 ; count--) {
-        var currentAccount = namespace.cp.accounts[count];
-        var criteriaCount = 0;
-        var matchedCount = 0;
-        for (var item in searchObj) {
-           var searchItem = searchObj[item];
-           if (typeof(searchItem) != "function") {
-             criteriaCount++;
-             if (searchItem == currentAccount[item]) {
-                //note that data types must match exactly
-                matchedCount++;
-             }
-          }
-        }
-        if (criteriaCount == matchedCount) {
-          currentAccount.primary_key = count;
-          resultArr.push (currentAccount);
-        }
-        if (resultArr.length == 2) {
-          break;
-        }
-      }
-      if (resultArr.length == 0) {
-         resultArr = null;
-      }
-      return (resultArr);
+   //try in-memory data instead
+   if (namespace.cp.accounts == undefined) {
+      namespace.cp.accounts = new Array();
+      return (null);
    }
+   var resultArr = new Array();
+   for (var count=(namespace.cp.accounts.length-1); count >=0 ; count--) {
+     var currentAccount = namespace.cp.accounts[count];
+     var criteriaCount = 0;
+     var matchedCount = 0;
+     for (var item in searchObj) {
+        var searchItem = searchObj[item];
+        if (typeof(searchItem) != "function") {
+          criteriaCount++;
+          if (searchItem == currentAccount[item]) {
+             //note that data types must match exactly
+             matchedCount++;
+          }
+       }
+     }
+     if (criteriaCount == matchedCount) {
+       currentAccount.primary_key = count;
+       resultArr.push (currentAccount);
+     }
+     if (resultArr.length == 2) {
+       break;
+     }
+   }
+   if (resultArr.length == 0) {
+      resultArr = null;
+   }
+   return (resultArr);
 }
 
 /**
@@ -951,6 +1003,21 @@ function sendBTCTx(txObject, network=null) {
 	return (promise);
 }
 
+/**
+* Builds a valid CypherPoker.JS message object (usually included as the
+* <code>data</code> property of a JSON-RPC 2.0 result object).
+*
+* @param {String} messageType The notification message type to build.
+*
+* @return {Object} A valid CypherPoker.JS message object. Additional properties
+* to include with the message may be appended directly to this object.
+*/
+function buildCPMessage(messageType) {
+   var JSONObj = new Object();
+   JSONObj.cpMsg = messageType;
+   return (JSONObj);
+}
+
 if (namespace.cp == undefined) {
    namespace.cp = new Object();
 }
@@ -958,6 +1025,7 @@ if (namespace.cp == undefined) {
 namespace.cp.getAccount = getAccount;
 namespace.cp.saveAccount = saveAccount;
 namespace.cp.updateAccount = updateAccount;
+namespace.cp.checkPassword = checkPassword;
 namespace.cp.callAccountDatabase = callAccountDatabase;
 namespace.cp.getAddress = getAddress;
 namespace.cp.getNewAddress = getNewAddress;
@@ -967,6 +1035,8 @@ namespace.cp.newBTCTx = newBTCTx;
 namespace.cp.signBTCTx = signBTCTx;
 namespace.cp.sendBTCTx = sendBTCTx;
 namespace.cp.makeHDWallet = makeHDWallet;
+namespace.cp.MySQLDateTime = MySQLDateTime;
+namespace.cp.buildCPMessage = buildCPMessage;
 if (namespace.cp.bitcoinWallet == undefined) {
    namespace.cp.bitcoinWallet = null;
 }

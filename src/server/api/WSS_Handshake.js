@@ -168,7 +168,19 @@ function handshakeOK(sessionObj) {
 */
 function allSessions(activeOnly = true) {
    var returnArr = new Array();
+   if ((namespace.websocket == undefined) || (namespace.websocket == null)) {
+      namespace.websocket = new Object();
+      return (returnArr);
+   }
+   if ((namespace.websocket.connections == undefined) || (namespace.websocket.connections == null)) {
+      namespace.websocket.connections = new Object();
+      return (returnArr);
+   }
    for (var cid in namespace.websocket.connections) {
+      if ((namespace.websocket.connections[cid] == undefined) || (namespace.websocket.connections[cid] == null)) {
+         namespace.websocket.connections[cid] = new Array();
+         return (returnArr);
+      }
       for (var count = 0; count < namespace.websocket.connections[cid].length; count++) {
          var connectionObj = namespace.websocket.connections[cid][count];
          if (activeOnly) {
