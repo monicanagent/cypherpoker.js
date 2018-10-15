@@ -1,6 +1,8 @@
 /**
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
+*
+* @version 0.2.0
 */
 async function CP_Account (sessionObj) {
    if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
@@ -428,7 +430,7 @@ function MySQLDateTime(dateObj) {
 
 /**
 *
-* Generates a HD (Hierarchical Deterministic) Bitcoin wallet from which addresses can be
+* Creates a HD (Hierarchical Deterministic) Bitcoin wallet which addresses can be
 * derived.
 *
 * @param {String} privKey A "xprv" or "tprv" base 58 string containing the private
@@ -975,6 +977,16 @@ function signToDER (toSignHex, privateKeyBuffer) {
 * contain the error object.
 */
 function sendBTCTx(txObject, network=null) {
+   /*
+   TODO: Future update example to build transaction from scratch:
+
+   var key = bitcoin.ECKey.fromWIF("L1Kzcyy88LyckShYdvoLFg1FYpB5ce1JmTYtieHrhkN65GhVoq73");
+   var tx = new bitcoin.TransactionBuilder();
+   tx.addInput("d18e7106e5492baf8f3929d2d573d27d89277f3825d3836aa86ea1d843b5158b", 1);
+   tx.addOutput("12idKQBikRgRuZEbtxXQ4WFYB7Wa3hZzhT", 149000);
+   tx.sign(0, key);
+   console.log(tx.build().toHex());
+   */
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API.bitcoin;
       var url = API.url.sendtx;
@@ -996,6 +1008,7 @@ function sendBTCTx(txObject, network=null) {
          if (error) {
             reject(error);
          } else {
+            //do we want to catch and reject JSON-RPC errors here?
             resolve(body);
          }
    	});

@@ -3,24 +3,24 @@
       "API": {
          "database":{
             "enabled":true,
-            "url":"http://localhost/rdb.php",
+            "url":"https://127.0.0.1/rdb.php",
             "host":"localhost",
-            "accessKey":"PUT_API_ACCESS_KEY_HERE"
+            "accessKey":"PRIVATE DATABASE ACCESS KEY"
          },
          "wallets":{
             "bitcoin":{
                "xprv":"xprv...",
                "startChain":0,
-               "startIndex":1
+               "startIndex":2
             },
             "test3":{
                "tprv":"tprv...",
                "startChain":0,
-               "startIndex":1
+               "startIndex":2
             }
          },
          "tokens": {
-            "blockcypher":"BLOCKCYPHER_API_KEY"
+            "blockcypher":"PRIVATE BLOCKCYPHER TOKEN"
          },
          "bitcoin":{
             "networks":{
@@ -32,11 +32,11 @@
                "updateLimitSeconds": 120,
                "baseDenom": "satoshi",
                "main":{
-                  "cashOutAddrPath":"m/0/0",
+                  "cashOutAddrPath":"m/0/1",
                   "minerFee": "50000"
                },
                "test3":{
-                  "cashOutAddrPath":"m/0/0",
+                  "cashOutAddrPath":"m/0/1",
                   "minerFee": "50000"
                }
             },
@@ -46,6 +46,9 @@
                "createtx": "https://api.blockcypher.com/v1/btc/%network%/txs/new?token=%token%",
                "sendtx": "https://api.blockcypher.com/v1/btc/%network%/txs/send?token=%token%"
             }
+         },
+         "contract":{
+            "timeoutDefault":20
          }
       }
    }

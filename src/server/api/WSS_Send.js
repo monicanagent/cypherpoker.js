@@ -6,6 +6,7 @@
 * Client Request -> {"jsonrpc":"2.0","method":"WSS_Send","id":3,"params":{"user_token":"7060939278321507","server_token":"9789091435706088","type":"broadcast","data":"Hello, everyone!"}}
 * Server Response -> {"jsonrpc":"2.0","result":{"message":"ok"},"id":3}
 *
+* @version 0.2.0
 */
 async function WSS_Send (sessionObj) {
    if (sessionObj.endpoint.startsWith("ws") == false) {

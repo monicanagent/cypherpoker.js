@@ -1,6 +1,6 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.1.0
+* @version 0.2.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -96,7 +96,7 @@ var ws_ping_intervalID = null;
 * accepted.
 * @property {Number} WRONG_TRANSPORT=-32002 The wrong transport was used to deliver API request (e.g. used "http" or "https" instead of "ws" or "wss").
 * @property {Number} ACTION_DISALLOWED=-32003 The action being requested is not currently allowed.
-* @property {Number} AUTH_FAILED=-32004 Authentication (e.g. password verification) failed.
+* @property {Number} PLAYER_ACTION_ERROR=-32005 A player has committed a penalizable wrong or incorrect action.
 */
 const JSONRPC_ERRORS = {
 	PARSE_ERROR: -32700,
@@ -107,7 +107,8 @@ const JSONRPC_ERRORS = {
    SESSION_CLOSE: -32001,
    WRONG_TRANSPORT: -32002,
    ACTION_DISALLOWED: -32003,
-   AUTH_FAILED: -32004
+   AUTH_FAILED: -32004,
+   PLAYER_ACTION_ERROR: -32005
 }
 
 /**
@@ -507,48 +508,52 @@ function sendError(code, message, sessionObj, data) {
 	if (data != undefined) {
 		responseData.error.data = data;
 	}
-  if (sessionObj.batchResponses != null) {
-      //handle batched responses
-		sessionObj.batchResponses.responses.push(responseData);
-		if (sessionObj.batchResponses.total == sessionObj.batchResponses.responses.length) {
-      switch (sessionObj.endpoint) {
-        case "http":
-          setDefaultHeaders(sessionObj.serverResponse);
-  			  sessionObj.serverResponse.end(JSON.stringify(sessionObj.batchResponses.responses));
-          break;
-        case "https":
-          break;
-        case "ws":
-          sessionObj.serverResponse.send(JSON.stringify(sessionObj.batchResponses.responses));
-          break;
-        case "wss":
-          break;
-        default:
-          throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
-          break;
-      }
-		}
-	} else {
-    //handle single response
-    switch (sessionObj.endpoint) {
-      case "http":
-        setDefaultHeaders(sessionObj.serverResponse);
-        sessionObj.serverResponse.end(JSON.stringify(responseData));
-        break;
-      case "https":
-        setDefaultHeaders(sessionObj.serverResponse);
-        sessionObj.serverResponse.end(JSON.stringify(responseData));
-        break;
-      case "ws":
-        sessionObj.serverResponse.send(JSON.stringify(responseData));
-        break;
-      case "wss":
-        break;
-      default:
-        throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
-        break;
+   try {
+      if (sessionObj.batchResponses != null) {
+         //handle batched responses
+   		sessionObj.batchResponses.responses.push(responseData);
+   		if (sessionObj.batchResponses.total == sessionObj.batchResponses.responses.length) {
+            switch (sessionObj.endpoint) {
+              case "http":
+                setDefaultHeaders(sessionObj.serverResponse);
+        			  sessionObj.serverResponse.end(JSON.stringify(sessionObj.batchResponses.responses));
+                break;
+              case "https":
+                break;
+              case "ws":
+                sessionObj.serverResponse.send(JSON.stringify(sessionObj.batchResponses.responses));
+                break;
+              case "wss":
+                break;
+              default:
+                throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
+                break;
+            }
+   		}
+   	} else {
+       //handle single response
+       switch (sessionObj.endpoint) {
+         case "http":
+           setDefaultHeaders(sessionObj.serverResponse);
+           sessionObj.serverResponse.end(JSON.stringify(responseData));
+           break;
+         case "https":
+           setDefaultHeaders(sessionObj.serverResponse);
+           sessionObj.serverResponse.end(JSON.stringify(responseData));
+           break;
+         case "ws":
+           sessionObj.serverResponse.send(JSON.stringify(responseData));
+           break;
+         case "wss":
+           break;
+         default:
+           throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
+           break;
+       }
     }
-	}
+   } catch (err) {
+      console.error(err.stack);
+   }
 }
 
 /**
@@ -579,48 +584,52 @@ function sendResult(result, sessionObj) {;
 		responseData.id = requestData.id;
 	}
 	responseData.result = result;
-	if (sessionObj.batchResponses != null) {
-      //handle batched responses
-		sessionObj.batchResponses.responses.push(responseData);
-		if (sessionObj.batchResponses.total == sessionObj.batchResponses.responses.length) {
-      switch (sessionObj.endpoint) {
-        case "http":
-           setDefaultHeaders(sessionObj.serverResponse);
-  			  sessionObj.serverResponse.end(JSON.stringify(sessionObj.batchResponses.responses));
-          break;
-        case "https":
-          break;
-        case "ws":
-          sessionObj.serverResponse.send(sessionObj.batchResponses.responses);
-          break;
-        case "wss":
-          break;
-        default:
-          throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
-          break;
+   try {
+   	if (sessionObj.batchResponses != null) {
+         //handle batched responses
+   		sessionObj.batchResponses.responses.push(responseData);
+   		if (sessionObj.batchResponses.total == sessionObj.batchResponses.responses.length) {
+            switch (sessionObj.endpoint) {
+              case "http":
+                 setDefaultHeaders(sessionObj.serverResponse);
+        			  sessionObj.serverResponse.end(JSON.stringify(sessionObj.batchResponses.responses));
+                break;
+              case "https":
+                break;
+              case "ws":
+                sessionObj.serverResponse.send(sessionObj.batchResponses.responses);
+                break;
+              case "wss":
+                break;
+              default:
+                throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
+                break;
+            }
+   		}
+      } else {
+          //handle single response
+          switch (sessionObj.endpoint) {
+            case "http":
+              setDefaultHeaders(sessionObj.serverResponse);
+              sessionObj.serverResponse.end(JSON.stringify(responseData));
+              break;
+            case "https":
+              setDefaultHeaders(sessionObj.serverResponse);
+              sessionObj.serverResponse.end(JSON.stringify(responseData));
+              break;
+            case "ws":
+              sessionObj.serverResponse.send(JSON.stringify(responseData));
+              break;
+            case "wss":
+              break;
+            default:
+              throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
+              break;
+          }
       }
-		}
-	} else {
-    //handle single response
-    switch (sessionObj.endpoint) {
-      case "http":
-        setDefaultHeaders(sessionObj.serverResponse);
-        sessionObj.serverResponse.end(JSON.stringify(responseData));
-        break;
-      case "https":
-        setDefaultHeaders(sessionObj.serverResponse);
-        sessionObj.serverResponse.end(JSON.stringify(responseData));
-        break;
-      case "ws":
-        sessionObj.serverResponse.send(JSON.stringify(responseData));
-        break;
-      case "wss":
-        break;
-      default:
-        throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
-        break;
-    }
-	}
+   } catch (err) {
+      console.error(err);
+   }
 }
 
 

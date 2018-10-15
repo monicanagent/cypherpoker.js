@@ -5,6 +5,7 @@
 * Client Request -> {"jsonrpc":"2.0","method":"WSS_Handshake","id":"1","params":{"user_token":"7060939278321507"}}
 * Server Response -> {"jsonrpc":"2.0","result":{"message":"accept","numconnections":1,"maxconnections":3,"peerconnections":1,"server_token":"9789091435706088"},"id":"1"}
 *
+* @version 0.2.0
 */
 async function WSS_Handshake (sessionObj) {
    if ((sessionObj.endpoint.startsWith("http") == false)  && (rpc_options.http_only_handshake)) {
