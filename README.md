@@ -9,9 +9,9 @@ CypherPoker.JS is written by [the same author](https://github.com/monicanagent/)
 ***
 The [CypherPoker.JS wiki](https://github.com/monicanagent/cypherpoker.js/wiki) is a good place to get started with the code.
 
-Further (code) documentation can be found here:
+The latest code documentation can be found here:
 
-Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.0.1/](https://monicanagent.github.io/cypherpoker.js/web/0.0.1/)<br/>
-Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.0.1/](https://monicanagent.github.io/cypherpoker.js/server/0.0.1/)
+Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.2.0/](https://monicanagent.github.io/cypherpoker.js/web/0.2.0/)<br/>
+Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.2.0/](https://monicanagent.github.io/cypherpoker.js/server/0.2.0/)
 ***
 CypherPoker.JS uses [semantic versioning](https://semver.org/).
