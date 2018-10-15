@@ -131,6 +131,14 @@ body {
    color:gray;
 }
 
+.gameContainer > #timeoutAmount > #timeout {
+   color:blue;
+}
+
+.gameContainer > #timeoutAmount > #timeoutCritical {
+   color:red;
+}
+
 .card {
    margin-top:-145px;
    margin-bottom:-145px;

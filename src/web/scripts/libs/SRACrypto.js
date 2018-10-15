@@ -1,5 +1,7 @@
 /**
 * @file Asynchronous SRA cryptosystem interface.
+*
+* @version 0.2.0
 */
 const _defaultHostScript = "./scripts/libs/SRACryptoWorker.js"; //default WorkerHost script
 let _hosts = new Array();

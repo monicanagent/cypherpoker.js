@@ -1,7 +1,7 @@
 /**
 * @file Contains information and functionality associated with a single managed account.
 *
-* @version 0.1.0
+* @version 0.2.0
 * @author Patrick Bay
 * @copyright MIT License
 */

@@ -2,7 +2,7 @@
 * @file A virtual smart contract implementation using a WebSocket Session
 * service as a TTP host.
 *
-* @version 0.1.0
+* @version 0.2.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -15,6 +15,39 @@
 * @extends EventDispatcher
 */
 class CypherPokerContract extends EventDispatcher {
+
+   /**
+   * The contract timeout timer has been started or restarted.
+   *
+   * @event CypherPokerContract#timeoutstart
+   * @type {Event}
+   * @property {CypherPokerContract} contract The instance dispatching the event.
+   * @property {Number} seconds The number of seconds that must elapse without
+   * player activity before the contract times out.
+   * @property {Number} cSeconds The number of courtesy seconds that will
+   * be allowed to elapse before the contract's "timeout" function is
+   * invoked. Note that the timeout may occur at any time after the contract
+   * has timed out (hence "courtesy" seconds).
+   */
+   /**
+   * The contract appears to have timed out due to player inactivity. This is a local event
+   * and does not necessarily reflect the state of the actual contract.
+   *
+   * @event CypherPokerContract#timeout
+   * @type {Event}
+   * @property {CypherPokerContract} contract The instance dispatching the event.
+   * @property {Array} penalized Array of objects containing private ID(s) and
+   * the amount tahat the associated player(s) were penalized. Typically
+   * only one player will time out (penalized[0]), but under certain
+   * conditions more than one player may time out.
+   */
+   /**
+   * The contract timeout is no longer valid (e.g. the game has ended).
+   *
+   * @event CypherPokerContract#timeoutinvalid
+   * @type {Event}
+   * @property {CypherPokerContract} contract The instance dispatching the event.
+   */
 
    /**
    * Creates a new proxy contract instance.
@@ -62,7 +95,8 @@ class CypherPokerContract extends EventDispatcher {
 
    /**
    * @property {String} contractID=null The ID of the contract instance, usually
-   * as returned by the remote contract host.
+   * as returned by the remote contract host. If this is <code>null</code>, this
+   * instance should not be considered valid.
    */
    get contractID() {
       if (this._contractID == undefined) {
@@ -83,6 +117,45 @@ class CypherPokerContract extends EventDispatcher {
    }
 
    /**
+   * @property {Array} deferredActions Indexed list of objects containing
+   * game state <code>snapshot</code>, <code>invoke</code>, <code>promise</code>,
+   * parent <code>contract</code>, and boolean <code>complete</code> properties.
+   */
+   get deferredActions() {
+      if (this._deferredActions == undefined) {
+         this._deferredActions = new Array();
+      }
+      return (this._deferredActions);
+   }
+
+   /**
+   * @property {Array} deferredPromises Complete indexed list of Promise instances currently
+   * in the {@link CypherPokerContract#deferredActions} array.
+   */
+   get deferredPromises() {
+      var returnArr = new Array();
+      for (var count=0; count < this.deferredActions.length; count++) {
+         returnArr.push(this.deferredActions[count].promise);
+      }
+      return (returnArr);
+   }
+
+   /**
+   * @property {Array} deferredActivePromises Indexed list of Promise instances currently
+   * in the {@link CypherPokerContract#deferredActions} array which have the property:
+   * <code>complete == false</code>
+   */
+   get deferredActivePromises() {
+      var returnArr = new Array();
+      for (var count=0; count < this.deferredActions.length; count++) {
+         if (this.deferredActions[count].complete == false) {
+            returnArr.push(this.deferredActions[count].promise);
+         }
+      }
+      return (returnArr);
+   }
+
+   /**
    * Adds event listeners required by the contract handler to the associated
    * {@link CypherPokerContract#game} instance.
    *
@@ -90,6 +163,13 @@ class CypherPokerContract extends EventDispatcher {
    */
    addGameEventListeners() {
       this.game.addEventListener("gamedeck", this.onNewGameDeck, this);
+      this.game.addEventListener("gamecardsencrypt", this.onEncryptCards, this);
+      this.game.addEventListener("gamedealprivate", this.onSelectCards, this);
+      this.game.addEventListener("gamedealpublic", this.onSelectCards, this);
+      this.game.addEventListener("gamedealmsg", this.onGameDeal, this);
+      this.game.addEventListener("gamebetplaced", this.onGameBetPlaced, this);
+      this.game.addEventListener("gamedecrypt", this.onGameDecrypt, this);
+      this.game.addEventListener("gameend", this.onGameEnd, this);
       this.cypherpoker.p2p.addEventListener("update", this.handleUpdateMessage, this);
    }
 
@@ -97,10 +177,115 @@ class CypherPokerContract extends EventDispatcher {
    * Removes event listeners required by the contract handler from the associated
    * {@link CypherPokerContract#game} instance.
    *
+   * @private
    */
    removeGameEventListeners() {
       this.game.removeEventListener("gamedeck", this.onNewGameDeck);
+      this.game.removeEventListener("gamecardsencrypt", this.onEncryptCards);
+      this.game.removeEventListener("gamedealprivate", this.onSelectCards);
+      this.game.removeEventListener("gamedealpublic", this.onSelectCards);
+      this.game.removeEventListener("gamedealmsg", this.onGameDeal);
+      this.game.removeEventListener("gamebetplaced", this.onGameBetPlaced);
+      this.game.removeEventListener("gamedecrypt", this.onGameDecrypt);
+      this.game.removeEventListener("gameend", this.onGameEnd);
       this.cypherpoker.p2p.removeEventListener("update", this.handleUpdateMessage);
+   }
+
+   /**
+   * Stops any current game timeout timer.
+   * @private
+   */
+   stopContractTimeout() {
+      try {
+         clearTimeout(this._contractTimeoutID);
+      } catch (err) {}
+   }
+
+   /**
+   * Cancels and resets the current contract timeout, signalling any listeners
+   * to ignore future timeout events from this instance.
+   *
+   * @fires CypherPokerContract#event:timeoutinvalid
+   * @private
+   */
+   resetContractTimeout() {
+      try {
+         clearTimeout(this._contractTimeoutID);
+      } catch (err) {}
+      var event = new Event("timeoutinvalid");
+      event.contract = this;
+      this.dispatchEvent(event);
+   }
+
+   /**
+   * Stops any current game timeout timer and starts a new one based on the
+   * most recent contract (<code>history[0]</code>).
+   *
+   * @fires CypherPokerContract#timeoutstart
+   * @throws {Error} If the contract timeout could not be started.
+   * @private
+   */
+   startContractTimeout() {
+      this.stopContractTimeout();
+      if ((this.history[0] == undefined) || (this.history[0] == null)) {
+         return;
+      }
+      if (typeof(this.history[0].table.tableInfo.timeout) == "number") {
+         //add 5 seconds to timeout to make sure we don't accidentally clock in early
+         var timeout = (this.history[0].table.tableInfo.timeout + 5) * 1000;
+         var event = new Event("timeoutstart");
+         event.contract = this;
+         event.seconds = this.history[0].table.tableInfo.timeout;
+         event.cSeconds = 5;
+         this.dispatchEvent(event);
+         this._contractTimeoutID = setTimeout(this.onContractTimeout, timeout, this);
+      } else {
+         console.error ("Contract \""+this._contractID+"\" does not define a timeout. It may never complete!")
+      }
+   }
+
+   /**
+   * Called on a timer when a contract times out (one or more players
+   * have failed to take an action in time).
+   *
+   * @private
+   * @fires CypherPokerContract#timeout
+   */
+   onContractTimeout(contractInstance) {
+      try {
+         clearTimeout(contractInstance._contractTimeoutID);
+         contractInstance._contractTimeoutID = null;
+         delete contractInstance._contractTimeoutID;
+      } catch (err) {
+      } finally {
+         var paramsObj = new Object();
+         paramsObj.contract = contractInstance.history[0];
+         paramsObj.contractID = paramsObj.contract.contractID;
+         paramsObj.ownerPID = contractInstance.game.getDealer().privateID;
+         var snapshot = contractInstance.gameSnapshot();
+         //call "timeout" penalty
+         contractInstance.callContractAPI("timeout", paramsObj).then(JSONResult => {
+            if (JSONResult.error != undefined) {
+               //probably already timed out
+               //console.error(JSONResult.error);
+               return;
+            }
+            if (contractInstance.contractID != JSONResult.result.contract.contractID) {
+               console.error("Expecting contract ID \""+contractInstance.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
+               console.dir(JSONResult);
+               throw(new Error("Unexpected contract ID returned."));
+            }
+            contractInstance.history.unshift(JSONResult.result.contract);
+            try {
+               contractInstance.updateBalances(JSONResult.result.contract);
+            } catch (err) {
+               console.error(err);
+            }
+            //the game can either end here or start a re-key operation
+         }).catch (err => {
+            contractInstance.game.debug(err, "err");
+         });
+      }
    }
 
    /**
@@ -129,6 +314,7 @@ class CypherPokerContract extends EventDispatcher {
    *
    * @return {Boolean} True if all properties found in <code>obj1</code> appear
    * in <code>obj2</code>, false otherwise.
+   * @private
    */
    compareObjects (obj1, obj2) {
       if ((obj1 == null) && (obj2 == null)) {
@@ -146,12 +332,13 @@ class CypherPokerContract extends EventDispatcher {
             } else {
                //compare primitives
                if (obj1[key] != obj2[key]) {
-                  console.log ("Mismatch on "+key);
-                  return (false);
+                  if (key != "timeout") {
+                     return (false);
+                  }
                }
             }
          } catch (err) {
-            console.log (err);
+            console.error (err);
             return (false);
          }
       }
@@ -171,44 +358,34 @@ class CypherPokerContract extends EventDispatcher {
    * (e.g. facedown cards), then 3 is returned. If both contract and snapshot are identical,
    * 0 is returned.
    * @throws {Error} If the expected structure or data of the parameters does not match.
+   * @private
    */
    compare(contract, snapshot) {
-      console.log("****************************");
       if (this.compareObjects(contract.table, snapshot.table) == false) {
          throw (new Error("Table properties don't match."));
       }
-      console.log("****************************");
-      console.log ("contract.prime="+contract.prime);
-      console.log ("snapshot.prime="+snapshot.prime);
       if ((contract.prime != null) && (snapshot.prime == null)) {
-         console.log("prime mismatch");
          return (1);
       } else if ((contract.prime == null) && (snapshot.prime != null)) {
-         console.log("prime mismatch");
          return (2);
       } else if (contract.prime != snapshot.prime) {
          throw (new Error("Prime value mismatch."));
       }
       //compare decks
-      console.dir(contract.cardDecks.faceup);
       result = this.compareDecks(contract.cardDecks.faceup, snapshot.cardDecks.faceup, "_mapping");
       if (result != 0) {
-         console.log("faceup mismatch");
          return (result);
       }
       result = this.compareDecks(contract.cardDecks.facedown, snapshot.cardDecks.facedown);
       if (result != 0) {
-         console.log("facedown mismatch");
          return (result);
       }
       result = this.compareDecks(contract.cardDecks.dealt, snapshot.cardDecks.dealt);
       if (result != 0) {
-         console.log("dealt mismatch");
          return (result);
       }
       result = this.compareDecks(contract.cardDecks.public, snapshot.cardDecks.public, "_mapping");
       if (result != 0) {
-         console.log("public mismatch");
          return (result);
       }
       //compare players
@@ -217,37 +394,33 @@ class CypherPokerContract extends EventDispatcher {
          var snapshotPlayer = snapshot.players[count];
          if (contractPlayer.privateID != snapshotPlayer.privateID) {
             //player order must be the same
+            console.error("Error 4");
             throw (new (Error("Incorrect player private ID at position "+count)));
          }
          for (var prop in contractPlayer.info) {
             if (snapshotPlayer.info[prop] != contractPlayer.info[prop]) {
+               console.error("Error 5");
                throw (new (Error("Incorrect player private info property \""+prop+"\"")));
             }
          }
          //compare player dealt cards
          var result = this.compareDecks(contractPlayer.dealtCards, snapshotPlayer.dealtCards, "_mapping");
          if (result != 0) {
-            console.log("player dealt mismatch");
             return (result);
          }
          //compare player selected cards
          result = this.compareDecks(contractPlayer.selectedCards, snapshotPlayer.selectedCards);
          if (result != 0) {
-            console.log("player selected mismatch");
             return (result);
          }
          if (contractPlayer.hasBet && (snapshotPlayer.hasBet == false)) {
-            console.log("player hasBet mismatch");
             return (1);
          } else if ((contractPlayer.hasBet == false) && snapshotPlayer.hasBet) {
-            console.log("player hasBet mismatch");
             return (2);
          }
          if (contractPlayer.hasFolded && (snapshotPlayer.hasFolded == false)) {
-            console.log("player hasFolded mismatch");
             return (1);
          } else if ((contractPlayer.hasFolded == false) && snapshotPlayer.hasFolded) {
-            console.log("player hasFolded mismatch");
             return (2);
          }
          if (contractPlayer.isDealer != snapshotPlayer.isDealer) {
@@ -265,20 +438,16 @@ class CypherPokerContract extends EventDispatcher {
          contractPlayer.totalBet = bigInt(contractPlayer.totalBet);
          snapshotPlayer.totalBet = bigInt(snapshotPlayer.totalBet);
          if (contractPlayer.totalBet.greater(snapshotPlayer.totalBet)) {
-            console.log("player totalBet mismatch");
             return (1);
          } else if (snapshotPlayer.totalBet.greater(contractPlayer.totalBet)) {
-            console.log("player totalBet mismatch");
             return (2);
          }
          //balance comparison is the inverse of totalBet comparison
          contractPlayer.balance = bigInt(contractPlayer.balance);
          snapshotPlayer.balance = bigInt(snapshotPlayer.balance);
          if (contractPlayer.balance.greater(snapshotPlayer.balance)) {
-            console.log("player balance mismatch");
             return (2);
          } else if (snapshotPlayer.balance.greater(contractPlayer.balance)) {
-            console.log("player balance mismatch");
             return (1);
          }
       }
@@ -328,27 +497,19 @@ class CypherPokerContract extends EventDispatcher {
                numMatches++;
             }
          }
-      });
+      }, this);
       if (contractDeck.length > snapshotDeck.length) {
-         if (numMatches == snapshotDeck.length) {
-            return (1);
-         } else {
-            throw (new Error("Mismatched deck elements."));
-         }
+         return (1);
       } else if (contractDeck.length < snapshotDeck.length) {
-         if (numMatches == snapshotDeck.length) {
-            return (2);
-         } else {
-            throw (new Error("Mismatched deck elements."));
-         }
-      } else if (contractDeck.length == snapshotDeck.length) {
+         return (2);
+      } else {
          if (numMatches != contractDeck.length) {
             //decks are same length but not all elements match
             throw (new Error("Mismatched deck elements."));
          }
+         //decks are identical (no duplications, same length)
+         return (0);
       }
-      //decks are identical (no duplications, same length)
-      return (0);
    }
 
    /**
@@ -383,7 +544,6 @@ class CypherPokerContract extends EventDispatcher {
                matchCount++;
             }
             if (matchCount > 1) {
-               console.log ("Duplicate value: "+compareValue);
                dupFound = true;
             }
          });
@@ -397,6 +557,7 @@ class CypherPokerContract extends EventDispatcher {
    * the game.
    *
    * @param {CypherPokerGame#event:gamedeck} event A "gamedeck" event.
+   * @private
    */
    onNewGameDeck(event) {
       if (this.game.getDealer().privateID == this.game.ownPID) {
@@ -408,14 +569,16 @@ class CypherPokerContract extends EventDispatcher {
          paramsObj.contract.contractID = this._contractID;
          paramsObj.contract.players = this.game.getPlayers(false, false);
          paramsObj.contract.table = this.game.table;
-         paramsObj.contract.prime = this.game.getDealer().keychain[0].prime; //prime generated by us
+         paramsObj.contract.prime = this.game.getPlayer(this.game.ownPID).keychain[0].prime; //prime generated by us
          paramsObj.contract.cardDecks = this.game.cardDecks;
+         paramsObj.contract.table.tableInfo.timeout = 20; //(seconds) this can be user-configured
          this.callContractAPI("new", paramsObj).then(JSONResult => {
             if (this.contractID != JSONResult.result.contract.contractID) {
                console.error("Expecting contract ID \""+this.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
                console.dir(JSONResult);
                throw(new Error("Unexpected contract ID returned."));
             }
+            this.history.unshift(JSONResult.result.contract);
             try {
                this.updateBalances(JSONResult.result.contract);
             } catch (err) {
@@ -425,8 +588,378 @@ class CypherPokerContract extends EventDispatcher {
             this.game.debug(err, "err");
          });
       } else {
-
+         //not the dealer; do nothing
       }
+   }
+
+   /**
+   * Event handler invoked a card encryption cycle happens. If this is ours,
+   * it automatically triggers a contract "store" operation.
+   *
+   *
+   * @param {CypherPokerGame#event:gamecardsencrypt} event A "gamecardsencrypt" event.
+   *
+   * @return {Promise} Resolves to <code>true</code> if the store operation successfully completed. Rejections
+   * receive an <code>Error</code> object.
+   * @private
+   */
+   async onEncryptCards(event) {
+      if (event.player.privateID != this.game.ownPID) {
+         return(false);
+      }
+      this.startContractTimeout();
+      var paramsObj = new Object();
+      paramsObj.type = "encrypt";
+      paramsObj.contract = this.history[0];
+      paramsObj.contractID = this._contractID;
+      paramsObj.ownerPID = this.game.getDealer().privateID;
+      paramsObj.cards = Array.from(event.selected);
+      var snapshot = this.gameSnapshot();
+      try {
+         var JSONResult = await this.onGameState(snapshot, this.callContractAPI, "store", paramsObj).promise;
+         if (JSONResult.error != undefined) {
+            console.error(JSONResult.error.message);
+            throw (new Error(JSONResult.error.message));
+         }
+         if (this.contractID != JSONResult.result.contract.contractID) {
+            console.error("Expecting contract ID \""+this.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
+            console.dir(JSONResult);
+            throw(new Error("Unexpected contract ID returned."));
+         }
+         try {
+            this.updateBalances(JSONResult.result.contract);
+         } catch (err) {
+            this.game.debug(err, "err");
+         }
+      } catch (err) {
+         this.game.debug(err, "err");
+      }
+      return (true);
+   }
+
+   /**
+   * Event handler invoked when the associated {@link CypherPokerContract#game}
+   * instance{@link CypherPokerGame#event:gamedealprivate} or
+   * {@link CypherPokerGame#event:gamedealpublic} event. This
+   * it automatically triggers a contract "store" operation.
+   *
+   * @param {CypherPokerGame#event} event A{@link CypherPokerGame#event:gamedealprivate} or
+   * {@link CypherPokerGame#event:gamedealpublic} event object.
+   *
+   * @async
+   * @private
+   */
+   async onSelectCards(event) {
+      this.startContractTimeout();
+      var paramsObj = new Object();
+      paramsObj.type = "select";
+      paramsObj.contract = this.history[0];
+      paramsObj.contractID = paramsObj.contract.contractID;
+      paramsObj.ownerPID = this.game.getDealer().privateID;
+      paramsObj.cards = Array.from(event.selected);
+      paramsObj.fromPID = this.game.ownPID;
+      if (event.type == "gamedealprivate") {
+         paramsObj.private = true;
+      } else {
+         paramsObj.private = false;
+      }
+      var snapshot = this.gameSnapshot();
+      try {
+         var JSONResult = await this.onGameState(snapshot, this.callContractAPI, "store", paramsObj).promise;
+         if (JSONResult.error != undefined) {
+            console.error(JSON.error.message);
+            throw(new Error(JSON.error.message));
+         }
+         if (this.contractID != JSONResult.result.contract.contractID) {
+            console.error("Expecting contract ID \""+this.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
+            console.dir(JSONResult);
+            throw(new Error("Unexpected contract ID returned."));
+         }
+         try {
+            this.updateBalances(JSONResult.result.contract);
+         } catch (err) {
+            this.game.debug(err, "err");
+         }
+      } catch (err) {
+         this.game.debug(err, "err");
+      }
+      return (true);
+   }
+
+   /**
+   * Event handler invoked when the associated {@link CypherPokerContract#game}
+   * instance{@link CypherPokerGame#event:gamedealmsg} event.
+   *
+   * @param {CypherPokerGame#event:gamedealmsg} event An external deal operation
+   * notification event.
+   *
+   * @private
+   */
+   onGameDeal(event) {
+      this.startContractTimeout();
+   }
+
+   /**
+   * Event handler invoked when the associated {@link CypherPokerContract#game}
+   * instance{@link CypherPokerGame#event:gamebetplaced} event. This
+   * it automatically triggers a contract "store" operation.
+   *
+   * @param {CypherPokerGame#event} event A {@link CypherPokerGame#event:gamebetplaced} event object.
+   *
+   * @async
+   * @private
+   */
+   async onGameBetPlaced(event) {
+      this.startContractTimeout();
+      var paramsObj = new Object();
+      paramsObj.contract = this.history[0];
+      paramsObj.contractID = paramsObj.contract.contractID;
+      paramsObj.ownerPID = this.game.getDealer().privateID;
+      paramsObj.amount = event.amount;
+      paramsObj.fromPID = this.game.ownPID;
+      var snapshot = this.gameSnapshot();
+      try {
+         var JSONResult = await this.onGameState(snapshot, this.callContractAPI, "bet", paramsObj).promise;
+         if (JSONResult.error != undefined) {
+            console.error(JSONResult.error.message);
+            throw(new Error(JSONResult.error.message));
+         }
+         if (this.contractID != JSONResult.result.contract.contractID) {
+            console.error("Expecting contract ID \""+this.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
+            console.dir(JSONResult);
+            throw(new Error("Unexpected contract ID returned."));
+         }
+         try {
+            this.updateBalances(JSONResult.result.contract);
+         } catch (err) {
+            this.game.debug(err, "err");
+         }
+      } catch (err) {
+         this.game.debug(err, "err");
+      }
+      return (true);
+   }
+
+   /**
+   * Event handler invoked when the associated {@link CypherPokerContract#game}
+   * instance dispatches a {@link CypherPoker#event:gamedecrypt} event.
+   *
+   * @param {Event} event A {@link CypherPoker#event:gamedecrypt} event object.
+   *
+   * @async
+   * @private
+   */
+   async onGameDecrypt(event) {
+      this.startContractTimeout();
+      var paramsObj = new Object();
+      paramsObj.type = "decrypt";
+      paramsObj.contract = this.history[0];
+      paramsObj.contractID = paramsObj.contract.contractID;
+      paramsObj.ownerPID = this.game.getDealer().privateID;
+      paramsObj.cards = Array.from(event.selected);
+      paramsObj.sourcePID = event.payload.sourcePID;
+      paramsObj.fromPID = this.game.ownPID;
+      paramsObj.private = event.private;
+      var snapshot = this.gameSnapshot();
+      try {
+         var JSONResult = await this.onGameState(snapshot, this.callContractAPI, "store", paramsObj).promise;
+         if (this.contractID != JSONResult.result.contract.contractID) {
+            console.error("Expecting contract ID \""+this.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
+            console.dir(JSONResult);
+            throw(new Error("Unexpected contract ID returned."));
+         }
+         try {
+            this.updateBalances(JSONResult.result.contract);
+         } catch (err) {
+            this.game.debug(err, "err");
+         }
+      } catch (err) {
+         this.game.debug(err, "err");
+      }
+   }
+
+   /**
+   * Event handler invoked when the associated {@link CypherPokerContract#game}
+   * instance dispatches a {@link CypherPoker#event:gameend} event. This
+   * currently causes an immediate submission of the keychain to the
+   * contract via a "store" message.
+   *
+   * @param {Event} event A {@link CypherPoker#event:gameend} event object.
+   *
+   * @async
+   * @private
+   */
+   async onGameEnd(event) {
+      this.startContractTimeout();
+      var paramsObj = new Object();
+      paramsObj.type = "keychain";
+      paramsObj.contract = this.history[0];
+      paramsObj.contractID = paramsObj.contract.contractID;
+      paramsObj.ownerPID = this.game.getDealer().privateID;
+      paramsObj.keychain = Array.from(this.game.getPlayer(this.game.ownPID).keychain);
+      paramsObj.fromPID = this.game.ownPID;
+      //var snapshot = this.gameSnapshot();
+      try {
+         var JSONResult = await this.callContractAPI("store", paramsObj);
+         if (JSONResult.error != undefined) {
+            console.error (JSONResult.error);
+            return;
+         }
+         if (this.contractID != JSONResult.result.contract.contractID) {
+            console.error("Expecting contract ID \""+this.contractID+"\", got \""+JSONResult.result.contract.contractID+"\"");
+            console.dir(JSONResult);
+            throw(new Error("Unexpected contract ID returned."));
+         }
+         try {
+            this.updateBalances(JSONResult.result.contract);
+         } catch (err) {
+            this.game.debug(err, "err");
+         }
+      } catch (err) {
+         this.game.debug(err, "err");
+      }
+   }
+
+   /**
+   * Creates a deferred invocation action object based on a game snapshot (state).
+   *
+   * @param {Object} snapshot A game snapshot (state) to match to a contract
+   * state in order to invoke <code>functionRef</code>; for example, a snapshot
+   * created using {@link CypherPokerContract#gameSnapshot}.
+   * @param {Function} functionRef The <b>asynchronous</b> function to invoke when the game
+   * <code>snapshot</code> (state) matches the contract state.
+   * @param {*} params Any parameters to include with the function invocation.
+   *
+   * @return {Object} A deferred game state action object containing a game
+   * <code>snapshot</code>, <code>invoke</code> object containing a deferred
+   * <code>func</code> function to invoke with <code>params</code> parameters,
+   * a <code>promise</code> that will resolve when the <code>snapshot</code>
+   * matches the reported contract, and a <code>complete</code> property
+   * indicating if the action has completed (true) or not (false).
+   * @private
+   */
+   onGameState(snapshot, functionRef, ...params) {
+      var action = new Object();
+      action.snapshot = snapshot;
+      action.invoke = new Object();
+      action.contract = this;
+      action.invoke.func = functionRef;
+      action.invoke.params = params;
+      action.promise = new Promise((resolve, reject) => {
+         //resolves or rejects in processDeferredActions
+         action._resolve = resolve;
+         action._reject = reject;
+      })
+      action.complete = false;
+      this.deferredActions.push(action);
+      if (this.history.length > 0) {
+         this.processDeferredActions(this.history[0]);
+      }
+      return (action);
+   }
+
+   /**
+   * Runs {@link CypherPokerContract#deferredActions} and executes the next un-executed action
+   * if its game <code>snapshot</code> matches the <code>contract</code> state.
+   *
+   * @param {ContractObject} contract The (ideally) updated contract object to check against
+   * {@link CypherPokerContract#deferredActions} for possible execution.
+   *
+   * @return {Promise} Resolves with the deferred action objects that were just executed. Will be an empty
+   * array if no actions were executed.
+   * @private
+   */
+   async processDeferredActions(contract){
+      var actions = this.deferredActions;
+      var previousAction = null;
+      var completedActions = new Array();
+      var incompletedActions = new Array();
+      for (var count=0; count < actions.length; count++) {
+         var currentAction = actions[count];
+         var exec = false;
+         if (previousAction == null) {
+            exec = true;
+         }
+         if (previousAction != null) {
+            if (previousAction.complete == true) {
+               exec = true;
+            }
+         }
+         if ((currentAction.complete == false) && (exec == true)) {
+            //todo: investigate why states are not matching on second (and later) games
+            //var snapshot = currentAction.snapshot;
+            //var result = this.compare (contract, snapshot);
+            //if ((result == 0) || (result == 2)) {
+               var func = currentAction.invoke.func;
+               var params = currentAction.invoke.params;
+               var context = currentAction.contract;
+               try {
+                  currentAction.complete = true;
+                  var fResult = await func.apply(context, params);
+                  completedActions.push(currentAction);
+                  this.game.debug ("CypherPokerContract: Contract action processed. Here's the response...");
+                  this.game.debug (fResult, "dir");
+                  currentAction._resolve(fResult);
+               } catch (err) {
+                  incompletedActions.push(currentAction);
+                  this.game.debug(err, "err");
+                  currentAction._reject(err);
+               }
+            //}
+         } else {
+            if (currentAction.complete == false) {
+               incompletedActions.push(currentAction);
+            }
+         }
+         previousAction = currentAction;
+      }
+      return (completedActions);
+   }
+
+   /**
+   * Deteremines whether a function is asynchronous (async) or synchronous.
+   *
+   * @param {function} func The function to evaluate.
+   *
+   * @return {Boolean} True if the function is asynchronous, false if it's a
+   * synchronous function or not a function.
+   * @private
+   */
+   isAsync(func) {
+      if (typeof(func) != "function") {
+         return (false);
+      }
+      return (String(func).startsWith("async"));
+   }
+
+   /**
+   * Sends an "agree" message to the contract API signalling our acceptance of
+   * the contract rules. At this point the <code>contract</code> parameter
+   * should have been carefully examined for accuracy.
+   *
+   * @param {ContractObject} contract The contract associated with this instance
+   * to agree to. The contract's owner is assumed to be the current dealer in the
+   * {@link CypherPokerContract#game} instance.
+   *
+   * @return {ContractObject} The contract object that was agreed to, according to
+   * the remote service.
+   * @todo Compare input and output of function as a final verification
+   * @private
+   */
+   async agreeToContract(contract) {
+      this.game.debug ("CypherPokerContract: Agreeing to contract...");
+      this.game.debug (contract, "dir");
+      var paramsObj = new Object();
+      paramsObj.ownerPID = this.game.getDealer().privateID;
+      paramsObj.contractID = contract.contractID;
+      var JSONResult = await this.callContractAPI("agree", paramsObj);
+      if (JSONResult.error == undefined) {
+         this.updateBalances(JSONResult.result.contract);
+      } else {
+         throw (new Error(JSONResult.error.message));
+      }
+      this.history.unshift(JSONResult.result.contract);
+      return (JSONResult.result.contract);
    }
 
    /**
@@ -435,22 +968,46 @@ class CypherPokerContract extends EventDispatcher {
    *
    * @param {Object} contractData The contract data object to use to update
    * player balances.
+   * @param {Boolean} fatalFail=false If true, the function will throw an error on an update failure
+   * (usually a value can't be converted). If false, errors are ignored.
+   * @throws {Error} If a game balance is not of a convertible type or subsequently if an account
+   * balance can't be converted. Note that an invalid game balance does not mean that the account
+   * balance is valid because it's checked second. Only thrown if <code>fataiFail=true</code>.
+   * @private
    */
-   updateBalances(contractData) {
-      var players = contractData.players;
-      for (var count = 0; count < players.length; count++) {
-         var player = players[count];
-         var privateID = player.privateID;
-         if ((typeof(player.balance) == "string") || (typeof(player.balance) == "number")) {
-            this.game.getPlayer(privateID).balance = player.balance;
+   updateBalances(contractData, fatalFail=false) {
+      var contractPlayers = contractData.players;
+      for (var count = 0; count < contractPlayers.length; count++) {
+         var contractPlayer = contractPlayers[count]; //player in contract
+         var privateID = contractPlayer.privateID;
+         var localPlayer = this.game.getPlayer(privateID); //player in game
+         if ((typeof(contractPlayer.balance) == "string") || (typeof(contractPlayer.balance) == "number")) {
+            localPlayer.balance = contractPlayer.balance;
          } else {
-            throw (new Error("Player game balance for \""+privateID+"\" is the wrong type."));
+            try {
+                  //balance may be a String-able instance
+                  localPlayer.balance = contractPlayer.balance.toString();
+            } catch (err) {
+               if (fatalFail == true) {
+                  throw (new Error("Player game balance for \""+privateID+"\" invalid (type: "+typeof(contractPlayer.balance)+"): "+contractPlayer.balance));
+               }
+            }
          }
-         if ((typeof(player.account) == "object") && (player.account != null)) {
-            if ((typeof(player.account.balance) == "string") || (typeof(player.account.balance) == "number")) {
-               this.game.getPlayer(privateID).account.balance = player.account.balance;
+         if ((typeof(contractPlayer.account) == "object") && (contractPlayer.account != null)) {
+            if ((typeof(contractPlayer.account.balance) == "string") || (typeof(contractPlayer.account.balance) == "number")) {
+               if ((localPlayer.account == null) || (localPlayer.account == undefined)) {
+                  localPlayer.account = new CypherPokerAccount(this.cypherpoker, contractPlayer.account);
+               } else {
+                  localPlayer.account.balance = contractPlayer.account.balance;
+               }
             } else {
-               throw (new Error("Player account balance for \""+player.account.address+"\" is the wrong type."));
+               try {
+                  localPlayer.account.balance = contractPlayer.account.balance.toString();
+               } catch (err) {
+                  if (fatalFail == true) {
+                     throw (new Error("Player account balance for \""+privateID+"\" invalid (type: "+typeof(contractPlayer.account.balance)+"): "+contractPlayer.account.balance));
+                  }
+               }
             }
          }
       }
@@ -469,6 +1026,7 @@ class CypherPokerContract extends EventDispatcher {
    *
    * @return {Promise} The promise resolves with the parsed JSON-RPC 2.0 result or
    * error (native object) of the call. Currently there is no rejection state.
+   * @private
    */
    async callContractAPI(action, params=null, APIFunc="CP_SmartContract") {
       var sendObj = new Object();
@@ -477,6 +1035,11 @@ class CypherPokerContract extends EventDispatcher {
       }
       for (var item in params) {
          sendObj[item] = params[item];
+      }
+      if (this.history.length > 0) {
+         if (this.history[0].invalid == true) {
+            throw (new Error("Contract is not valid!"));
+         }
       }
       sendObj.action = action;
       sendObj.user_token = this.cypherpoker.p2p.userToken;
@@ -504,6 +1067,7 @@ class CypherPokerContract extends EventDispatcher {
    *
    * @return {Boolean} True if the result object has a valid contract update object
    * structure and is intended for this contract instance.
+   * @private
    */
    verifyContractMessage(resultObj) {
       if ((typeof(resultObj.data) != "object") || (resultObj.data == null)) {
@@ -512,6 +1076,12 @@ class CypherPokerContract extends EventDispatcher {
       var data = resultObj.data;
       var contract = data.contract;
       var table = contract.table;
+      if ((this.game == undefined) || (this.game == null)) {
+         return (false);
+      }
+      if ((typeof(this.game.table) != "object") || (this.game.table == null)) {
+         return (false);
+      }
       if ((this.game.table.tableID != table.tableID) ||
          (this.game.table.tableName != table.tableName) ||
          (this.game.table.ownerPID != table.ownerPID)) {
@@ -551,6 +1121,7 @@ class CypherPokerContract extends EventDispatcher {
    *
    * @return {Boolean} True if the result object's contract ID matches this
    * instances'.
+   * @private
    */
    verifyContractID(resultObj) {
       var data = resultObj.data;
@@ -583,12 +1154,6 @@ class CypherPokerContract extends EventDispatcher {
          //either not a contract update message or not for this instance
          return;
       }
-      if (this.contractID != null) {
-         if (this.verifyContractID(resultObj) == false) {
-            //wrong contract ID
-            return;
-         }
-      }
       if (resultObj.from != undefined) {
          var fromPID = resultObj.from; //peer-initiated
       } else {
@@ -596,52 +1161,142 @@ class CypherPokerContract extends EventDispatcher {
       }
       var contractObj = resultObj.data.contract;
       var messageType = resultObj.data.cpMsg;
-      var player = this.game.getPlayer(fromPID);
-      this.history.unshift(contractObj);
-      this.game.debug("CypherPokerContract.handleP2PMessage("+event+") => \""+messageType+"\"");
+      var contract = resultObj.data.contract;
+      var table = contract.table;
+      var players = contract.players;
+      this.history.unshift(contractObj); //make sure to store contract in history!
+      this.game.debug("CypherPokerContract.handleUpdateMessage("+event+") => \""+messageType+"\"");
+      this.processDeferredActions(contractObj); //respond immediately on game state match
       switch (messageType) {
          case "contractnew":
-            var contract = resultObj.data.contract;
-            var players = contract.players;
-            //var table = contract.table;
-            this._contractID = contract.contractID;
-            for (var count = 0; count < players.length; count++) {
-               var player = this.game.getPlayer(players[count].privateID);
-               if (player != null) {
-                  player.balance = players[count].balance; //player balance
-                  if ((typeof(players[count].account) == "object") && (players[count].account != null)) {
-                     if (player.privateID != this.game.ownPID) {
-                        player.account = new CypherPokerAccount(this.cypherpoker, players[count].account);
-                     }
-                  }
+            if (this.contractID == null) {
+               this._contractID = contract.contractID;
+               this.updateBalances(contract);
+               var snapshot = this.gameSnapshot();
+               this.onGameState(snapshot, this.agreeToContract, contract).promise.catch (err => {
+                  this._contractID = null; //could not agree / contract is invalid
+                  this.removeGameEventListeners();
+                  this.game.debug(err, "err");
+               });
+               if (this.history[0].invalid != true) {
+                  this.startContractTimeout();
+               } else {
+                  this.stopContractTimeout();
                }
             }
-            var snapshot = this.gameSnapshot();
-            var result = this.compare (contract, snapshot);
-            console.log ("***************************************");
-            console.log ("Snapshot to contract comparison: "+result);
-            console.log ("***************************************");
             break;
          case "contractagree":
-            var contract = resultObj.data.contract;
-            var players = contract.players;
-            //var table = contract.table;
-            this._contractID = contract.contractID;
-            for (var count = 0; count < players.length; count++) {
-               var player = this.game.getPlayer(players[count].privateID);
-               if (player != null) {
-                  player.balance = players[count].balance; //player balance
-                  if ((typeof(players[count].account) == "object") && (players[count].account != null)) {
-                     if (player.privateID != this.game.ownPID) {
-                        player.account = new CypherPokerAccount(this.cypherpoker, players[count].account);
-                     }
-                  }
-               }
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
             }
-         break;
-      default:
-         //not a recognized CypherPokerContract message type
-         break;
+            //note that contract owner (dealer) auto-agrees in addition to...
+            this.game.debug ("Player "+fromPID+" has agreed to contract: "+contract.contractID);
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            if (this.history[0].invalid != true) {
+               this.startContractTimeout();
+            } else {
+               this.stopContractTimeout();
+            }
+            break;
+         case "contractencryptstore":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.game.debug ("Player "+fromPID+" has stored an encryption round to the contract:");
+            this.game.debug (contract, "dir");
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            if (this.history[0].invalid != true) {
+               this.startContractTimeout();
+            } else {
+               this.stopContractTimeout();
+            }
+            break;
+         case "contractselectstore":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.game.debug ("Player "+fromPID+" has stored a card(s) selection to the contract:");
+            this.game.debug (contract, "dir");
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            if (this.history[0].invalid != true) {
+               this.startContractTimeout();
+            } else {
+               this.stopContractTimeout();
+            }
+            break;
+         case "contractdecryptstore":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.game.debug ("Player "+fromPID+" has stored a decryption round to the contract:");
+            this.game.debug (contract, "dir");
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            if (this.history[0].invalid != true) {
+               this.startContractTimeout();
+            } else {
+               this.stopContractTimeout();
+            }
+            break;
+         case "contractbet":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.game.debug ("Player "+fromPID+" has stored a bet or fold action to the contract:");
+            this.game.debug (contract, "dir");
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            if (this.history[0].invalid != true) {
+               this.startContractTimeout();
+            } else {
+               this.stopContractTimeout();
+            }
+            break;
+         case "contractkeychainstore":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.game.debug ("Player "+fromPID+" has stored their keychain to the contract:");
+            this.game.debug (contract, "dir");
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            this.startContractTimeout();
+            break;
+         case "contracttimeout":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.updateBalances(contract);
+            this.processDeferredActions(contract);
+            var event = new Event("timeout");
+            event.contract = this;
+            event.penalized = contract.penalty.penalized;
+            this.dispatchEvent(event);
+            this.stopContractTimeout();
+            this.resetContractTimeout();
+            break;
+         case "contractend":
+            if (this.verifyContractID(resultObj) == false) {
+               //wrong contract ID
+               return;
+            }
+            this.removeGameEventListeners();
+            this.stopContractTimeout();
+            this.resetContractTimeout();
+            break;
+         default:
+            //not a recognized CypherPokerContract message type
+            break;
       }
    }
 

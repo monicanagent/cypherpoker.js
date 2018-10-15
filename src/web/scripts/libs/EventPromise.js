@@ -3,6 +3,8 @@
 /**
 *
 * @file Binds asynchronous events to Promise objects.
+*
+* @version 0.2.0
 */
 /**
 * @class Creates promises from standard JavaScript events for

@@ -2,6 +2,8 @@
 * @file Handles asynchronous JSON-RPC 2.0 requests to either a HTTP / HTTPS or
 * WebSocket / Secure WebSocket endpoints. Requires <code>EventPromise</code>
 * to exist in the current execution context.
+*
+* @version 0.2.0
 */
 var __rpc_request_id = 1;
 

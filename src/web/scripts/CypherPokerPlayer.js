@@ -1,7 +1,7 @@
 /**
 * @file Information management for an individual CypherPoker.JS player.
 *
-* @version 0.1.0
+* @version 0.2.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -188,6 +188,22 @@ class CypherPokerPlayer extends EventDispatcher {
       }
       return (this._balance);
    }
+
+   /**
+   * @property {numActions} numActions=0 The number of betting actions (bet or fold),
+   * comitted by the player.
+   */
+   get numActions() {
+      if (this._numActions == undefined) {
+         this._numActions = 0;
+      }
+      return (this._numActions);
+   }
+
+   set numActions(actionSet) {
+      this._numActions = actionSet;
+   }
+
 
    /**
    * @property {Boolean} hasBet=false True if the player has placed a bet or

@@ -1,5 +1,7 @@
 /**
 * @file WebSocket Session interface.
+*
+* @version 0.2.0
 */
 
 /**

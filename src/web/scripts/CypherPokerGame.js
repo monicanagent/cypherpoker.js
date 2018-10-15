@@ -1,7 +1,7 @@
 /**
 * @file A CypherPoker.JS implementation of Texas Hold'em poker for 2+ players.
 *
-* @version 0.1.0
+* @version 0.2.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -174,6 +174,17 @@ class CypherPokerGame extends EventDispatcher {
    * @property {CypherPoker#TableObject} table The table associated with the received bet.
    */
    /**
+   * A bet has been placed by us.
+   *
+   * @event CypherPokerGame#gamebetplaced
+   * @type {Event}
+   * @property {String} amount The amount of the bet, in the smallest denomination of
+   * the cryptocurrency.
+   * @property {CypherPokerPlayer} player Reference to our own player object.
+   * @property {CypherPokerGame} game The game instance associated with the bet.
+   * @property {CypherPoker#TableObject} table The table associated with the bet.
+   */
+   /**
    * The game is about to end and should have its state saved for analysis.
    *
    * @event CypherPokerGame#gameanalyze
@@ -212,6 +223,14 @@ class CypherPokerGame extends EventDispatcher {
    * @property {CypherPoker#TableObject} table The table associated with the game instance. As with
    * the <code>game</code> property, the table may have changed prior to the completion of the analysis.
    */
+   /**
+   * The game instance has been reset and is about to restart.
+   *
+   * @event CypherPokerGame#gamerestart
+   * @type {Event}
+   * @property {CypherPokerGame} game The game instance about to restart.
+   * @property {CypherPoker#TableObject} table The table associated with the game instance.
+   */
 
    /**
    * Creates a new game instance.
@@ -247,6 +266,7 @@ class CypherPokerGame extends EventDispatcher {
       this.cypherpoker.copyTable(tableObj, this.table);
       this.cypherpoker.games.push(this);
       this._players = new Array();
+      this._lastBetPID = null;
       for (var count=0; count < tableObj.joinedPID.length; count++) {
          var newPlayer = new CypherPokerPlayer(tableObj.joinedPID[count]);
          if (newPlayer.privateID == this.ownPID) {
@@ -509,26 +529,137 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
+   * Returns the next betting player following a specified one.
+   *
+   * @param {String} privateID The private ID of the player that last
+   * completed a bet or fold operation.
+   *
+   * @return {CypherPokerPlayer} The player that should be betting next, or
+   * <code>null</code> if the player can't be determined.
+   * @private
+   */
+   getNextBettingPlayer(privateID) {
+      if (privateID == null) {
+         return (this.getSmallBlind());
+      }
+      if (privateID == this.ownPID) {
+         privateID = this.getPreviousPlayer(this.ownPID).privateID;
+      }
+      var anyBetsPlaced = false; //during this round of betting?
+      var largestPlayerBet = this.largestBet;
+      for (var count=0; count < this.players.length; count++) {
+         var player = this.players[count];
+         if ((player.hasBet == true) && (player.hasFolded == false)) {
+            anyBetsPlaced = true;
+            break;
+         }
+      }
+      if ((this.getBigBlind().numActions < 2) && this.getPreviousPlayer(this.getBigBlind().privateID).hasBet && (this.getBigBlind().hasFolded == false)) {
+         if ((this.players.length == 2) && (this.getSmallBlind().totalBet.lesser(this.getBigBlind().totalBet))) {
+            return (this.getSmallBlind());
+         } else {
+            return (this.getBigBlind());
+         }
+      }
+      //last resort
+      var nextPlayer = this.getNextPlayer(privateID);
+      while (nextPlayer.privateID != privateID) {
+         var nextTotalBet = nextPlayer.totalBet;
+         if (nextTotalBet.lesser(largestPlayerBet) && (nextPlayer.hasFolded == false)) {
+            if (this.getBigBlind().numActions > 0) {
+               return (nextPlayer);
+            }
+         }
+         nextPlayer = this.getNextPlayer(nextPlayer.privateID);
+      }
+      //starting bets
+      if (this.players.length == 2) {
+         //heads-up betting order
+         if ((this.cardDecks.public.length == 0) && (this.bettingDone == false)) {
+            //pre-flop
+            if (this.getDealer().hasBet == false) {
+               //dealer goes first
+               return (this.getDealer());
+            } else {
+               return (this.getNextPlayer(this.getDealer().privateID));
+            }
+         } else {
+            //post-flop
+            if (this.getNextPlayer(this.getDealer().privateID).hasBet == false) {
+               //player goes first
+               return (this.getNextPlayer(this.getDealer().privateID));
+            } else {
+               return (this.getDealer());
+            }
+         }
+      } else {
+         //standard betting order
+         var startingPlayer = this.getSmallBlind();
+         var firstNonFoldedPlayer = null;
+         if (startingPlayer.hasFolded == false) {
+            firstNonFoldedPlayer = startingPlayer;
+            if ((startingPlayer.hasBet == false) || startingPlayer.totalBet.lesser(largestPlayerBet)) {
+               return (startingPlayer);
+            }
+         }
+         var startingID = startingPlayer.privateID;
+         startingPlayer = this.getNextPlayer(startingPlayer.privateID);
+         while (startingPlayer.privateID != startingID) {
+            if (startingPlayer.hasFolded == false) {
+               if (firstNonFoldedPlayer == null) {
+                  firstNonFoldedPlayer = startingPlayer;
+               }
+               if ((startingPlayer.hasBet == false) || startingPlayer.totalBet.lesser(largestPlayerBet)) {
+                  return (startingPlayer);
+               }
+            }
+            startingPlayer = this.getNextPlayer(startingPlayer.privateID);
+         }
+         return (firstNonFoldedPlayer);
+      }
+      return (null);
+   }
+
+   /**
    * @property {Boolean} canBet If true, we can place a bet, check/call, or fold
    * via the {@link CypherPokerGame#placeBet} function.
    */
    get canBet() {
-      if (this.gameStarted == false) {
+      if (this.bettingDone == true) {
          return (false);
       }
-      var player = this.getPlayer(this.ownPID);
-      var previousPlayer = this.getPreviousPlayer(this.ownPID);
-      if (((player.isSmallBlind) || (player.isBigBlind)) && (player.totalBet.equals(0)) && (this.bettingDone == false)) {
-         //blinds can bet at any time at start of hand, with or without cards
+      var nextBettingPlayer = this.getNextBettingPlayer(this._lastBetPID);
+      if (nextBettingPlayer == null) {
+         return (false)
+      }
+      if (nextBettingPlayer.privateID == this.ownPID) {
          return (true);
-      }
-      if (player.dealtCards.length < 2) {
-         //no private cards dealt
+      } else {
          return (false);
       }
-      if (player.hasBet || player.hasFolded) {
-         //we've already bet or folded
-         return (false);
+      var anyBetsPlaced = false; //during this round of betting?
+      var largestPlayerBet = this.largestBet;
+      for (var count=0; count < this.players.length; count++) {
+         var player = this.players[count];
+         if ((player.hasBet == true) && (player.hasFolded == false)) {
+            anyBetsPlaced = true;
+            break;
+         }
+      }
+      if ((this.getBigBlind().numActions < 2) && this.getPreviousPlayer(this.getBigBlind().privateID).hasBet) {
+         if ((this.players.length == 2) && (this.getSmallBlind().totalBet.lesser(this.getBigBlind().totalBet))) {
+            if (this.ownPID == this.getSmallBlind().privateID) {
+               return (true);
+            } else {
+               return (false);
+            }
+         } else {
+            if (this.ownPID == this.getBigBlind().privateID) {
+               return (true);
+            } else {
+               return (false);
+            }
+         }
       }
       //heads-up rules
       if (this.players.length == 2) {
@@ -537,7 +668,7 @@ class CypherPokerGame extends EventDispatcher {
             return (true);
          }
          if ((this.cardDecks.public.length == 0) && (player.isDealer == false) && (previousPlayer.hasBet)) {
-            //pre-flop, non=dealer goes last
+            //pre-flop, non-dealer goes last
             return (true);
          }
          if ((this.cardDecks.public.length > 0) && player.isDealer && previousPlayer.hasBet) {
@@ -549,23 +680,40 @@ class CypherPokerGame extends EventDispatcher {
             return (true);
          }
          return (false);
-      }
-      //standard rules
-      var playerHasBet = false; //has any plyaer bet yet?
-      for (var count=0; count < this.players.length; count++) {
-         if (this.players[count].hasBet || this.players[count].hasFolded) {
-            playerHasBet = true;
-            break;
+      } else {
+         //standard rules
+         var largestPlayerBet = this.largestBet;
+         var startingPlayer = this.getSmallBlind();
+         if ((startingPlayer.hasFolded == false) && ((startingPlayer.hasBet == false) || startingPlayer.totalBet.lesser(largestPlayerBet))) {
+            if (startingPlayer.privateID == this.ownPID) {
+               return (true);
+            } else {
+               return (false);
+            }
          }
-      }
-      if (playerHasBet == false) {
-         if (player.isSmallBlind) {
-            //first bet is small blind
+         var startingID = startingPlayer.privateID;
+         startingPlayer = this.getNextPlayer(startingPlayer.privateID);
+         var firstNonFoldedPlayer = null;
+         while (startingPlayer.privateID != startingID) {
+            if (startingPlayer.hasFolded == false) {
+               if (firstNonFoldedPlayer == null) {
+                  firstNonFoldedPlayer = startingPlayer;
+               }
+               if ((startingPlayer.hasBet == false) || startingPlayer.totalBet.lesser(largestPlayerBet)) {
+                  if (startingPlayer.privateID == this.ownPID) {
+                     return (true);
+                  } else {
+                     return (false);
+                  }
+               }
+               startingPlayer = this.getNextPlayer(startingPlayer.privateID);
+            }
+         }
+         if (firstNonFoldedPlayer.privateID == this.ownPID) {
             return (true);
+         } else {
+            return (false);
          }
-      } else if ((previousPlayer.hasBet || previousPlayer.hasFolded) && (this.bettingDone == false)) {
-         //subsequent bets
-         return (true);
       }
       return (false);
    }
@@ -579,13 +727,16 @@ class CypherPokerGame extends EventDispatcher {
       var nonFoldedPlayers = 0;
       var currentBet = "";
       var betGroups = new Object(); //players grouped by bet amount
+      if ((this.getBigBlind().numActions < 2) && (this.getBigBlind().hasFolded == false)) {
+         return (false);
+      }
       for (var count=0; count < this.players.length; count++) {
          if (this.players[count].hasFolded) {
             foldedPlayers++;
          } else {
             nonFoldedPlayers++;
             if (this.players[count].hasBet) {
-               currentBet = this.players[count].totalBet.toString();
+               currentBet = this.players[count].totalBet.toString(10);
                if (betGroups[currentBet] == undefined) {
                   betGroups[currentBet] = new Array();
                }
@@ -1410,7 +1561,7 @@ class CypherPokerGame extends EventDispatcher {
    * @return {Promise} The promise is resolved with a <code>true</code> result
    * if the bet was successfully placed and rejected with an <code>Error</code> if the bet
    * could not be placed.
-   * @async
+   * @fires CypherPokerGame#gamebetplaced
    */
    placeBet(betAmount) {
       if (this.canBet == false) {
@@ -1423,6 +1574,8 @@ class CypherPokerGame extends EventDispatcher {
       if (betAmount.lesser(0)) {
          //we are folding
          this.getPlayer(this.ownPID).hasFolded = true;
+         this.getPlayer(this.ownPID).hasBet = true;
+         this.getPlayer(this.ownPID).numActions++;
          betObj.fold = true;
          betObj.amount = null;
       }
@@ -1443,11 +1596,13 @@ class CypherPokerGame extends EventDispatcher {
          if (totalCurrentBet.equals(biggestBet)) {
             //we are checking / calling
             this.getPlayer(this.ownPID).totalBet = totalCurrentBet;
+            this.getPlayer(this.ownPID).numActions++;
             this.getPlayer(this.ownPID).hasBet = true;
             betObj.amount = betAmount.toString(10);
          } else if (totalCurrentBet.greater(biggestBet)) {
             //we are raising
             this.getPlayer(this.ownPID).totalBet = totalCurrentBet;
+            this.getPlayer(this.ownPID).numActions++;
             this.getPlayer(this.ownPID).hasBet = true;
             for (var count = 0; count < this.players.length; count++) {
                if (this.players[count].privateID != this.ownPID) {
@@ -1461,13 +1616,21 @@ class CypherPokerGame extends EventDispatcher {
                throw (new Error("Bet amount insufficient for current round."));
             } else {
                this.getPlayer(this.ownPID).totalBet = totalCurrentBet;
+               this.getPlayer(this.ownPID).numActions++;
                this.getPlayer(this.ownPID).hasBet = true;
                betObj.amount = betAmount.toString(10);
             }
          }
          this.pot = this.pot.add(betAmount);
       }
+      this._lastBetPID = this.ownPID;
       this.sendToPlayers("gamebet", betObj);
+      var eventObj = new Event("gamebetplaced");
+      eventObj.amount = betAmount.toString(10);
+      eventObj.player = this.getPlayer(this.ownPID);
+      eventObj.game = this;
+      eventObj.table = this.table;
+      this.dispatchEvent(eventObj);
       var numFolded = 0;
       for (count = 0; count < this.players.length; count++) {
          if (this.players[count].hasFolded) {
@@ -1493,19 +1656,28 @@ class CypherPokerGame extends EventDispatcher {
    */
    async endGame () {
       this.debug ("endGame()");
-      this._gameStarted = false;
-      var event = new Event("gameanalyze");
-      event.table = this.table;
-      event.game = this;
-      this.dispatchEvent(event);
-      var endGameObj = new Object();
-      endGameObj.keychain = this.getPlayer(this.ownPID).keychain;
-      this.sendToPlayers("gameend", endGameObj);
-      event = new Event("gameend");
-      event.table = this.table;
-      event.game = this;
-      this.dispatchEvent(event);
+      try {
+         this._gameStarted = false;
+         var event = new Event("gameanalyze");
+         event.table = this.table;
+         event.game = this;
+         this.dispatchEvent(event);
+      } catch (err) {
+         console.error(err);
+      }
+      try {
+         var endGameObj = new Object();
+         endGameObj.keychain = this.getPlayer(this.ownPID).keychain;
+         this.sendToPlayers("gameend", endGameObj);
+         event = new Event("gameend");
+         event.table = this.table;
+         event.game = this;
+         this.dispatchEvent(event);
+      } catch (err) {
+         console.error(err);
+      }
       return (true);
+      //the instance's data should now be assumed to be unstable
    }
 
    /**
@@ -1518,18 +1690,22 @@ class CypherPokerGame extends EventDispatcher {
    *
    * @return {Promise} Resolves to <code>true</code> when game is immediately
    * restarted, and <code>false</code> if the game is awaiting analysis (is paused).
+   *
+   * @fires CypherPokerGame#event:gamerestart
    */
    async restartGame(context=null) {
       if (context == null) {
          context = this;
       }
       if (context.analyzer != null) {
-         if (context.analyzer.allKeychainsCommitted == false) {
+         if (context.analyzer.active != false) {
             //re-check every 0.5 seconds
             setTimeout(context.restartGame, 500, context);
             return (false);
          }
       }
+      this.pot = 0;
+      this._gameStarted = false;
       context.resetPlayerStates(true, true, true);
       context.cardDecks.public = new Array();
       context.cardDecks.dealt = new Array();
@@ -1539,16 +1715,30 @@ class CypherPokerGame extends EventDispatcher {
       for (var count=0; count < context.players.length; count++) {
          context.players[count].selectedCards = new Array();
          context.players[count].dealtCards = new Array();
+         context.players[count].hasBet = false;
+         context.players[count].hasFolded = false;
+         context.players[count].totalBet = 0;
+         context.players[count].numActions = 0;
+         //player roles are not currently adjusted
          context.players[count].isBigBlind = false;
          context.players[count].isSmallBlind = false;
          context.players[count].isDealer = false;
          context.players[count].resetKeychain();
       }
+      this._lastBetPID = null;
+      //dealer currently stays in place
       context.assignPlayerRoles(nextDealerPID);
       context._gameParams = new Object();
+      context._contract.stopContractTimeout();
       context._analyzer.removeGameListeners();
+      context._contract.removeGameEventListeners();
       context._analyzer = new CypherPokerAnalyzer(context);
       context._analyzer.addEventListener("scored", context.onGameAnalyzed, context);
+      context._contract = new CypherPokerContract(context);
+      var event = new Event("gamerestart");
+      event.game = context;
+      event.table = context.table;
+      context.dispatchEvent.call(context, event);
       try {
          var event = await context.sendGameParams(true);
          event = await context.generateKeypair();
@@ -1857,15 +2047,18 @@ class CypherPokerGame extends EventDispatcher {
             if (payload.fold == true) {
                this.getPlayer(fromPID).hasFolded = true;
                this.getPlayer(fromPID).hasBet = true;
+               this.getPlayer(fromPID).numActions++;
             } else {
                //todo: check to make sure bet amount is valid
                var betAmount = bigInt(payload.amount);
                this.pot = this.pot.add(betAmount);
                this.getPlayer(fromPID).totalBet = this.getPlayer(fromPID).totalBet.add(betAmount);
+               this.getPlayer(fromPID).hasFolded = false;
                this.getPlayer(fromPID).hasBet = true;
+               this.getPlayer(fromPID).numActions++;
                var raise = false;
                for (var count = 0; count < this.players.length; count++) {
-                  if (this.getPlayer(fromPID).totalBet.greater(this.players[count].totalBet) && this.players[count].hasBet) {
+                  if (this.getPlayer(fromPID).totalBet.greater(this.players[count].totalBet) && this.players[count].hasBet && (this.players[count].hasFolded == false)) {
                      raise = true;
                      break;
                   }
@@ -1884,6 +2077,7 @@ class CypherPokerGame extends EventDispatcher {
                   numFolded++;
                }
             }
+            this._lastBetPID = fromPID;
             this.postAutoBlinds();
             event = new Event("gamebet");
             event.amount = String(payload.amount);

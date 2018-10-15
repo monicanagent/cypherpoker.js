@@ -78,6 +78,7 @@
             <input type="text" id="buyInAmount" name="buyInAmount" placeholder="Buy-in amount" step="100" min="2" /><br/>
             <input type="text" id="bigBlindAmount" name="bigBlindAmount" placeholder="Big blind amount" step="100" min="2" /><br/>
             <input type="text" id="smallBlindAmount" name="smallBlindAmount" placeholder="Small blind amount" step="100" min="1" /><br/>
+            <!-- input type="text" id="inactivityTimeoutAmount" name="inactivityTimeoutAmount" placeholder="Inactivity timeout (seconds)" step="1" min="1" value="30"/><br/ -->
             <br/>
             <button id="createGameButton" class="lobbyButton">CREATE TABLE</button>
          </div>
@@ -99,6 +100,7 @@
          <div id="privateCards" class="privateCardsContainer"></div>
          <span id="totalBetLabel" class="gameLabel">Total bet for this hand: </span><span id="totalBet" name="totalBet" class="gameAmount">0</span><br/>
          <span id="potLabel" class="gameLabel">Pot: </span><span id="potAmount" name="potAmount" class="gameAmount">0</span><br/>
+         <span id="timeoutLabel" class="timeoutLabel">⏱&nbsp;</span><span id="timeoutAmount" name="timeoutAmount" class="gameAmount"><span id="timeout">0</span></span><br/>
          <br/>
          <input type="number" id="betAmount" name="betAmount" class="betAmountInput" placeholder="Bet Amount" step="1" />
          <button id="betButton" class="gameButton" disabled="true">BET</button>
