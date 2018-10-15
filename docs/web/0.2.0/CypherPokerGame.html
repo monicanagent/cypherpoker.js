@@ -1,0 +1,9930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: CypherPokerGame</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: CypherPokerGame</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2><span class="attribs"><span class="type-signature"></span></span>CypherPokerGame<span class="signature">(cypherpokerRef, tableObj, playerInfo<span class="signature-attributes">opt</span>, ContractClass<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        
+            <div class="class-description">Manages game logic, <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instances,and other game-specific properties for CypherPoker.JS Texas Hold'em.</div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    
+    <h4 class="name" id="CypherPokerGame"><span class="type-signature"></span>new CypherPokerGame<span class="signature">(cypherpokerRef, tableObj, playerInfo<span class="signature-attributes">opt</span>, ContractClass<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Creates a new game instance.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>cypherpokerRef</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html">CypherPoker</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">A reference to the parent orcontaining <a href="CypherPoker.html">CypherPoker</a> instance that created the game instance.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tableObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The table associated with the game instance.A copy of this object is available through the table reference.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>playerInfo</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">Contains additional informationabout us to share with the table.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ContractClass</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "CypherPokerContract"
+                
+                </td>
+            
+
+            <td class="description last">The (smart) contract interfaceto use with this game (available through the <a href="CypherPokerGame.html#contract">CypherPokerGame#contract</a> property).If <code>null</code>, no contract interface is used.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line15">line 15</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="EventDispatcher.html">EventDispatcher</a></li>
+    </ul>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="analyzer"><span class="type-signature"></span>analyzer<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>analyzer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The current analyzer instanceassociated with this game.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line850">line 850</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="autoBlinds"><span class="type-signature"></span>autoBlinds<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>autoBlinds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">If true, the required blind amount forthe table are posted automatically if we're playing as a blind, otherwisethe blind amount will need to be posted via the <a href="CypherPokerGame.html#placeBet">CypherPokerGame#placeBet</a> function.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line303">line 303</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="bettingDone"><span class="type-signature"></span>bettingDone<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>bettingDone</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">True if all non-folded players have committed the samebet amount, or if all players but one have folded (new cards may be dealt or the game has completed).</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line725">line 725</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="canBet"><span class="type-signature"></span>canBet<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>canBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true, we can place a bet, check/call, or foldvia the <a href="CypherPokerGame.html#placeBet">CypherPokerGame#placeBet</a> function.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line627">line 627</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="canDeal"><span class="type-signature"></span>canDeal<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>canDeal</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true, we can initiate the next round of carddealing (private or public), via the <a href="CypherPokerGame.html#dealCards">CypherPokerGame#dealCards</a> function.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line814">line 814</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="cardDecks"><span class="type-signature">(readonly) </span>cardDecks<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>cardDecks</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Stores card decks for the game.
+                <h6>Properties</h6>
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>faceup</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of <a href="CypherPokerCard.html">CypherPokerCard</a>instances containing the face-up or unencrypted deck. The contents of thisarray should not change during a game (hand).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>facedown</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of strings representingthe face-down or encrypted deck. As cards are drawn they're moved to the<code>dealt</code> array.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dealt</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of strings representingthe face-down or encrypted deck that have been dealt from the <code>facedown</code>array.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>public</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of unencrypted or face-up<a href="CypherPokerCard.html">CypherPokerCard</a> instances that have been dealt as public or community cards.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line508">line 508</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="contract"><span class="type-signature">(readonly) </span>contract<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>contract</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerContract.html">CypherPokerContract</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A CypherPoker (smart) contractinterface associated with this instance, usually created at instantiation.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line489">line 489</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="cypherpoker"><span class="type-signature">(readonly) </span>cypherpoker<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>cypherpoker</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html">CypherPoker</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Reference to the parent or containing<a href="CypherPoker.html">CypherPoker</a> instance used to create this game, as provided atinstantiation.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line435">line 435</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="DOMElement"><span class="type-signature"></span>DOMElement<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>DOMElement</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">HTMLElement</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">A reference to the DOM element associatedwith this game instance. Typically this reference is set by an external userinterface manager.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line418">line 418</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="gameDone"><span class="type-signature"></span>gameDone<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>gameDone</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">True if the current game (hand), and allassociated betting rounds have completed. Verification and otherpost-game actions can take place once a game is done.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line760">line 760</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="gameParams"><span class="type-signature">(readonly) </span>gameParams<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>gameParams</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Game-related parameters.
+                <h6>Properties</h6>
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>prime</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The current prime modulus value forthe game. Previous prime values are stored in <a href="global.html#keypair">keypair</a>instances in the <a href="CypherPokerPlayer.html#keychain">CypherPokerPlayer#keychain</a> array.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line477">line 477</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="gameStarted"><span class="type-signature">(readonly) </span>gameStarted<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>gameStarted</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">True if the game has been started (allplayers have introduced themselves and game parameters have been set).</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line524">line 524</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="largestBet"><span class="type-signature"></span>largestBet<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>largestBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">BigInteger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The largest bet currently placed bya non-folded player at the table.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line800">line 800</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="minimumBet"><span class="type-signature"></span>minimumBet<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>minimumBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">BigInteger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The minimum bet that must be placed byus during this round of betting in order to continue playing.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line781">line 781</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="ownPID"><span class="type-signature">(readonly) </span>ownPID<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>ownPID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Our own private ID as generated throughthe parent <a href="CypherPoker.html">CypherPoker</a> instance's <code>p2p</code> interface.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line466">line 466</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="players"><span class="type-signature">(readonly) </span>players<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>players</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">An array of <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instancesassociated with the game.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line457">line 457</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="pot"><span class="type-signature"></span>pot<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>pot</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">BigInteger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The amount currently in the pot for the game.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line287">line 287</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="table"><span class="type-signature">(readonly) </span>table<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A copy of the table associated with this gameprovided at instantiation. Note that this is <b>not</b> a reference tothe original table object provided to the constructor.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line448">line 448</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="addEventListener"><span class="type-signature"></span>addEventListener<span class="signature">(type, listener, context<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Registers a new event listener with the extending class instance.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The event type to register.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The listening function to invoke on the event.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">Unlike the traditional <code>addEventListener</code> parameter, this isthe context or scope in which to invoke the listening function (since we can't use capture phases).If null, the listener is invoked in the context of the EventDispatcher instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="EventDispatcher.html#addEventListener">EventDispatcher#addEventListener</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_EventDispatcher.js.html">libs/EventDispatcher.js</a>, <a href="libs_EventDispatcher.js.html#line56">line 56</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="dealCards"><span class="type-signature">(async) </span>dealCards<span class="signature">(numCards<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Deals cards by removing random selections from the<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.facedown</code> array, adding themthem the <a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.dealt</code> array,sending the resulting arrays to the table, and requesting a decryption forthe selections.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>numCards</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    0
+                
+                </td>
+            
+
+            <td class="description last">The number of cards to select. If thisvalue is less than 1, the required cards are automatically determined using our<a href="CypherPokerPlayer.html">CypherPokerPlayer</a><code>.dealtCards</code> array or the<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.public</code> array, depending onthe current game state.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1772">line 1772</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="CypherPokerGame.html#event:gamedealprivate">CypherPokerGame#event:gamedealprivate</a></li>
+
+    <li><a href="CypherPokerGame.html#event:gamedealpublic">CypherPokerGame#event:gamedealpublic</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The promise resolves with an array of selected face-down orencrypted card values, or rejects with an error if something went wrong.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="endGame"><span class="type-signature">(async) </span>endGame<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Ends the current game (hand), and sends keyring to other players for verification.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1657">line 1657</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="CypherPokerGame.html#event:gameanalyze">CypherPokerGame#event:gameanalyze</a></li>
+
+    <li><a href="CypherPokerGame.html#event:gameend">CypherPokerGame#event:gameend</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Resolves with a result of <code>true</code> when the game iscompletely ended and optionally restarted.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="gameExists"><span class="type-signature"></span>gameExists<span class="signature">(tableObj)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Checks if a game associated with a specific <a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a> instanceis registered with the parent <a href="CypherPoker.html">CypherPoker</a> instance.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tableObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The associated table to check for.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1511">line 1511</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    True if the table has been associated with an existing<a href="CypherPokerGame.html">CypherPokerGame</a> instance in the parent <a href="CypherPoker.html">CypherPoker</a>.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Boolean</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getBigBlind"><span class="type-signature"></span>getBigBlind<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="CypherPokerPlayer.html">CypherPokerPlayer</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> that is currently flagged as the big blindin the <a href="CypherPokerGame.html#players">CypherPokerGame#players</a> array.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1028">line 1028</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instance thatis flagged as a big blind. <code>null</code> is returned if no big blindis flagged.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getCardDecks"><span class="type-signature"></span>getCardDecks<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a condensed object containing the copied properties of the<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a> object. Use the object returned bythis function with <code>JSON.stringify</code> instead of using<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a> directly in order to prevent circularreference errors.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line890">line 890</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The condensed cardDecks object associated with this game instance.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getDealer"><span class="type-signature"></span>getDealer<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="CypherPokerPlayer.html">CypherPokerPlayer</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> that is currently flagged as the dealerin the <a href="CypherPokerGame.html#players">CypherPokerGame#players</a> array.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1011">line 1011</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instance thatis flagged as a dealer. <code>null</code> is returned if no dealer is flagged.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getListeners"><span class="type-signature"></span>getListeners<span class="signature">(type)</span><span class="type-signature"> &rarr; {Array}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns all registered listeners for a specific event type.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The event type to return registered listeners for.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="EventDispatcher.html#getListeners">EventDispatcher#getListeners</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_EventDispatcher.js.html">libs/EventDispatcher.js</a>, <a href="libs_EventDispatcher.js.html#line40">line 40</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A list of registered event listener objects for the specific event.Each object contains a <code>listener</code> function reference and anexecution <code>context</code> reference.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getMappedCard"><span class="type-signature"></span>getMappedCard<span class="signature">(mapping)</span><span class="type-signature"> &rarr; {<a href="CypherPokerCard.html">CypherPokerCard</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a <a href="CypherPokerCard.html">CypherPokerCard</a> instance from the <a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.faceup</code>array based on its mapping.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mapping</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The card mapping (quadratic residue value), of the card to retrieve.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1448">line 1448</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The matching card instance or <code>null</code> if no such cardexists.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerCard.html">CypherPokerCard</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNextPlayer"><span class="type-signature"></span>getNextPlayer<span class="signature">(privateID)</span><span class="type-signature"> &rarr; {<a href="CypherPokerPlayer.html">CypherPokerPlayer</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> that appears <i>after</i> a specifiedplayer in the <a href="CypherPokerGame.html#players">CypherPokerGame#players</a> array.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>privateID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The private ID of the player preceding theplayer to return.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line971">line 971</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instance thatfollows the player specified by the parameter. <code>null</code> isreturned if no matching player private ID can be found.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPlayer"><span class="type-signature"></span>getPlayer<span class="signature">(privateID)</span><span class="type-signature"> &rarr; {<a href="CypherPokerPlayer.html">CypherPokerPlayer</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instance associated with this gameinstance.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>privateID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The private ID of the player.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line951">line 951</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> for the private IDassociated with this game. <code>null</code> is returned if no matchingplayer private ID can be found.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPlayerInfo"><span class="type-signature"></span>getPlayerInfo<span class="signature">(privateID)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a player information object for a specific private ID associatedwith this game.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>privateID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The private ID of the player associated withthis game for which to return the information object.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line933">line 933</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    An information object for the specified private ID ornull if no such private ID has an information object associated with thisgame.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPlayers"><span class="type-signature"></span>getPlayers<span class="signature">(includeKeychains<span class="signature-attributes">opt</span>, includePasswords<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a condensed array containing the copied properties of the<a href="CypherPokerGame.html#players">CypherPokerGame#players</a> array. Use the object returned bythis function with <code>JSON.stringify</code> instead of using<a href="CypherPokerGame.html#players">CypherPokerGame#players</a> directly in order to prevent circularreference errors.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>includeKeychains</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the <a href="CypherPokerPlayer.html#keychain">CypherPokerPlayer#keychain</a>array of each player will be included in the returned object.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>includePasswords</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the <a href="CypherPokerAccount.html#password">CypherPokerAccount#password</a>property of each <a href="CypherPokerPlayer.html#account">CypherPokerPlayer#account</a> reference will be includedwith the returned object.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line872">line 872</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The condensed players array associated with this game instance.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getPreviousPlayer"><span class="type-signature"></span>getPreviousPlayer<span class="signature">(privateID)</span><span class="type-signature"> &rarr; {<a href="CypherPokerPlayer.html">CypherPokerPlayer</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> that appears <i>before</i> a specifiedplayer in the <a href="CypherPokerGame.html#players">CypherPokerGame#players</a> array.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>privateID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The private ID of the player following theplayer to return.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line991">line 991</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instance thatprecedes the player specified by the parameter. <code>null</code> isreturned if no matching player private ID can be found.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getSmallBlind"><span class="type-signature"></span>getSmallBlind<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="CypherPokerPlayer.html">CypherPokerPlayer</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> that is currently flagged as the small blindin the <a href="CypherPokerGame.html#players">CypherPokerGame#players</a> array.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1045">line 1045</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The <a href="CypherPokerPlayer.html">CypherPokerPlayer</a> instance thatis flagged as a small blind. <code>null</code> is returned if no smallblind is flagged.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getTable"><span class="type-signature"></span>getTable<span class="signature">()</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a condensed object containing the copied properties of the<a href="CypherPokerGame.html#table">CypherPokerGame#table</a> object. Use the object returned bythis function with <code>JSON.stringify</code> instead of using<a href="CypherPokerGame.html#table">CypherPokerGame#table</a> directly in order to prevent circularreference errors.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line908">line 908</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The condensed table object associated with this game instance.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="placeBet"><span class="type-signature"></span>placeBet<span class="signature">(betAmount)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Places a bet during the current round of betting, if allowed, and sends theaction to other players at the table.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>betAmount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+|
+
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The bet amount to place. A 0 bet isa check or call and a bet of less than 0 is a fold.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1566">line 1566</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="CypherPokerGame.html#event:gamebetplaced">CypherPokerGame#event:gamebetplaced</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The promise is resolved with a <code>true</code> resultif the bet was successfully placed and rejected with an <code>Error</code> if the betcould not be placed.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="removeEventListener"><span class="type-signature"></span>removeEventListener<span class="signature">(type, listener)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Removes an event listener from the extending instance. The standard capture phaseparameter is ignored.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The event type to remove the function from.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>listener</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The listening function to remove.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="EventDispatcher.html#removeEventListener">EventDispatcher#removeEventListener</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_EventDispatcher.js.html">libs/EventDispatcher.js</a>, <a href="libs_EventDispatcher.js.html#line78">line 78</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="resetPlayerStates"><span class="type-signature"></span>resetPlayerStates<span class="signature">(resetBet<span class="signature-attributes">opt</span>, resetHasBet<span class="signature-attributes">opt</span>, resetHasFolded<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Resets the betting states of all players associated with this game instance.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>resetBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the <a href="CypherPokerPlayer.html#totalBet">CypherPokerPlayer#totalBet</a> amountis set to 0.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resetHasBet</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the <a href="CypherPokerPlayer.html#hasBet">CypherPokerPlayer#hasBet</a> flag isset to false.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resetHasFolded</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last">If true, the <a href="CypherPokerPlayer.html#hasFolded">CypherPokerPlayer#hasFolded</a> flagis set to false.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line361">line 361</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="restartGame"><span class="type-signature">(async) </span>restartGame<span class="signature">(context)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Attempts to restart the game by resetting all cards and player selections,shifting player roles, and finally starting the game (if we're the current dealer).If the game is awaiting analysis, the restart is put on indefinite pause.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>context</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">The game context in which to executethe restart. If <code>null</code>, <code>this</code> is assumed.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1696">line 1696</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<h5>Fires:</h5>
+<ul>
+    <li><a href="CypherPokerGame.html#event:gamerestart">CypherPokerGame#event:gamerestart</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    Resolves to <code>true</code> when game is immediatelyrestarted, and <code>false</code> if the game is awaiting analysis (is paused).
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="sendToPlayers"><span class="type-signature"></span>sendToPlayers<span class="signature">(messageType, payload<span class="signature-attributes">opt</span>, privateIDs<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Sends a message to player(s) associated with this game. Tableinformation is automatically appended to the message.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>messageType</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The CypherPoker.JS message type to sendto recipients. This should begin with "game" in order toprevent conflicts with other peer-to-peer message types.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>payload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">Additional data to include withthe message's <code>payload</code> property.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>privateIDs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">The private ID(s) of the target(s) / recipient(s).If <code>null</code>, the list of recipients comes from the associated<a href="CypherPokerGame.html#table">CypherPokerGame#table</a>.<code>joinedPID</code> array.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line1067">line 1067</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="start"><span class="type-signature"></span>start<span class="signature">()</span><span class="type-signature"> &rarr; {<a href="CypherPokerGame.html">CypherPokerGame</a>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Starts the game instance and notifies other players that it's ready. Thisfunction should only be called when all game settings have been loaded,references set, etc.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line408">line 408</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    A reference to the current instance.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+    
+
+    
+
+    
+        <h3 class="subsection-title">Events</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gameanalyze">gameanalyze</h4>
+    
+
+    
+
+
+
+<div class="description">
+    The game is about to end and should have its state saved for analysis.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance reporting that it's about to end.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line187">line 187</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamebet">gamebet</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A bet has been placed by another player.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>amount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The amount of the bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that placed the bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the received bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the received bet.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line166">line 166</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamebetplaced">gamebetplaced</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A bet has been placed by us.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>amount</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The amount of the bet, in the smallest denomination ofthe cryptocurrency.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Reference to our own player object.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the bet.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the bet.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line176">line 176</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamecardsencrypt">gamecardsencrypt</h4>
+    
+
+    
+
+
+
+<div class="description">
+    An encryption operation has been completed by us or another player. Notethat the current dealer generates the current faceup deck.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>selected</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of numeric strings representing thepartially encrypted card values.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that sent the encrypted cards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the message.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line85">line 85</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamedeal">gamedeal</h4>
+    
+
+    
+
+
+
+<div class="description">
+    New public or private cards have been fully decrypted and dealt intoplay.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>cards</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of <a href="CypherPokerCard.html">CypherPokerCard</a> instancesrepresenting the newly dealt, face-up cards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>private</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true, the <code>cards</code> array contains private / holecards otherwise it contains public / community cards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the deal.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the deal.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line127">line 127</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamedealmsg">gamedealmsg</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A "gamedeal" message was received via the peer-to-peer channel and has notyet been processed.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">{Object} data The JSON-RPC 2.0 object containing the message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that sent message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the message.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line155">line 155</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamedealprivate">gamedealprivate</h4>
+    
+
+    
+
+
+
+<div class="description">
+    We have selected private cards which are about to be sent to other playersfor decryption.The selected cards have been removed from the<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.facedown</code> array and added tothe <a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.dealt</code> array.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>selected</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of strings representing theencrypted private cards we've selected.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that selected the cards (us).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the deal.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the deal.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line97">line 97</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamedealpublic">gamedealpublic</h4>
+    
+
+    
+
+
+
+<div class="description">
+    We have selected public cards which are about to be sent to other playersfor decryption.The selected cards have been removed from the<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.facedown</code> array and added tothe <a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.dealt</code> array.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>selected</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of strings representing theencrypted public cards we've selected.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that selected the cards (us).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the deal.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the deal.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line112">line 112</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamedeck">gamedeck</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A new card deck (sequential quadratic residues), has been generated for the game.The deck is available as an array of <a href="CypherPokerCard.html">CypherPokerCard</a> instances in<a href="CypherPokerGame.html#cardDecks">CypherPokerGame#cardDecks</a><code>.faceup</code>.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The JSON-RPC 2.0 object containing the message.If we've created the deck (as dealer), this object is null.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that sent message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance reporting as ready.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line72">line 72</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamedecrypt">gamedecrypt</h4>
+    
+
+    
+
+
+
+<div class="description">
+    New public or private cards have been partially decrypted and forwarded tothe next player for processing.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>payload</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The <code>payload</code> property of the<code>data</code> property of the received JSON-RPC 2.0 result object.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>selected</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Indexed array of strings representing thepartially-encrypted public or private cards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>private</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">If true, the <code>selected</code> array contains private / holecards otherwise it contains public / community cards.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the decryption operation.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the decryption operation.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line140">line 140</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gameend">gameend</h4>
+    
+
+    
+
+
+
+<div class="description">
+    The game (hand) has ended because either all but one player have folded orall cards have been dealt and all rounds of betting have completed.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance reporting as ready.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line195">line 195</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamehello">gamehello</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A "hello" or introduction message was received from a player at this table.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The JSON-RPC 2.0 object containing the message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that sent message. This instance's<code>info</code> object was updated.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance reporting as ready.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line37">line 37</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamekeypair">gamekeypair</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A new <a href="global.html#keypair">keypair</a> has been generated for us by the generateKeypair function.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>keypair</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A new <a href="global.html#keypair">keypair</a> derived from the<a href="CypherPokerGame.html#gameParams">CypherPokerGame#gameParams</a><code>.prime</code> value.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player for whom the keypair was created.If the generateKeypair function was invoked with the <code>storeKeypair</code>parameter set to false, this property will be null.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance that generated the keypair.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line59">line 59</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gameparams">gameparams</h4>
+    
+
+    
+
+
+
+<div class="description">
+    New parameters for the game have been set or received by/from the dealer.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The JSON-RPC 2.0 object containing the message.If we've set the parameters (as dealer), this object is null.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that sent message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance reporting as ready.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gameplayerkeychain">gameplayerkeychain</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A keychain has been received for a specific player, usually at the end of a gameas part of the verification process.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>keychain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Array of <a href="global.html#keypair">keypair</a> objects submitted by the player.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player that send their keyring.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance associated with the message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the message.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line204">line 204</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gameplayerready">gameplayerready</h4>
+    
+
+    
+
+
+
+<div class="description">
+    A player is notifying us that their game is ready (i.e. they received a"gameready" event).
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The JSON-RPC 2.0 object containing the message.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>player</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The player sending the notification.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game to which the player belongs.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table to which the player and game belong.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line26">line 26</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gameready">gameready</h4>
+    
+
+    
+
+
+
+<div class="description">
+    This game instance is signalling that it is ready to start (all startup data has beenloaded, references set, etc.)
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance reporting as ready.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line17">line 17</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamerestart">gamerestart</h4>
+    
+
+    
+
+
+
+<div class="description">
+    The game instance has been reset and is about to restart.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance about to restart.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line226">line 226</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="event:gamescored">gamescored</h4>
+    
+
+    
+
+
+
+<div class="description">
+    The most recently completed game (hand) has been analyzed and scored.
+</div>
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Event</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>analyzer</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The analyzer instance reporting the results.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>game</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPokerGame.html">CypherPokerGame</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The game instance from which the results were generated.Note that the game may have been reset (lost most data), prior to the completion of the analysis.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>table</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CypherPoker.html#TableObject">CypherPoker#TableObject</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The table associated with the game instance. As withthe <code>game</code> property, the table may have changed prior to the completion of the analysis.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="CypherPokerGame.js.html">CypherPokerGame.js</a>, <a href="CypherPokerGame.js.html#line215">line 215</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Oct 15 2018 17:34:06 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
