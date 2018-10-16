@@ -7,13 +7,13 @@
    */
 
    //External API access key:
-   $_accessKey = "n6j>r9%P)lo=y#nfa*<-?0La91+>+@4;-;'j r~`!9(3|!)6m";
+   $_accessKey = "PRIVATE ACCESS KEY";
 
    //Database settings:
    $_dbhost = "localhost"; //the MySQL database host URL
-   $_dbname = "patrickb_cp"; //the MySQL database name
-   $_dbuser = "patrickb_cpadmin"; //the authorized database user account
-   $_dbpw = "Gi{9G7mMKZpK]8sh.0"; //password for $_dbuser
+   $_dbname = "db_name"; //the MySQL database name
+   $_dbuser = "db_user"; //the authorized database user account
+   $_dbpw = "db_password"; //password for $_dbuser
    $db = NULL; //active database connection
 
    /**
