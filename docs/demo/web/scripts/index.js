@@ -46,11 +46,13 @@ const _require = [
    {"url":"./scripts/libs/BigInteger.min.js"},
    {"url":"./scripts/CypherPokerGame.js"},
    {"url":"./scripts/CypherPokerPlayer.js"},
+   {"url":"./scripts/CypherPokerAccount.js"},
    {"url":"./scripts/CypherPokerCard.js"},
+   {"url":"./scripts/CypherPokerContract.js"},
    {"url":"./scripts/CypherPokerAnalyzer.js"},
    {"url":"./scripts/CypherPokerUI.js",
       "onload": () => {
-         //UI is contained in #game element
+         //game UI is contained in #game element
          var gameElement = document.querySelector("#game");
          ui = new CypherPokerUI(gameElement);
       }

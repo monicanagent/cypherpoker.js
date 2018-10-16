@@ -1,7 +1,7 @@
 /**
 * @file Storage and functionality for a single CypherPoker.JS card.
 *
-* @version 0.0.1
+* @version 0.2.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -46,10 +46,11 @@ class CypherPokerCard {
    *
    * @param {HTMLElement} parentElement The parent or containing element within
    * which to add the card graphic.
+   * @param {String} [cardClass="card"] Custom class to apply to the card element.
    * @param {String} [URIProp="imageURI"] The dynamic property of this instance that
    * contains the URI of the card image with which to construct the child element.
    */
-   addToDOM(parentElement, URIProp="imageURI") {
+   addToDOM(parentElement, cardClass="card", URIProp="imageURI") {
       if (this[URIProp] == undefined) {
          throw (new Error("Card image URI property \""+URIProp+"\" not defined."));
       }
@@ -58,9 +59,27 @@ class CypherPokerCard {
          return;
       }
       var cardElement = document.createElement("img");
-      cardElement.setAttribute("class", "card");
+      cardElement.setAttribute("class", cardClass);
       cardElement.setAttribute("src", this[URIProp]);
       parentElement.appendChild(cardElement);
+   }
+
+   /**
+   * Compares the properties of another {@link CypherPokerCard} instance to this
+   * one to determine if they're the same card.
+   *
+   * @param {CypherPokerCard} card The card instance to compare to this one.
+   *
+   * @return {Boolean} True if both cards have the same properties, false
+   * if they're different.
+   */
+   compare (card) {
+      for (var item in card) {
+         if (this[item] != card[item]) {
+            return (false);
+         }
+      }
+      return (true);
    }
 
    /**

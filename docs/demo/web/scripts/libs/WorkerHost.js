@@ -1,5 +1,7 @@
 /**
 * @file A host for a (mostly) generic Web Worker.
+*
+* @version 0.2.0
 */
 let _instances = 0;
 

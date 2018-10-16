@@ -1,6 +1,7 @@
 /**
 * @class SRACryptoWorker Asynchronous Web Worker implementation of the SRA cryptosystem.
 * @name SRACryptoWorker
+* @version 0.2.0
 */
 self.importScripts("BigInteger.min.js"); //very important!
 var useCrypto = false; //use browser's crypto interface?

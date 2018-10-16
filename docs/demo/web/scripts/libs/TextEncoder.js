@@ -1,5 +1,7 @@
 /**
 * @file TextEncoder polyfill (only functional for "utf-8" encoding)
+*
+* @version 0.2.0
 */
 if (typeof TextEncoder === "undefined") {
     TextEncoder=function TextEncoder(){};

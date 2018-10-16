@@ -1,5 +1,7 @@
 /**
 * @file WebSocket Session interface.
+*
+* @version 0.2.0
 */
 
 /**
@@ -298,6 +300,12 @@ class WSS extends EventDispatcher {
                break;
             case "direct":
                event = new Event("message");
+               event.data = dataObj;
+               event._event = event;
+               this.session.dispatchEvent(event);
+               break;
+            case "update":
+               event = new Event("update");
                event.data = dataObj;
                event._event = event;
                this.session.dispatchEvent(event);

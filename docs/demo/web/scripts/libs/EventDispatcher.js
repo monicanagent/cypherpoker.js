@@ -1,5 +1,7 @@
 /**
 * @file Extensible class intended to (nearly) mimic standard DOM event dispatchers.
+*
+* @version 0.2.0
 */
 /**
 * @class Extend this class to enable standard event dispatcher functionality
@@ -15,6 +17,7 @@
 *  }
 * }
 *
+* @version 0.2.0
 * @mixin
 * @mixes Object
 * @see https://www.w3.org/TR/uievents/

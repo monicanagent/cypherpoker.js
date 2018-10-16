@@ -1,11 +1,11 @@
 {
    "p2p":{
       "create":"return (new WSS())",
-      "connectURL":"wss://wssserver-fkodogqovp.now.sh/"
+      "connectURL":"wss://cpserver-zqfqaeubxr.now.sh"
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",
-      "bitLength": 32,
+      "bitLength": 512,
       "radix": 16
    },
    "cards":[

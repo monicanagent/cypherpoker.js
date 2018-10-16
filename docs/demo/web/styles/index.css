@@ -26,6 +26,11 @@
 body {
   font-family: sans-serif;
   font-size: 14px;
+  background-image: linear-gradient(to bottom right, #FFFFFF, #CECECE);
+  height: 100%;
+  margin: 0;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .gameLabel {
@@ -126,6 +131,14 @@ body {
    color:gray;
 }
 
+.gameContainer > #timeoutAmount > #timeout {
+   color:blue;
+}
+
+.gameContainer > #timeoutAmount > #timeoutCritical {
+   color:red;
+}
+
 .card {
    margin-top:-145px;
    margin-bottom:-145px;
@@ -133,4 +146,36 @@ body {
    margin-right:-95px;
    width:300px;
    height:auto;
+}
+
+.historyCard {
+   margin-top:-65px;
+   margin-bottom:-65px;
+   margin-left:-51px;
+   margin-right:-51px;
+   width:150px;
+   height:auto;
+}
+
+.historyHandName {
+   font-size: 14px;
+   font-weight: bold;
+}
+
+.historyHandOwner {
+   font-size: 10px;
+}
+
+.header {
+   font-size:16px;
+}
+
+.handHistoryContainer {
+   overflow-x: scroll;
+   overflow-y: scroll;
+   width: 400px;
+   height: 100%;
+   top: 0px;
+   right: 0px;
+   position: absolute;
 }
