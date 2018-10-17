@@ -4,7 +4,7 @@
 * manages accounts and tables, launches games, and provides accesss to other shared
 * functionality.
 *
-* @version 0.2.0
+* @version 0.2.2
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -373,6 +373,8 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Restores saved accounts from the browser's <code>localStorage</code>.
+   *
+   * @private
    */
    restoreAccounts() {
       var storage = window.localStorage;
@@ -396,7 +398,7 @@ class CypherPoker extends EventDispatcher {
       //strip out unnecessary and circular references
       var saveArray = new Array();
       for (var count=0; count < this.accounts.length; count++) {
-         saveArray.push(this.accounts[count].data);
+         saveArray.push(this.accounts[count].toObject(true));
       }
       storage.setItem("accounts", JSON.stringify(saveArray));
    }
@@ -422,6 +424,8 @@ class CypherPoker extends EventDispatcher {
       var created = await account.create();
       if (created) {
          this.accounts.push(account);
+         console.log ("Created new account:");
+         console.dir(account);
          this.saveAccounts();
          return (account);
       } else {
