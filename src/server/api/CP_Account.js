@@ -705,15 +705,17 @@ function callAccountDatabase(method, message) {
          var signature = hmac.digest('hex');
          txObject.params.signature = signature;
          txObject.params.message = message;
-         var headersArr = [{"Content-Type":"application/json-rpc"}];
-         if ((host != null) && (host != undefined) && (host != "")) {
-            headersArr.push({"Host":host});
+         var headersObj = new Object();
+         headersObj = {
+            "Content-Type":"application/json-rpc",
+            "accept":"application/json-rpc",
+            "Host":host
          }
          request({
             url: url,
             method: "POST",
             body: txObject,
-            headers: headersArr,
+            headers: headersObj,
             json: true
          }, (error, response, body) => {
             if (error) {
