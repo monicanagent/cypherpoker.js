@@ -44,7 +44,7 @@
       <div id="accounts" class="accountsContainer">
          <div id="loginForm" class="loginFormContainer">
             <select id="currentAccounts" class="currentAccountsList">
-            </select><br/>
+            </select><button id="copyToClipboardButton" class="copyToClipboardButton">📋</button><br/>
             Password: <input type="password" id="accountPassword" name="accountPassword" placeholder="Account password" /><br/>
             <button id="useAccountButton" class="useAccountButton">USE ACCOUNT</button>
             <button id="createAccountButton" class="createAccountButton">CREATE NEW ACCOUNT</button><br/>
@@ -114,5 +114,7 @@
          </div>
       </div>
 
+      <!-- Proxy data container for global copy-to-clipboard commands. This element should almost always remain off-screen (but not hidden!). -->
+      <input id="clipboardData" name="clipboardData" type="text" style="width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;opacity:0;" value=""></input>
    </body>
 </html>

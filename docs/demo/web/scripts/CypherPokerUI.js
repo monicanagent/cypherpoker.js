@@ -22,6 +22,7 @@ class CypherPokerUI {
    * @property {String} UISelectors.accountLoginForm="#accounts>#loginForm" The main account login container element.
    * @property {String} UISelectors.accountManageForm="#accounts>#manageForm" The main account management container element.
    * @property {String} UISelectors.accountCreateForm="#accounts>#createAccountForm" The main account creation container element.
+   * @property {String} UISelectors.clipboardData="#clipboardData" Proxy data container for global clipboard copy commands.
    * @property {String} UISelectors.lobby="#lobby" The main lobby container element.
    */
    get UISelectors() {
@@ -31,6 +32,7 @@ class CypherPokerUI {
          "accountLoginForm": "#accounts > #loginForm",
          "accountManageForm": "#accounts > #manageForm",
          "accountCreateForm": "#accounts > #createAccountForm",
+         "clipboardData":"#clipboardData",
          "lobby":"#lobby"
       });
    }
@@ -53,6 +55,7 @@ class CypherPokerUI {
    * @property {String} accountsUISelectors.newAccountButton="#newAccountButton" The new account form's new account button.
    * @property {String} accountsUISelectors.newAccountType="#newAccountType" The new account form's new account type selection element.
    * @property {String} accountsUISelectors.newAccountPassword="#newAccountPassword" The new account form's new account password input element.
+   * @property {String} accountsUISelectors.copyToClipboardButton="#copyToClipboardButton" The "copy to clipboard" button in the accounts interface.
    */
    get accountsUISelectors() {
       return({
@@ -69,7 +72,8 @@ class CypherPokerUI {
          "createAccountButton":this.UISelectors.accountLoginForm + " > #createAccountButton",
          "newAccountButton":this.UISelectors.accountCreateForm + " > #newAccountButton",
          "newAccountType":this.UISelectors.accountCreateForm + " > #newAccountType",
-         "newAccountPassword":this.UISelectors.accountCreateForm + "  > #newAccountPassword"
+         "newAccountPassword":this.UISelectors.accountCreateForm + "  > #newAccountPassword",
+         "copyToClipboardButton":this.UISelectors.accountLoginForm  + " > #copyToClipboardButton"
       });
    }
 
@@ -266,12 +270,14 @@ class CypherPokerUI {
       var newAccountButton = document.querySelector(this.accountsUISelectors.newAccountButton);
       var useAccountButton = document.querySelector(this.accountsUISelectors.useAccountButton);
       var createAccountButton = document.querySelector(this.accountsUISelectors.createAccountButton);
+      var copyToClipboardButton = document.querySelector(this.accountsUISelectors.copyToClipboardButton);
       accountSelect.addEventListener("change", this.onSelectAccount)
       cashoutButton.addEventListener("click", this.onCashoutButtonClick)
       transferButton.addEventListener("click", this.onTransferButtonClick)
       useAccountButton.addEventListener("click", this.onUseAccountButtonClick);
       newAccountButton.addEventListener("click", this.onNewAccountButtonClick);
       createAccountButton.addEventListener("click", this.onCreateAccountButtonClick);
+      copyToClipboardButton.addEventListener("click", this.onCopyToClipboardButtonClick);
    }
 
    /**
@@ -443,6 +449,52 @@ class CypherPokerUI {
       }).catch(error => {
          ui.showDialog(error);
       });
+   }
+
+   /**
+   * Event handler invoked when the "copy to clipboard" button is
+   * clicked in the accounts UI. The function copies data to the clipboard.
+   *
+   * @param {Event} event A HTML DOM button click event.
+   *
+   * @private
+   */
+   onCopyToClipboardButtonClick(event) {
+      var ui = event.target.ui;
+      console.log ("onCopyToClipboardButtonClick");
+      var accountsList = document.querySelector(ui.accountsUISelectors.currentAccounts);
+      if (accountsList.length == 0) {
+         ui.showDialog("No account.");
+         ui.hideDialog(3000);
+         return;
+      }
+      var selectedOption = accountsList.options[accountsList.selectedIndex];
+      var useAccount = selectedOption.account;
+      ui.copyToClipboard(useAccount.address, ui);
+      ui.showDialog("Copied to clipboard.");
+      ui.hideDialog(3000);
+   //   console.log ("Selected account: "+useAccount.address)
+   }
+
+   /**
+   * Copies data to the system clipboard via a proxy HTML element.
+   *
+   * @param {String} data The data to copy to the clipboard.
+   * @param {CypherPokerUI} [context=null] The context in which to execute
+   * the function. If <code>null</code>, the default <code>this</code>
+   * reference is assumed.
+   *
+   * @private
+   */
+   copyToClipboard (data, context=null) {
+      if (context == null) {
+         context = this;
+      }
+      document.querySelector(context.UISelectors.clipboardData).value = data;
+      document.querySelector(context.UISelectors.clipboardData).focus();
+      document.querySelector(context.UISelectors.clipboardData).select();
+      document.execCommand("copy");
+      document.querySelector(context.UISelectors.clipboardData).value = "";
    }
 
    /**
