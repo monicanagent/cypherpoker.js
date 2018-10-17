@@ -332,4 +332,5 @@ class CypherPokerAccount extends EventDispatcher {
       }
       return (result);
    }
+
 }
