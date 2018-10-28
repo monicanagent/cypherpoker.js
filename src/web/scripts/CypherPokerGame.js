@@ -1,7 +1,7 @@
 /**
 * @file A CypherPoker.JS implementation of Texas Hold'em poker for 2+ players.
 *
-* @version 0.2.0
+* @version 0.2.3-beta.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -1704,8 +1704,16 @@ class CypherPokerGame extends EventDispatcher {
             return (false);
          }
       }
-      this.pot = 0;
-      this._gameStarted = false;
+      if (context.contract != null) {
+         if (context.contract.active != false) {
+            //re-check every 0.5 seconds
+            setTimeout(context.restartGame, 500, context);
+            return (false);
+         }
+      }
+      context.debug ("restartGame()");
+      context.pot = 0;
+      context._gameStarted = false;
       context.resetPlayerStates(true, true, true);
       context.cardDecks.public = new Array();
       context.cardDecks.dealt = new Array();
@@ -1725,7 +1733,7 @@ class CypherPokerGame extends EventDispatcher {
          context.players[count].isDealer = false;
          context.players[count].resetKeychain();
       }
-      this._lastBetPID = null;
+      context._lastBetPID = null;
       //dealer currently stays in place
       context.assignPlayerRoles(nextDealerPID);
       context._gameParams = new Object();

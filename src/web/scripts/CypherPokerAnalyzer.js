@@ -624,6 +624,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                   var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+fromPID+"\" for \""+sourcePID+"\".");
                   console.dir (cards);
                   console.dir (encryptedDeck);
+                  console.dir (this.deals);
                   error.code = 2;
                   this._analysis.error = error;
                   this._analysis.complete = true;

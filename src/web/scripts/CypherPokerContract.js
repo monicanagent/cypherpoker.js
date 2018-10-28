@@ -2,7 +2,7 @@
 * @file A virtual smart contract implementation using a WebSocket Session
 * service as a TTP host.
 *
-* @version 0.2.0
+* @version 0.2.3-beta.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -58,6 +58,7 @@ class CypherPokerContract extends EventDispatcher {
    constructor(gameRef) {
       super();
       this._game = gameRef;
+      this._active = true;
       this.addGameEventListeners();
    }
 
@@ -91,6 +92,17 @@ class CypherPokerContract extends EventDispatcher {
       }
       //other validity tests can be done here
       return (true);
+   }
+
+   /**
+   * @property {Boolean} active=false Indicates whether or not the contract is currently
+   * active (recording or resolving a game).
+   */
+   get active() {
+      if (this._active == undefined) {
+         this._active = false;
+      }
+      return (this._active);
    }
 
    /**
@@ -1293,6 +1305,7 @@ class CypherPokerContract extends EventDispatcher {
             this.removeGameEventListeners();
             this.stopContractTimeout();
             this.resetContractTimeout();
+            this._active = false;
             break;
          default:
             //not a recognized CypherPokerContract message type
