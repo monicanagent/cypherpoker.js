@@ -517,7 +517,7 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * @property {Boolean} gameStarted True if the game has been started (all
+   * @property {Boolean} gameStarted=false True if the game has been started (all
    * players have introduced themselves and game parameters have been set).
    * @readonly
    */
@@ -527,6 +527,20 @@ class CypherPokerGame extends EventDispatcher {
       }
       return (this._gameStarted);
    }
+
+   /**
+   * @property {Array} messageQueue Peer-to-peer message events that have been
+   * queued while {@link CypherPokerGame#gameStarte} is <code>false</code>.
+   * Message events are stored in order of age of receipt with the most
+   * recent events appearing last.
+   */
+   get messageQueue() {
+      if (this._messageQueue == undefined) {
+         this._messageQueue = new Array();
+      }
+      return (this._messageQueue);
+   }
+
 
    /**
    * Returns the next betting player following a specified one.
@@ -1049,6 +1063,23 @@ class CypherPokerGame extends EventDispatcher {
          }
       }
       return (null);
+   }
+
+   /**
+   * Processes any queued message events found in the {@link CypherPokerGame#messageQueue}.
+   *
+   * @async
+   * @private
+   */
+   async processMessageQueue() {
+      console.log ("Now processing message queue with "+this.messageQueue.length+" entries");
+      while (this.messageQueue.length > 0) {
+         var nextMessageEvent = this.messageQueue.shift(); //process oldest first
+         console.log ("Next message...");
+         console.log ("Remaining messages: "+this.messageQueue.length);
+         var result = await this.handleP2PMessage(nextMessageEvent);
+      }
+      return (true);
    }
 
    /**
@@ -1697,21 +1728,24 @@ class CypherPokerGame extends EventDispatcher {
       if (context == null) {
          context = this;
       }
+      context.debug ("restartGame() *********************************************");
+      context._gameEnding = true;
       if (context.analyzer != null) {
          if (context.analyzer.active != false) {
-            //re-check every 0.5 seconds
+            //re-check every half second
             setTimeout(context.restartGame, 500, context);
             return (false);
          }
       }
+      /*
       if (context.contract != null) {
          if (context.contract.active != false) {
-            //re-check every 0.5 seconds
+            //re-check every half second
             setTimeout(context.restartGame, 500, context);
             return (false);
          }
       }
-      context.debug ("restartGame()");
+      */
       context.pot = 0;
       context._gameStarted = false;
       context.resetPlayerStates(true, true, true);
@@ -1755,6 +1789,9 @@ class CypherPokerGame extends EventDispatcher {
       } catch (err) {
          //anyone but the current dealer will throw an error in sendGameParams
       }
+      context._gameStarted = true;
+      context._gameEnding = false;
+      var result = await context.processMessageQueue();
       return (true);
    }
 
@@ -1877,6 +1914,7 @@ class CypherPokerGame extends EventDispatcher {
    * @param {Event} event A "message" event dispatched by the communication interface.
    * A <code>data</code> property is expected to contain the parsed JSON-RPC 2.0
    * message received.
+   *
    * @fires CypherPokerGame#gamehello
    * @fires CypherPokerGame#gameplayerready
    * @fires CypherPokerGame#gameparams
@@ -1890,13 +1928,13 @@ class CypherPokerGame extends EventDispatcher {
    async handleP2PMessage(event) {
       if (this.cypherpoker.isCPMsgEvent(event) == false) {
          //don't process any further
-         return;
+         return (false);
       }
       var resultObj = event.data.result;
       var eventData = event.data;
       if (this.matchesThisTable(resultObj) == false) {
          //included table information doesn't match this game's table
-         return;
+         return (false);
       }
       var message = resultObj.data;
       var payload = message.payload; //similar to a generic "tableInfo" object
@@ -1910,6 +1948,11 @@ class CypherPokerGame extends EventDispatcher {
       this.debug("CypherPokerGame.handleP2PMessage("+event+") => \""+messageType+"\"");
       switch (messageType) {
          case "gameready":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             player.ready = true;
             this.sendPlayerInfo([fromPID]);
             event = new Event("gameplayerready");
@@ -1920,6 +1963,11 @@ class CypherPokerGame extends EventDispatcher {
             this.dispatchEvent(event);
             break;
          case "gamehello":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             if (player.ready == false) {
                //we weren't ready for this player's "gameready"
                player.ready = true;
@@ -1940,7 +1988,7 @@ class CypherPokerGame extends EventDispatcher {
             this.dispatchEvent(event);
             for (var count=0; count < this.players.length; count++) {
                if (this.players[count].ready == false) {
-                  return;
+                  return (false);
                }
             }
             //all players are now ready - send game parameters
@@ -1954,6 +2002,11 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gameparams":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             this._gameParams = payload;
             event = new Event("gameparams");
             event.data = event.data;
@@ -1968,6 +2021,11 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gamedeck":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             if (this.cardDecks.faceup.length >= this.cypherpoker.settings.cards.length) {
                throw (new Error("A deck for this game has already been generated."));
             }
@@ -1982,6 +2040,11 @@ class CypherPokerGame extends EventDispatcher {
             this.dispatchEvent(event);
             break;
          case "gamecardsencrypt":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             //dispatch this event before potentially calling "encryptCards" below
             event = new Event("gamecardsencrypt");
             event.selected = Array.from(payload);
@@ -2017,6 +2080,11 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gamedeal":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             event = new Event("gamedealmsg");
             event.data = eventData;
             event.player = this.getPlayer(fromPID);
@@ -2052,6 +2120,11 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gamebet":
+            if (this._gameEnding == true) {
+               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
+               this.messageQueue.push(event);
+               return (false);
+            }
             if (payload.fold == true) {
                this.getPlayer(fromPID).hasFolded = true;
                this.getPlayer(fromPID).hasBet = true;

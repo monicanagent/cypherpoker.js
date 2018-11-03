@@ -490,7 +490,7 @@ class CypherPoker extends EventDispatcher {
       }
       newTableObj.tableInfo = tableInfo;
       newTableObj.toString = function () {
-        return ("[object CypherPoker#TableObject]");
+        return ("[object TableObject]");
       }
       this._joinedTables.push(newTableObj);
       this._openTables = true;

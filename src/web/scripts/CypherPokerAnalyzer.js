@@ -104,6 +104,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
          this._keychains = new Object();
       }
       var allPlayersCommitted = true;
+      var numCommitted = 0;
       for (var count=0; count < this.game.players.length; count++) {
          var player = this.game.players[count];
          if (this._keychains[player.privateID] == undefined) {
@@ -113,8 +114,11 @@ class CypherPokerAnalyzer extends EventDispatcher {
          if (keychain.length == 0) {
             allPlayersCommitted = false;
             break;
+         } else {
+            numCommitted++;
          }
       }
+      console.log ("Keychains committed: "+numCommitted);
       if (allPlayersCommitted) {
          return (true);
       }
@@ -284,8 +288,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * setting the {@link CypherPokerAnalyzer#active} property to false.
    */
    deactivate() {
-      this.removeGameListeners();
-      this._active = false;
+      //this.removeGameListeners();
+      //this._active = false;
    }
 
    /**
@@ -477,7 +481,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    onKCSTimeout(context, game) {
-      this._analysis.complete = true;
+      context.analysis.complete = true;
       throw (new Error("Not all players have committed their keychains in time (table ID: "+game.table.tableID+")"));
    }
 
@@ -498,8 +502,9 @@ class CypherPokerAnalyzer extends EventDispatcher {
       var player = event.player;
       var game = event.game;
       if (game.gameStarted) {
-         return (false);
+      //   return (false);
       }
+      console.log("onPlayerKeychain ****************************************************");
       this._keychains[player.privateID] = Array.from(event.keychain);
       if (this.allKeychainsCommitted) {
          this.removeGameListeners();
@@ -863,6 +868,22 @@ class CypherPokerAnalyzer extends EventDispatcher {
          winningPlayers = newWinningPlayers;
          winningHands = newWinningHands;
       }
+      //eliminate any duplicates
+      newWinningPlayers = new Array();
+      newWinningHands = new Array();
+      for (var count=0; count < winningPlayers.length; count++) {
+         var currentWinnerPID = winningPlayers[count];
+         var currentWinningHand = winningHands[count];
+         var existingWinnerPID = newWinningPlayers.find(winnerPID => {
+            return (winnerPID == currentWinnerPID);
+         }, this);
+         if (existingWinnerPID == undefined) {
+            newWinningPlayers.push(currentWinnerPID);
+            newWinningHands.push(currentWinningHand);
+         }
+      }
+      winningPlayers = newWinningPlayers;
+      winningHands = newWinningHands;
       cardsObj.winningPlayers = winningPlayers;
       cardsObj.winningHands = winningHands;
       return (cardsObj);
