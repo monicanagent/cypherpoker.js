@@ -200,7 +200,7 @@ class CypherPokerAccount extends EventDispatcher {
          this.balance = 0;
          throw(new Error(JSONObj.error.message));
       }
-      //balance confirmed? JSONObj.result.confirmed
+      //balance confirmed = JSONObj.result.confirmed
       this.balance = JSONObj.result.balance;
       return (true);
    }

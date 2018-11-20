@@ -54,12 +54,15 @@ class EventDispatcher {
    * If null, the listener is invoked in the context of the EventDispatcher instance.
    */
    addEventListener (type, listener, eventContext = null) {
-       var listeners= this.getListeners(type);
+       var listeners = this.getListeners(type);
+       /*
        for (var count=0; count < listeners.length; count++) {
           if (listeners[count].listener == listener) {
+             console.log ("!!!!!!!!!!!!!!!!!!!! SKIPPING DUPLICATE EVENT LISTENER !!!!!!!!!!!!!!!!!!!!!!!!");
              return;
           }
        }
+       */
        var listenerObj = new Object();
        listenerObj.listener = listener;
        listenerObj.context = eventContext;
@@ -76,7 +79,7 @@ class EventDispatcher {
    * @augments EventDispatcher
    */
    removeEventListener (type, listener) {
-       var listeners= this.getListeners(type);
+       var listeners = this.getListeners(type);
        for (var count=0; count < listeners.length; count++) {
           if (listeners[count].listener == listener) {
              listeners.splice(count, 1);

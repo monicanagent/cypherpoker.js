@@ -482,7 +482,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    */
    onKCSTimeout(context, game) {
       context.analysis.complete = true;
-      throw (new Error("Not all players have committed their keychains in time (table ID: "+game.table.tableID+")"));
+      //throw (new Error("Not all players have committed their keychains in time (table ID: "+game.table.tableID+")"));
    }
 
    /**
@@ -507,6 +507,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
       console.log("onPlayerKeychain ****************************************************");
       this._keychains[player.privateID] = Array.from(event.keychain);
       if (this.allKeychainsCommitted) {
+         console.log ("NOW ANALYZING");
          this.removeGameListeners();
          //all keychains committed, we can clear the timeout and start the analysis
          clearTimeout(this._keychainCommitTimeout);
@@ -531,9 +532,9 @@ class CypherPokerAnalyzer extends EventDispatcher {
          event.analyzer = this;
          event.analysis = this.analysis;
          this.dispatchEvent(event);
-      //   console.log ("Final analysis:");
-      //   console.dir (this.analysis);
-      //   console.dir (this.deals);
+         console.log ("Final analysis:");
+         console.dir (this.analysis);
+         console.dir (this.deals);
          this._active = false;
       }
       return (true);

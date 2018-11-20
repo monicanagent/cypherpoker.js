@@ -1,7 +1,7 @@
 /**
 * @file Manages proxy CypherPoker smart contracts and defines a number of related utility functions.
 *
-* @version 0.2.0
+* @version 0.2.3
 */
 
 /**
@@ -84,6 +84,7 @@ async function CP_SmartContract (sessionObj) {
             return(false);
          }
          if (validContractObject(requestParams.contract, privateID, requestParams.account) == false) {
+            console.error("Invalid contract creation");
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Invalid contract.", sessionObj);
             return(false);
          }
@@ -145,12 +146,17 @@ async function CP_SmartContract (sessionObj) {
             return(false);
          }
          console.log ("New hand contract created: \""+newContract.contractID+"\"");
+         console.log ("Contract owner PID: \""+privateID+"\"");
          break;
       case "agree":
          var contractOwnerPID = requestParams.ownerPID;
          var contractID = requestParams.contractID;
+         console.log ("Attempting to agree to contract: \""+contractID+"\"");
+         console.log ("Contract owner PID: \""+contractOwnerPID+"\"");
          var gameContract = getContractByID(contractOwnerPID, contractID);
          if (gameContract == null) {
+            console.log ("agree");
+         //   console.dir (namespace.cp.contracts);
             console.error ("Attempt to access non-existent contract: "+contractID);
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "No such contract.", sessionObj);
             return(false);
@@ -195,6 +201,7 @@ async function CP_SmartContract (sessionObj) {
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
             return(false);
          }
+         console.log ("Player has agreed to contract: \""+contractID+"\"");
          break;
       case "store":
          if (typeof(requestParams.type) != "string") {
@@ -208,7 +215,10 @@ async function CP_SmartContract (sessionObj) {
          contractOwnerPID = requestParams.ownerPID;
          contractID = requestParams.contractID;
          gameContract = getContractByID(contractOwnerPID, contractID);
+         //console.log ("store "+requestParams.type+" for contract "+contractID+" by "+privateID);
+         //console.log ("owner: "+contractOwnerPID);
          if (gameContract == null) {
+            console.log ("store");
             console.error ("Attempt by \""+privateID+"\" to access non-existent contract: "+contractID);
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "No such contract.", sessionObj);
             return(false);
@@ -458,6 +468,7 @@ async function CP_SmartContract (sessionObj) {
          var gameContract = getContractByID(contractOwnerPID, contractID);
          if (typeof(requestParams.amount) != "string")
          if (gameContract == null) {
+            console.log ("bet");
             console.error ("Attempt to access non-existent contract: "+contractID);
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "No such contract.", sessionObj);
             return(false);
@@ -546,6 +557,7 @@ async function CP_SmartContract (sessionObj) {
          contractID = requestParams.contractID;
          gameContract = getContractByID(contractOwnerPID, contractID);
          if (gameContract == null) {
+            console.log ("timeout");
             console.error ("Attempt to access non-existent contract: "+contractID);
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "No such contract.", sessionObj);
             return(false);
@@ -637,6 +649,7 @@ async function analyzeCards(contract) {
    cardsObj.public = new Array();
    var faceUpMappings = Array.from(history.deck[0].cards); //generated plaintext (quadratic residues) values
    var previousDeck = Array.from(faceUpMappings);
+   console.log("History deck length: "+history.deck.length);
    for (var count = 1; count < history.deck.length; count++) {
       var currentDeck = Array.from(history.deck[count].cards);
       var keychain = history.keychains[history.deck[count].fromPID];
@@ -656,6 +669,12 @@ async function analyzeCards(contract) {
       }
       if (compareDecks(currentDeck, resultDeck) == false) {
          var error = new Error("Deck encryption at stage "+count+" by \""+history.deck[count].fromPID+"\" failed.");
+      //   console.log ("Source:");
+      //   console.dir (previousDeck);
+      //   console.log ("Expected:");
+      //   console.dir (currentDeck);
+      //   console.log ("Result:");
+      //   console.dir (resultDeck);
          error.code = 1;
          error.failedPIDs = new Array();
          error.failedPIDs.push (history.deck[count].fromPID);
@@ -763,6 +782,7 @@ async function analyzeCards(contract) {
                error.failedPIDs.push (fromPID);
                history.analysis.error = error;
                history.analysis.complete = true;
+               console.dir(history.deals);
                throw (error);
             }
          } else {
@@ -2099,10 +2119,12 @@ function bettingDone(contract) {
 function getContractsByPID(ownerPID) {
    if ((namespace.cp.contracts == undefined) || (namespace.cp.contracts == null)) {
       //create contracts container
+      //console.log ("creating new contracts object");
       namespace.cp.contracts = new Object();
    }
    if ((namespace.cp.contracts[ownerPID] == null) || (namespace.cp.contracts[ownerPID] == undefined) || (namespace.cp.contracts[ownerPID] == "")) {
       //create a new container
+      //console.log ("contracts for "+ownerPID+" not yet created.");
       namespace.cp.contracts[ownerPID] = new Array();
    }
    return (namespace.cp.contracts[ownerPID]);
@@ -2121,6 +2143,7 @@ function getContractsByPID(ownerPID) {
 function getContractByID(ownerPID, contractID) {
    var contractsArr = namespace.cp.getContractsByPID(ownerPID);
    if (contractsArr.length == 0) {
+      console.log ("contracts array is empty");
       return (null);
    }
    for (var count=0; count < contractsArr.length; count++) {

@@ -529,6 +529,18 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
+   * @property {Boolean} gameEnding=false True if the game is currently ending
+   * (game play has completed by verification/validation has not).
+   * @readonly
+   */
+   get gameEnding() {
+      if (this._gameEnding == undefined) {
+         this._gameEnding = false;
+      }
+      return (this._gameEnding);
+   }
+
+   /**
    * @property {Array} messageQueue Peer-to-peer message events that have been
    * queued while {@link CypherPokerGame#gameStarte} is <code>false</code>.
    * Message events are stored in order of age of receipt with the most
@@ -1226,6 +1238,7 @@ class CypherPokerGame extends EventDispatcher {
       event.game = this.game;
       event.table = this.table;
       this.dispatchEvent(event);
+      console.log (">>>>>>>>>>>>>>>>>>>. KEYPAIR NOW GENERATED");
       return (keypair);
    }
 
@@ -1729,7 +1742,8 @@ class CypherPokerGame extends EventDispatcher {
          context = this;
       }
       context.debug ("restartGame() *********************************************");
-      context._gameEnding = true;
+      //context._gameEnding = true;
+/*
       if (context.analyzer != null) {
          if (context.analyzer.active != false) {
             //re-check every half second
@@ -1737,7 +1751,6 @@ class CypherPokerGame extends EventDispatcher {
             return (false);
          }
       }
-      /*
       if (context.contract != null) {
          if (context.contract.active != false) {
             //re-check every half second
@@ -1745,7 +1758,7 @@ class CypherPokerGame extends EventDispatcher {
             return (false);
          }
       }
-      */
+*/
       context.pot = 0;
       context._gameStarted = false;
       context.resetPlayerStates(true, true, true);
@@ -1753,6 +1766,9 @@ class CypherPokerGame extends EventDispatcher {
       context.cardDecks.dealt = new Array();
       context.cardDecks.faceup = new Array();
       context.cardDecks.facedown = new Array();
+      console.log ("Table before update: ");
+      console.log ("Current dealer: "+context.getDealer().privateID);
+      console.log(JSON.stringify(context.table));
       var nextDealerPID = context.getNextPlayer(context.getDealer().privateID).privateID;
       for (var count=0; count < context.players.length; count++) {
          context.players[count].selectedCards = new Array();
@@ -1761,15 +1777,19 @@ class CypherPokerGame extends EventDispatcher {
          context.players[count].hasFolded = false;
          context.players[count].totalBet = 0;
          context.players[count].numActions = 0;
-         //player roles are not currently adjusted
          context.players[count].isBigBlind = false;
          context.players[count].isSmallBlind = false;
          context.players[count].isDealer = false;
          context.players[count].resetKeychain();
       }
-      context._lastBetPID = null;
-      //dealer currently stays in place
       context.assignPlayerRoles(nextDealerPID);
+      context.players.push(context.players.shift());
+      context.table.joinedPID.push(context.table.joinedPID.shift());
+      context.table.ownerPID = nextDealerPID;
+      console.log ("Table after update: ");
+      console.log ("Next dealer: "+nextDealerPID);
+      console.log (JSON.stringify(context.table));
+      context._lastBetPID = null;
       context._gameParams = new Object();
       context._contract.stopContractTimeout();
       context._analyzer.removeGameListeners();
@@ -1790,7 +1810,7 @@ class CypherPokerGame extends EventDispatcher {
          //anyone but the current dealer will throw an error in sendGameParams
       }
       context._gameStarted = true;
-      context._gameEnding = false;
+      //context._gameEnding = false;
       var result = await context.processMessageQueue();
       return (true);
    }
@@ -1934,6 +1954,7 @@ class CypherPokerGame extends EventDispatcher {
       var eventData = event.data;
       if (this.matchesThisTable(resultObj) == false) {
          //included table information doesn't match this game's table
+         console.log ("Table mismatch.");
          return (false);
       }
       var message = resultObj.data;
@@ -2091,15 +2112,17 @@ class CypherPokerGame extends EventDispatcher {
             event.game = this;
             event.table = this.table;
             this.dispatchEvent(event);
-            payload.fromPID = fromPID;
-            //store encrypted private card selections for a player
-            if ((payload.private == true) && (payload.sourcePID == fromPID)) {
+            payload.fromPID = fromPID;            
+            //if ((payload.private == true) && (payload.sourcePID == fromPID)) {
+            if (payload.sourcePID == fromPID) {
                for (var count = 0; count < payload.selected.length; count++) {
                    for (var count2 = (this.cardDecks.facedown.length-1); count2 >= 0; count2--) {
                       if (this.cardDecks.facedown[count2] == payload.selected[count]) {
                          this.cardDecks.dealt.push(this.cardDecks.facedown[count2]);
                          //todo: ensure that this only gets done once!
-                         this.getPlayer(fromPID).selectedCards.push(this.cardDecks.facedown[count2]);
+                          if (payload.private == true) {
+                            this.getPlayer(fromPID).selectedCards.push(this.cardDecks.facedown[count2]);
+                         }
                          this.cardDecks.facedown.splice(count2, 1);
                       }
                    }
