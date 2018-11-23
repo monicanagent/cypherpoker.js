@@ -1084,11 +1084,8 @@ class CypherPokerGame extends EventDispatcher {
    * @private
    */
    async processMessageQueue() {
-      console.log ("Now processing message queue with "+this.messageQueue.length+" entries");
       while (this.messageQueue.length > 0) {
          var nextMessageEvent = this.messageQueue.shift(); //process oldest first
-         console.log ("Next message...");
-         console.log ("Remaining messages: "+this.messageQueue.length);
          var result = await this.handleP2PMessage(nextMessageEvent);
       }
       return (true);
@@ -1238,7 +1235,6 @@ class CypherPokerGame extends EventDispatcher {
       event.game = this.game;
       event.table = this.table;
       this.dispatchEvent(event);
-      console.log (">>>>>>>>>>>>>>>>>>>. KEYPAIR NOW GENERATED");
       return (keypair);
    }
 
@@ -1741,7 +1737,6 @@ class CypherPokerGame extends EventDispatcher {
       if (context == null) {
          context = this;
       }
-      context.debug ("restartGame() *********************************************");
       //context._gameEnding = true;
 /*
       if (context.analyzer != null) {
@@ -1766,9 +1761,6 @@ class CypherPokerGame extends EventDispatcher {
       context.cardDecks.dealt = new Array();
       context.cardDecks.faceup = new Array();
       context.cardDecks.facedown = new Array();
-      console.log ("Table before update: ");
-      console.log ("Current dealer: "+context.getDealer().privateID);
-      console.log(JSON.stringify(context.table));
       var nextDealerPID = context.getNextPlayer(context.getDealer().privateID).privateID;
       for (var count=0; count < context.players.length; count++) {
          context.players[count].selectedCards = new Array();
@@ -1786,9 +1778,6 @@ class CypherPokerGame extends EventDispatcher {
       context.players.push(context.players.shift());
       context.table.joinedPID.push(context.table.joinedPID.shift());
       context.table.ownerPID = nextDealerPID;
-      console.log ("Table after update: ");
-      console.log ("Next dealer: "+nextDealerPID);
-      console.log (JSON.stringify(context.table));
       context._lastBetPID = null;
       context._gameParams = new Object();
       context._contract.stopContractTimeout();
@@ -1954,7 +1943,6 @@ class CypherPokerGame extends EventDispatcher {
       var eventData = event.data;
       if (this.matchesThisTable(resultObj) == false) {
          //included table information doesn't match this game's table
-         console.log ("Table mismatch.");
          return (false);
       }
       var message = resultObj.data;
@@ -1970,7 +1958,6 @@ class CypherPokerGame extends EventDispatcher {
       switch (messageType) {
          case "gameready":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -1985,7 +1972,6 @@ class CypherPokerGame extends EventDispatcher {
             break;
          case "gamehello":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -2024,7 +2010,6 @@ class CypherPokerGame extends EventDispatcher {
             break;
          case "gameparams":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -2043,7 +2028,6 @@ class CypherPokerGame extends EventDispatcher {
             break;
          case "gamedeck":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -2062,7 +2046,6 @@ class CypherPokerGame extends EventDispatcher {
             break;
          case "gamecardsencrypt":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -2102,7 +2085,6 @@ class CypherPokerGame extends EventDispatcher {
             break;
          case "gamedeal":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -2112,7 +2094,7 @@ class CypherPokerGame extends EventDispatcher {
             event.game = this;
             event.table = this.table;
             this.dispatchEvent(event);
-            payload.fromPID = fromPID;            
+            payload.fromPID = fromPID;
             //if ((payload.private == true) && (payload.sourcePID == fromPID)) {
             if (payload.sourcePID == fromPID) {
                for (var count = 0; count < payload.selected.length; count++) {
@@ -2144,7 +2126,6 @@ class CypherPokerGame extends EventDispatcher {
             break;
          case "gamebet":
             if (this._gameEnding == true) {
-               console.log ("**************** NOW QUEUEING MESSAGE ***********************");
                this.messageQueue.push(event);
                return (false);
             }
@@ -2221,7 +2202,7 @@ class CypherPokerGame extends EventDispatcher {
    * @private
    */
    onGameAnalyzed(event) {
-      event.analyzer.removeEventListener("scored", this.onGameAnalyzed);
+      event.analyzer.removeEventListener("scored", this.onGameAnalyzed, this);
       var newEvent = new Event("gamescored");
       newEvent.analyzer = event.analyzer;
       newEvent.game = this;

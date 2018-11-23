@@ -2,7 +2,7 @@
 * @file A virtual smart contract implementation using a WebSocket Session
 * service as a TTP host.
 *
-* @version 0.2.3-beta.1
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -61,7 +61,6 @@ class CypherPokerContract extends EventDispatcher {
       this._active = true;
       this.addGameEventListeners();
       this.cypherpoker.p2p.addEventListener("update", this.handleUpdateMessage, this);
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> CREATED NEW CONTRACT INSTANCE");
    }
 
    /**
@@ -113,7 +112,6 @@ class CypherPokerContract extends EventDispatcher {
    * @private
    */
    refreshPlayers() {
-      //this._players = Array.from(this.game.players);
       this._players = new Array();
       for (var count=0; count < this.game.players.length; count++) {
          this._players.push(this.game.players[count].copy());
@@ -212,7 +210,6 @@ class CypherPokerContract extends EventDispatcher {
    * @private
    */
    addGameEventListeners() {
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> addGameEventListeners for: "+this.contractID);
       this.game.addEventListener("gamekeypair", this.onGameKeypair, this);
       this.game.addEventListener("gamedeck", this.onNewGameDeck, this);
       this.game.addEventListener("gamecardsencrypt", this.onEncryptCards, this);
@@ -231,16 +228,15 @@ class CypherPokerContract extends EventDispatcher {
    * @private
    */
    removeGameEventListeners() {
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> removeGameEventListeners for: "+this.contractID);
-      this.game.removeEventListener("gamekeypair", this.onGameKeypair);
-      this.game.removeEventListener("gamedeck", this.onNewGameDeck);
-      this.game.removeEventListener("gamecardsencrypt", this.onEncryptCards);
-      this.game.removeEventListener("gamedealprivate", this.onSelectCards);
-      this.game.removeEventListener("gamedealpublic", this.onSelectCards);
-      this.game.removeEventListener("gamedealmsg", this.onGameDeal);
-      this.game.removeEventListener("gamebetplaced", this.onGameBetPlaced);
-      this.game.removeEventListener("gamedecrypt", this.onGameDecrypt);
-      this.game.removeEventListener("gameend", this.onGameEnd);
+      this.game.removeEventListener("gamekeypair", this.onGameKeypair, this);
+      this.game.removeEventListener("gamedeck", this.onNewGameDeck, this);
+      this.game.removeEventListener("gamecardsencrypt", this.onEncryptCards, this);
+      this.game.removeEventListener("gamedealprivate", this.onSelectCards, this);
+      this.game.removeEventListener("gamedealpublic", this.onSelectCards, this);
+      this.game.removeEventListener("gamedealmsg", this.onGameDeal, this);
+      this.game.removeEventListener("gamebetplaced", this.onGameBetPlaced, this);
+      this.game.removeEventListener("gamedecrypt", this.onGameDecrypt, this);
+      this.game.removeEventListener("gameend", this.onGameEnd, this);
    }
 
    /**
@@ -279,10 +275,8 @@ class CypherPokerContract extends EventDispatcher {
    */
    getPlayers(includeKeychains=false, includePasswords=false) {
       var returnArr = new Array();
-      console.log ("Iterating through "+this.players.length+" players...");
       for (var count=0; count < this.players.length; count++) {
          var playerObj = this.players[count].toObject(includeKeychains, includePasswords);
-         console.log ("Included player: "+playerObj);
          returnArr.push(playerObj);
       }
       return (returnArr);
@@ -440,7 +434,6 @@ class CypherPokerContract extends EventDispatcher {
             if (typeof(obj1[key]) == "object") {
                //recurse compare sub-objects
                if (this.compareObjects(obj1[key], obj2[key]) == false) {
-                  console.log ("Property \""+key+"\" doesn't match.");
                   return (false);
                }
             } else {
@@ -448,7 +441,6 @@ class CypherPokerContract extends EventDispatcher {
                if ((typeof(obj1[key]) != "function") && (typeof(obj2[key]) != "function")) {
                   if (obj1[key] != obj2[key]) {
                      if (key != "timeout") {
-                        console.log ("Property \""+key+"\" doesn't match.");
                         return (false);
                      }
                   }
@@ -482,9 +474,6 @@ class CypherPokerContract extends EventDispatcher {
          throw (new Error("Table properties don't match for contract "+this.contractID));
       }
       if ((contract.prime != null) && (snapshot.prime == null)) {
-         console.log ("prime mismatch");
-         console.log ("contract.prime="+contract.prime);
-         console.log ("snapshot.prime="+snapshot.prime);
          return (1);
       } else if ((contract.prime == null) && (snapshot.prime != null)) {
          return (2);
@@ -494,22 +483,18 @@ class CypherPokerContract extends EventDispatcher {
       //compare decks
       result = this.compareDecks(contract.cardDecks.faceup, snapshot.cardDecks.faceup, "_mapping");
       if (result != 3) {
-         console.log ("deck compare 1");
          return (result);
       }
       result = this.compareDecks(contract.cardDecks.facedown, snapshot.cardDecks.facedown);
       if (result != 0) {
-         console.log ("deck compare 2");
          return (result);
       }
       result = this.compareDecks(contract.cardDecks.dealt, snapshot.cardDecks.dealt);
       if (result != 0) {
-         console.log ("deck compare 3");
          return (result);
       }
       result = this.compareDecks(contract.cardDecks.public, snapshot.cardDecks.public, "_mapping");
       if (result != 0) {
-         console.log ("deck compare 4");
          return (result);
       }
       //compare players
@@ -518,35 +503,29 @@ class CypherPokerContract extends EventDispatcher {
          var snapshotPlayer = snapshot.players[count];
          if (contractPlayer.privateID != snapshotPlayer.privateID) {
             //player order must be the same
-            console.error("Error 4");
             throw (new (Error("Incorrect player private ID at position "+count)));
          }
          for (var prop in contractPlayer.info) {
             if (snapshotPlayer.info[prop] != contractPlayer.info[prop]) {
-               console.error("Error 5");
                throw (new (Error("Incorrect player private info property \""+prop+"\"")));
             }
          }
          //compare player dealt cards
          var result = this.compareDecks(contractPlayer.dealtCards, snapshotPlayer.dealtCards, "_mapping");
          if (result != 0) {
-            console.log ("deck compare 5");
             return (result);
          }
          //compare player selected cards
          result = this.compareDecks(contractPlayer.selectedCards, snapshotPlayer.selectedCards);
          if (result != 0) {
-            console.log ("deck compare 6");
             return (result);
          }
          if (contractPlayer.hasBet && (snapshotPlayer.hasBet == false)) {
-            console.log ("hasBet mismatch");
             return (1);
          } else if ((contractPlayer.hasBet == false) && snapshotPlayer.hasBet) {
             return (2);
          }
          if (contractPlayer.hasFolded && (snapshotPlayer.hasFolded == false)) {
-            console.log ("hasFolded mismatch");
             return (1);
          } else if ((contractPlayer.hasFolded == false) && snapshotPlayer.hasFolded) {
             return (2);
@@ -566,7 +545,6 @@ class CypherPokerContract extends EventDispatcher {
          contractPlayer.totalBet = bigInt(contractPlayer.totalBet);
          snapshotPlayer.totalBet = bigInt(snapshotPlayer.totalBet);
          if (contractPlayer.totalBet.greater(snapshotPlayer.totalBet)) {
-            console.log ("totalBet mismatch");
             return (1);
          } else if (snapshotPlayer.totalBet.greater(contractPlayer.totalBet)) {
             return (2);
@@ -577,7 +555,6 @@ class CypherPokerContract extends EventDispatcher {
          if (contractPlayer.balance.greater(snapshotPlayer.balance)) {
             return (2);
          } else if (snapshotPlayer.balance.greater(contractPlayer.balance)) {
-            console.log ("balance mismatch");
             return (1);
          }
       }
@@ -690,10 +667,7 @@ class CypherPokerContract extends EventDispatcher {
    * @async
    */
    async onGameKeypair(event) {
-      //this.game.removeEventListener("gamekeypair", this.onGameKeypair);
       this.refreshPlayers();
-      console.log ("Keypair at stage 1:");
-      console.dir (this.getPlayer(this.game.ownPID).keychain[0]);
       var actions = this.deferredActions;
       for (var count=0; count < actions.length; count++) {
          var currentAction = actions[count];
@@ -725,15 +699,10 @@ class CypherPokerContract extends EventDispatcher {
          paramsObj.contract.prime = this.getPlayer(this.game.ownPID).keychain[0].prime; //prime generated by us
          paramsObj.contract.cardDecks = this.game.cardDecks;
          paramsObj.contract.table.tableInfo.timeout = 20; //(seconds) this can be user-configured
-         console.log ("************************** CONTRACT ABOUT TO BE CREATED *************************");
-         console.log ("this._contractID="+this._contractID);
-         //this.history.unshift(paramsObj.contract);
          this.callContractAPI("new", paramsObj).then(JSONResult => {
             if (this.contractID != JSONResult.result.contract.contractID) {
-               console.log ("onNewGameDeck unrecognized contract id: "+JSONResult.result.contract.contractID);
-               console.log ("own contract id: "+this.contractID);
-               //this.removeGameEventListeners();
-               //this.stopContractTimeout();
+               this.removeGameEventListeners();
+               this.stopContractTimeout();
                return (false);
             }
             this.history.unshift(JSONResult.result.contract);
@@ -763,17 +732,12 @@ class CypherPokerContract extends EventDispatcher {
    * @private
    */
    async onEncryptCards(event) {
-      console.log ("CypherPokerContract.onEncryptCards");
       if ((this.history.length == 0) && (this.getDealer().privateID != this.game.ownPID)) {
          return (false);
       }
       if (event.player.privateID != this.game.ownPID) {
-         console.log ("Private IDs don't match! Aborting...");
-         console.log ("event.player.privateID="+event.player.privateID);
-         console.log ("this.game.ownPID="+this.game.ownPID);
          return(false);
       }
-      console.log ("this.getDealer()="+this.getDealer());
       this.startContractTimeout();
       var paramsObj = new Object();
       paramsObj.type = "encrypt";
@@ -781,13 +745,6 @@ class CypherPokerContract extends EventDispatcher {
       paramsObj.contractID = this._contractID;
       paramsObj.ownerPID = this.getDealer().privateID;
       paramsObj.cards = Array.from(event.selected);
-      console.log ("***************************************");
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-      console.log ("Storing encryption for contract: "+this._contractID);
-      console.log ("Contract owner PID: "+this.getDealer().privateID);
-      console.dir(paramsObj.cards);
-      console.log ("***************************************");
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
       var snapshot = this.gameSnapshot();
       try {
          var JSONResult = await this.onGameState(snapshot, this.callContractAPI, "store", paramsObj).promise;
@@ -796,10 +753,8 @@ class CypherPokerContract extends EventDispatcher {
             throw (new Error(JSONResult.error.message));
          }
          if (this.contractID != JSONResult.result.contract.contractID) {
-            console.log ("onEncryptCards unrecognized contract id: "+JSONResult.result.contract.contractID);
-            console.log ("own contract id: "+this.contractID);
-            //this.removeGameEventListeners();
-            //this.stopContractTimeout();
+            this.removeGameEventListeners();
+            this.stopContractTimeout();
             return (false);
          }
          try {
@@ -835,17 +790,10 @@ class CypherPokerContract extends EventDispatcher {
       var paramsObj = new Object();
       paramsObj.type = "select";
       paramsObj.contract = this.history[0];
-      console.log ("Sending \"select\" for contract: "+paramsObj.contract.contractID);
       paramsObj.contractID = paramsObj.contract.contractID;
       paramsObj.ownerPID = this.getDealer().privateID;
       paramsObj.cards = Array.from(event.selected);
       paramsObj.fromPID = this.game.ownPID;
-      console.log ("***************************************");
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-      console.log ("Storing for contract: "+this._contractID);
-      console.log ("Contract owner PID: "+this.getDealer().privateID);
-      console.log ("***************************************");
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
       if (event.type == "gamedealprivate") {
          paramsObj.private = true;
       } else {
@@ -859,10 +807,8 @@ class CypherPokerContract extends EventDispatcher {
             throw(new Error(JSON.error.message));
          }
          if (this.contractID != JSONResult.result.contract.contractID) {
-            console.log ("onSelectCards unrecognized contract id: "+JSONResult.result.contract.contractID);
-            console.log ("own contract id: "+this.contractID);
-            //this.removeGameEventListeners();
-            //this.stopContractTimeout();
+            this.removeGameEventListeners();
+            this.stopContractTimeout();
             return (false);
          }
          try {
@@ -923,10 +869,8 @@ class CypherPokerContract extends EventDispatcher {
             throw(new Error(JSONResult.error.message));
          }
          if (this.contractID != JSONResult.result.contract.contractID) {
-            console.log ("onGameBetPlaced unrecognized contract id: "+JSONResult.result.contract.contractID);
-            console.log ("own contract id: "+this.contractID);
-            //this.removeGameEventListeners();
-            //this.stopContractTimeout();
+            this.removeGameEventListeners();
+            this.stopContractTimeout();
             return (false);
          }
          try {
@@ -969,10 +913,8 @@ class CypherPokerContract extends EventDispatcher {
       try {
          var JSONResult = await this.onGameState(snapshot, this.callContractAPI, "store", paramsObj).promise;
          if (this.contractID != JSONResult.result.contract.contractID) {
-            console.log ("onGameDecrypt unrecognized contract id: "+JSONResult.result.contract.contractID);
-            console.log ("own contract id: "+this.contractID);
-            //this.removeGameEventListeners();
-            //this.stopContractTimeout();
+            this.removeGameEventListeners();
+            this.stopContractTimeout();
             return (false);
          }
          try {
@@ -999,7 +941,6 @@ class CypherPokerContract extends EventDispatcher {
    * @private
    */
    async onGameEnd(event) {
-      console.log (">>>>>>>>>>>>>>> Received gameEnd in contract: "+this.contractID);
       if (this.history.length == 0) {
          return (false);
       }
@@ -1012,13 +953,6 @@ class CypherPokerContract extends EventDispatcher {
       paramsObj.ownerPID = this.getDealer().privateID;
       paramsObj.keychain = Array.from(this.getPlayer(this.game.ownPID).keychain);
       paramsObj.fromPID = this.game.ownPID;
-      console.log ("***************************************");
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-      console.log ("Storing keychain for contract: "+this._contractID);
-      console.log ("Contract owner PID: "+this.getDealer().privateID);
-      console.dir (this.getPlayer(this.game.ownPID).keychain);
-      console.log ("***************************************");
-      console.log (">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
       //var snapshot = this.gameSnapshot();
       try {
          var JSONResult = await this.callContractAPI("store", paramsObj);
@@ -1027,10 +961,8 @@ class CypherPokerContract extends EventDispatcher {
             return;
          }
          if (this.contractID != JSONResult.result.contract.contractID) {
-            console.log ("onGameEnd unrecognized contract id: "+JSONResult.result.contract.contractID);
-            console.log ("own contract id: "+this.contractID);
-            //this.removeGameEventListeners();
-            //this.stopContractTimeout();
+            this.removeGameEventListeners();
+            this.stopContractTimeout();
             return (false);
          }
          try {
@@ -1099,7 +1031,6 @@ class CypherPokerContract extends EventDispatcher {
       var previousAction = null;
       var completedActions = new Array();
       var incompletedActions = new Array();
-      console.log ("------ processDeferredActions ------");
       for (var count=0; count < actions.length; count++) {
          var currentAction = actions[count];
          var exec = false;
@@ -1114,7 +1045,6 @@ class CypherPokerContract extends EventDispatcher {
          if ((currentAction.complete == false) && (exec == true)) {
             var snapshot = currentAction.snapshot;
             var result = this.compare (contract, snapshot);
-            console.log ("Next action compare result: "+result);
             if ((result == 0) || (result == 2)) {
                var func = currentAction.invoke.func;
                var params = currentAction.invoke.params;
@@ -1137,7 +1067,6 @@ class CypherPokerContract extends EventDispatcher {
          }
          previousAction = currentAction;
       }
-      console.log ("Queued actions remaining: "+incompletedActions.length);
       return (completedActions);
    }
 
@@ -1271,8 +1200,6 @@ class CypherPokerContract extends EventDispatcher {
       sendObj.user_token = this.cypherpoker.p2p.userToken;
       sendObj.server_token = this.cypherpoker.p2p.serverToken;
       sendObj.account = this.getPlayer(this.game.ownPID).account.toObject(true);
-      console.log ("Sending request:");
-      console.dir(sendObj);
       var requestID = "CP" + String(Math.random()).split(".")[1];
       var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.p2p.webSocket, false, requestID);
       var result = JSON.parse(rpc_result.data);
@@ -1282,8 +1209,6 @@ class CypherPokerContract extends EventDispatcher {
          result = JSON.parse(rpc_result.data);
          //we could include a max wait limit here
       }
-      console.log ("Got request result for (\""+action+"\"): ");
-      console.dir (result);
       return (result);
    }
 
@@ -1301,24 +1226,26 @@ class CypherPokerContract extends EventDispatcher {
    */
    verifyContractMessage(resultObj) {
       if ((typeof(resultObj.data) != "object") || (resultObj.data == null)) {
+         console.error("not an object or null");
          return (false);
       }
       var data = resultObj.data;
       var contract = data.contract;
       var table = contract.table;
       if ((this.game == undefined) || (this.game == null)) {
+         console.error("no game ref");
          return (false);
       }
-      if ((typeof(this.game.table) != "object") || (this.game.table == null)) {
+      if ((typeof(this.table) != "object") || (this.table == null)) {
          return (false);
       }
-      if ((this.game.table.tableID != table.tableID) ||
-         (this.game.table.tableName != table.tableName) ||
-         (this.game.table.ownerPID != table.ownerPID)) {
+      if ((this.table.tableID != table.tableID) ||
+         (this.table.tableName != table.tableName) ||
+         (this.table.ownerPID != table.ownerPID)) {
             return (false);
       }
       var tableInfo = table.tableInfo;
-      var gameTableInfo = this.game.table.tableInfo;
+      var gameTableInfo = this.table.tableInfo;
       if ((gameTableInfo.buyIn != tableInfo.buyIn) ||
          (gameTableInfo.bigBlind != tableInfo.bigBlind) ||
          (gameTableInfo.smallBlind != tableInfo.smallBlind)) {
@@ -1327,13 +1254,13 @@ class CypherPokerContract extends EventDispatcher {
       var players = contract.players;
       var matchingPlayers = 0;
       for (var count = 0; count < players.length; count++) {
-         for (var count2 = 0; count2 < this.game.players.length; count2++) {
-            if (players[count].privateID == this.game.players[count2].privateID) {
+         for (var count2 = 0; count2 < this.players.length; count2++) {
+            if (players[count].privateID == this.players[count2].privateID) {
                matchingPlayers++;
             }
          }
       }
-      if (matchingPlayers != this.game.players.length) {
+      if (matchingPlayers != this.players.length) {
          return (false);
       }
       //other checks can be performed here
@@ -1375,7 +1302,6 @@ class CypherPokerContract extends EventDispatcher {
    * @async
    */
    async handleUpdateMessage(event) {
-      console.log ("CypherPokerContract.handleUpdateMessage");
       if (this.cypherpoker.isCPMsgEvent(event) == false) {
          //don't process any further
          return;
@@ -1400,8 +1326,6 @@ class CypherPokerContract extends EventDispatcher {
       this.processDeferredActions(contractObj); //respond immediately on game state match
       switch (messageType) {
          case "contractnew":
-            console.log ("Received new contract notification >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            console.log ("My contract ID: "+this.contractID);
             if (this.contractID == null) {
                this._contractID = contract.contractID;
                this.updateBalances(contract);
@@ -1521,10 +1445,10 @@ class CypherPokerContract extends EventDispatcher {
          case "contractend":
             if (this.verifyContractID(resultObj) == false) {
                //wrong contract ID
+               console.error ("Contracts don't match!");
                return;
             }
-            console.log ("************************** CONTRACT "+this.contractID+" HAS ENDED *************************");
-            this.cypherpoker.p2p.removeEventListener("update", this.handleUpdateMessage);
+            this.cypherpoker.p2p.removeEventListener("update", this.handleUpdateMessage, this);
             this.removeGameEventListeners();
             this.stopContractTimeout();
             this.resetContractTimeout();

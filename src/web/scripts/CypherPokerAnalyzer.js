@@ -273,14 +273,14 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    removeGameListeners() {
-      this.game.removeEventListener("gamecardsencrypt", this.onEncryptCards);
-      this.game.removeEventListener("gamedealmsg", this.onGameDealMessage);
-      this.game.removeEventListener("gamedealprivate", this.onSelectCards);
-      this.game.removeEventListener("gamedealpublic", this.onSelectCards);
-      this.game.removeEventListener("gamedeal", this.onCardDeal);
-      this.game.removeEventListener("gamedecrypt", this.onGameDecrypt);
-      this.game.removeEventListener("gameanalyze", this.onGameAnalyze);
-      this.game.removeEventListener("gameplayerkeychain", this.onPlayerKeychain);
+      this.game.removeEventListener("gamecardsencrypt", this.onEncryptCards, this);
+      this.game.removeEventListener("gamedealmsg", this.onGameDealMessage, this);
+      this.game.removeEventListener("gamedealprivate", this.onSelectCards, this);
+      this.game.removeEventListener("gamedealpublic", this.onSelectCards, this);
+      this.game.removeEventListener("gamedeal", this.onCardDeal, this);
+      this.game.removeEventListener("gamedecrypt", this.onGameDecrypt, this);
+      this.game.removeEventListener("gameanalyze", this.onGameAnalyze, this);
+      this.game.removeEventListener("gameplayerkeychain", this.onPlayerKeychain, this);
    }
 
    /**
@@ -504,10 +504,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
       if (game.gameStarted) {
       //   return (false);
       }
-      console.log("onPlayerKeychain ****************************************************");
       this._keychains[player.privateID] = Array.from(event.keychain);
       if (this.allKeychainsCommitted) {
-         console.log ("NOW ANALYZING");
          this.removeGameListeners();
          //all keychains committed, we can clear the timeout and start the analysis
          clearTimeout(this._keychainCommitTimeout);
@@ -668,8 +666,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
                }
                if (this.removeFromDeck(cards, encryptedDeck) == false) {
                   var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+this.game.getPlayer(fromPID).account.address+"\" for \""+this.game.getPlayer(sourcePID).account.address+"\".");
-                  //console.dir (cards);
-                  //console.dir (encryptedDeck);
                   error.code = 2;
                   this._analysis.error = error;
                   this._analysis.complete = true;

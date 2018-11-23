@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.2.0
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -845,10 +845,10 @@ class CypherPokerUI {
       var timeoutElement = event.contract.game.DOMElement.querySelector(ui.gameUISelectors.timeoutAmount);
       this.stopTimeoutTimer(timeoutElement);
       try {
-         event.game.contract.removeEventListener("gamerestart", this.onRestartGame);
-         event.game.contract.removeEventListener("timeoutstart", this.onStartContractTimeout);
-         event.game.contract.removeEventListener("timeout", this.onContractTimeout);
-         event.game.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid);
+         event.game.contract.removeEventListener("gamerestart", this.onRestartGame, this);
+         event.game.contract.removeEventListener("timeoutstart", this.onStartContractTimeout, this);
+         event.game.contract.removeEventListener("timeout", this.onContractTimeout, this);
+         event.game.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
       } catch (err) {}
    }
 
@@ -860,21 +860,22 @@ class CypherPokerUI {
    * @private
    */
    onContractTimeout(event) {
-      var timeoutNotification = "The following player(s) have timed out:<br/>";
+      var timeoutNotification = "The following player(s) have timed out:<br/><br/>";
       for (var count = 0; count < event.penalized.length; count++) {
-         var timedOutPlayer = event.contract.game.getPlayer(event.penalized[count].privateID);
-         event.contract.game.debug ("Player has timed out: "+timedOutPlayer.account.address, "err");
+         var timedOutPlayer = event.contract.getPlayer(event.penalized[count].privateID);
+         event.contract.game.debug ("Player has timed out: "+timedOutPlayer.account.address+"<br/>", "err");
          timeoutNotification += timedOutPlayer.info.alias + " ("+timedOutPlayer.account.address+")<br/>";
+         timeoutNotification += " Private ID: "+event.penalized[count].privateID+"<br/>";
       }
       this.showDialog(timeoutNotification);
       this.hideDialog(10000);
       var timeoutElement = event.contract.game.DOMElement.querySelector(ui.gameUISelectors.timeoutAmount);
       this.stopTimeoutTimer(timeoutElement);
       try {
-         event.contract.removeEventListener("gamerestart", this.onRestartGame);
-         event.contract.removeEventListener("timeoutstart", this.onStartContractTimeout);
-         event.contract.removeEventListener("timeout", this.onContractTimeout);
-         event.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid);
+         event.contract.removeEventListener("gamerestart", this.onRestartGame, this);
+         event.contract.removeEventListener("timeoutstart", this.onStartContractTimeout, this);
+         event.contract.removeEventListener("timeout", this.onContractTimeout, this);
+         event.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
       } catch (err) {
          console.error(err);
       }

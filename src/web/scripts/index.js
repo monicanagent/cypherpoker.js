@@ -59,6 +59,7 @@ const _require = [
    },
    {"url":"./scripts/CypherPoker.js",
       "onload": () => {
+         ui.showDialog ("Loading game settings...");
          //EventDispatcher and EventPromise must already exist here!
          loadJSON(_settingsURL).onEventPromise("load").then(promise => {
             if (promise.target.response != null) {
