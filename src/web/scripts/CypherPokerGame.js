@@ -1737,8 +1737,7 @@ class CypherPokerGame extends EventDispatcher {
       if (context == null) {
          context = this;
       }
-      //context._gameEnding = true;
-/*
+      context._gameEnding = true;
       if (context.analyzer != null) {
          if (context.analyzer.active != false) {
             //re-check every half second
@@ -1746,14 +1745,6 @@ class CypherPokerGame extends EventDispatcher {
             return (false);
          }
       }
-      if (context.contract != null) {
-         if (context.contract.active != false) {
-            //re-check every half second
-            setTimeout(context.restartGame, 500, context);
-            return (false);
-         }
-      }
-*/
       context.pot = 0;
       context._gameStarted = false;
       context.resetPlayerStates(true, true, true);
@@ -1799,7 +1790,7 @@ class CypherPokerGame extends EventDispatcher {
          //anyone but the current dealer will throw an error in sendGameParams
       }
       context._gameStarted = true;
-      //context._gameEnding = false;
+      context._gameEnding = false;
       var result = await context.processMessageQueue();
       return (true);
    }

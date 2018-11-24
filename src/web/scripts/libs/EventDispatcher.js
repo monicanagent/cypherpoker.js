@@ -62,12 +62,11 @@ class EventDispatcher {
    }
 
    /**
-   * Removes an event listener from the extending instance. The standard capture phase
-   * parameter is ignored.
+   * Removes an event listener from the extending instance.
    *
    * @param {String} type The event type to remove the function from.
    * @param {Function} listener The listening function to remove.
-   * @param {}
+   * @param {Object} [context=null] The context or scope in which the listener exists.
    *
    * @augments EventDispatcher
    */

@@ -242,6 +242,40 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
+   * @property {CypherPoker} cypherpoker A reference to the
+   * {@link CypherPokerContract#game}'s <code>cypherpoker</code> instance or
+   * <code>null</code> if none exists.
+   */
+   get cypherpoker() {
+      if ((this._game != null) && (this._game != undefined)) {
+         return (this._game.cypherpoker);
+      }
+      return (null);
+   }
+
+   /**
+   * @property {TableObject} A copy of the table associated with the {@link CypherPokerContract#game}
+   * instance.
+   */
+   get table() {
+      if (this._table == undefined) {
+         this._table = this.game.getTable();
+      }
+      return (this._table);
+   }
+
+   /**
+   * @property {Array} Indexed list of {CypherPokerPlayer} instances copied
+   * from the associated {@link CypherPokerContract#game} instance.
+   */
+   get players() {
+      if (this._players == undefined) {
+         this.refreshPlayers();
+      }
+      return (this._players);
+   }
+
+   /**
    * @property {Object} analysis The partial or full analysis of the
    * completed game.
    * @property {Object} analysis.private Name/value pairs with each name matching
@@ -264,6 +298,79 @@ class CypherPokerAnalyzer extends EventDispatcher {
          this._analysis.error = null;
       }
       return (this._analysis);
+   }
+
+   /**
+   * Refreshes the {@link CypherPokerAnalyzer#players} array with data from
+   * the associated {@link CypherPokerAnalyzer#game}.
+   *
+   * @private
+   */
+   refreshPlayers() {
+      this._players = new Array();
+      for (var count=0; count < this.game.players.length; count++) {
+         this._players.push(this.game.players[count].copy());
+      }
+   }
+
+   /**
+   * Returns a {@link CypherPokerPlayer} instance associated with the analyzer's
+   * game instance.
+   *
+   * @param {String} privateID The private ID of the player to return.
+   *
+   * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} for the private ID
+   * associated with this game. <code>null</code> is returned if no matching
+   * player private ID can be found.
+   */
+   getPlayer(privateID) {
+      for (var count=0; count < this.players.length; count++) {
+         if (this.players[count].privateID == privateID) {
+            return (this.players[count]);
+         }
+      }
+      return (null);
+   }
+
+   /**
+   * Returns a condensed array containing the copied properties of the
+   * {@link CypherPokerAnalyzer#players} array. Use the object returned by
+   * this function with <code>JSON.stringify</code> instead of using
+   * {@link CypherPokerAnalyzer#players} directly in order to prevent circular
+   * reference errors.
+   *
+   * @param {Boolean} [includeKeychains=false] If true, the {@link CypherPokerPlayer#keychain}
+   * array of each player will be included in the returned object.
+   * @param {Boolean} [includePasswords=false] If true, the {@link CypherPokerAccount#password}
+   * property of each {@link CypherPokerPlayer#account} reference will be included
+   * with the returned object.
+   *
+   * @return {Object} The condensed players array associated with this instance's
+   * game reference.
+   */
+   getPlayers(includeKeychains=false, includePasswords=false) {
+      var returnArr = new Array();
+      for (var count=0; count < this.players.length; count++) {
+         var playerObj = this.players[count].toObject(includeKeychains, includePasswords);
+         returnArr.push(playerObj);
+      }
+      return (returnArr);
+   }
+
+   /**
+   * Returns the {@link CypherPokerPlayer} that is currently flagged as the dealer
+   * in the {@link CypherPokerContract#players} array.
+   *
+   * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} instance that
+   * is flagged as a dealer. <code>null</code> is returned if no dealer is flagged.
+   */
+   getDealer() {
+      for (var count=0; count < this.players.length; count++) {
+         if (this.players[count].isDealer) {
+            return (this.players[count]);
+         }
+      }
+      return (null);
    }
 
    /**
@@ -312,7 +419,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
             cardsArr.push(generatedDeck[count].mapping);
             this.mappedDeck.push(this.game.getMappedCard(generatedDeck[count].mapping));
          }
-         infoObj.fromPID = event.game.getDealer().privateID;
+         infoObj.fromPID = this.getDealer().privateID;
          infoObj.cards = cardsArr;
          this.deck.push (infoObj);
       }
@@ -431,9 +538,9 @@ class CypherPokerAnalyzer extends EventDispatcher {
       //partially decrypted public or private cards:
       var selected = resultObj.data.payload.selected;
       //the player that dealt (selected) the cards:
-      var dealingPlayer = this.game.getPlayer(resultObj.data.payload.sourcePID);
+      var dealingPlayer = this.getPlayer(resultObj.data.payload.sourcePID);
       //the player that sent the "gamedeal" message:
-      var fromPlayer = this.game.getPlayer(resultObj.from);
+      var fromPlayer = this.getPlayer(resultObj.from);
       //the selected card values:
       if (dealingPlayer.privateID == fromPlayer.privateID) {
          //player is selecting a card
@@ -459,9 +566,9 @@ class CypherPokerAnalyzer extends EventDispatcher {
 
    /**
    * Event handler invoked when the associated {@link CypherPokerAnalyzer#game}
-   * instance dispatches a {@link CypherPoker#event:gameanalyze} event.
+   * instance dispatches a {@link CypherPokerGame#event:gameanalyze} event.
    *
-   * @param {Event} event A {@link CypherPoker#event:gameanalyze} event object.
+   * @param {Event} event A {@link CypherPokerGame#event:gameanalyze} event object.
    *
    * @async
    * @private
@@ -482,7 +589,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    */
    onKCSTimeout(context, game) {
       context.analysis.complete = true;
-      //throw (new Error("Not all players have committed their keychains in time (table ID: "+game.table.tableID+")"));
+      throw (new Error("Not all players have committed their keychains in time (table ID: "+context.table.tableID+")"));
    }
 
    /**
@@ -495,16 +602,15 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    async onPlayerKeychain(event) {
+      console.log ("CypherPokerAnalyzer.onPlayerKeychain("+event+")");
       this._active = true;
       if (this._keychains == undefined) {
          this._keychains = new Object();
       }
       var player = event.player;
       var game = event.game;
-      if (game.gameStarted) {
-      //   return (false);
-      }
       this._keychains[player.privateID] = Array.from(event.keychain);
+      console.log ("this.allKeychainsCommitted="+this.allKeychainsCommitted);
       if (this.allKeychainsCommitted) {
          this.removeGameListeners();
          //all keychains committed, we can clear the timeout and start the analysis
@@ -650,7 +756,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                for (count2 = 0; count2 < promiseResults.length; count2++) {
                   var card = this.getMappedCard(promiseResults[count2].data.result);
                   if (card == null) {
-                     var error = new Error("Final decryption (deal "+count+") by \""+this.game.getPlayer(fromPID).account.address+"\" for \""+this.game.getPlayer(sourcePID).account.address+"\" does not map: "+promiseResults[count2].data.result);
+                     var error = new Error("Final decryption (deal "+count+") by \""+this.getPlayer(fromPID).account.address+"\" for \""+this.getPlayer(sourcePID).account.address+"\" does not map: "+promiseResults[count2].data.result);
                      console.dir (card);
                      console.dir (promiseResults[count2].data.result);
                      error.code = 2;
@@ -665,7 +771,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                   }
                }
                if (this.removeFromDeck(cards, encryptedDeck) == false) {
-                  var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+this.game.getPlayer(fromPID).account.address+"\" for \""+this.game.getPlayer(sourcePID).account.address+"\".");
+                  var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+this.getPlayer(fromPID).account.address+"\" for \""+this.getPlayer(sourcePID).account.address+"\".");
                   error.code = 2;
                   this._analysis.error = error;
                   this._analysis.complete = true;
@@ -712,7 +818,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                      compareDeck.push(promiseResults[count2].data.result);
                   }
                   if (this.compareDecks(compareDeck, cards) == false) {
-                     var error = new Error("Previous round ("+count+") of decryption by \""+this.game.getPlayer(fromPID).account.address+"\" for \""+this.game.getPlayer(sourcePID).account.address+"\" does not match computed results.");
+                     var error = new Error("Previous round ("+count+") of decryption by \""+this.getPlayer(fromPID).account.address+"\" for \""+this.getPlayer(sourcePID).account.address+"\" does not match computed results.");
                      console.dir(compareDeck);
                      console.dir(cards);
                      error.code = 2;
@@ -802,7 +908,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
       var winningPlayers = new Array();
       var winningHands = new Array();
       for (var privateID in playersObj) {
-         var player = this.game.getPlayer(privateID);
+         var player = this.getPlayer(privateID);
          //private ID may actually be some other object property (e.g. onEventPromise)
          if (player != null) {
             if (player.hasFolded == false) {
