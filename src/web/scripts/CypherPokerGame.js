@@ -1562,12 +1562,12 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns true if the supplied JSON-RPC result structure contains the same
-   * {@link CypherPoker#TableObject} identifiers as the table associated with this game instance.
+   * {@link CypherPoker#TableObject} identifiers as a table associated with this game instance.
    *
    * @param {Object} msgResultObj The JSON-RPC result object to check.
    *
    * @return {Boolean} True if the supplied table has the same identifiers
-   * (table ID, table name, table owner, member private ID), as the one associated
+   * (table ID, table name, table owner, member private ID), as one associated
    * with this game.
    * @private
    */
@@ -1578,6 +1578,8 @@ class CypherPokerGame extends EventDispatcher {
       if ((msgResultObj.data == null) || (msgResultObj.data == undefined)) {
          return (false);
       }
+      //todo: update this to use a history of past tables played by this game
+      //which should fix post-game verificaion problem (not triggering on subsequent rounds)
       if ((this.table.tableID == msgResultObj.data.tableID) &&
          (this.table.tableName == msgResultObj.data.tableName) &&
          (this.table.ownerPID == msgResultObj.data.ownerPID)) {
@@ -1737,6 +1739,7 @@ class CypherPokerGame extends EventDispatcher {
       if (context == null) {
          context = this;
       }
+      /*
       context._gameEnding = true;
       if (context.analyzer != null) {
          if (context.analyzer.active != false) {
@@ -1745,6 +1748,7 @@ class CypherPokerGame extends EventDispatcher {
             return (false);
          }
       }
+      */
       context.pot = 0;
       context._gameStarted = false;
       context.resetPlayerStates(true, true, true);
@@ -1763,6 +1767,7 @@ class CypherPokerGame extends EventDispatcher {
          context.players[count].isBigBlind = false;
          context.players[count].isSmallBlind = false;
          context.players[count].isDealer = false;
+         console.log (">>>>>>>>>>>>>>>>>>>>> NOW RESETTING KEYCHAIN FOR: "+context.players[count].privateID);
          context.players[count].resetKeychain();
       }
       context.assignPlayerRoles(nextDealerPID);
@@ -1932,7 +1937,8 @@ class CypherPokerGame extends EventDispatcher {
       }
       var resultObj = event.data.result;
       var eventData = event.data;
-      if (this.matchesThisTable(resultObj) == false) {
+      if ((this.matchesThisTable(resultObj) == false) && (resultObj.data.cpMsg != "gameend")) {
+         console.error ("Rejected "+resultObj.data.cpMsg+" message because it doesn't match this game's table.")
          //included table information doesn't match this game's table
          return (false);
       }

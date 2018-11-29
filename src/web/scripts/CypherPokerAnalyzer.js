@@ -105,8 +105,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
       }
       var allPlayersCommitted = true;
       var numCommitted = 0;
-      for (var count=0; count < this.game.players.length; count++) {
-         var player = this.game.players[count];
+      for (var count=0; count < this.players.length; count++) {
+         var player = this.players[count];
          if (this._keychains[player.privateID] == undefined) {
             this._keychains[player.privateID] = Array.from(player.keychain);
          }
@@ -307,10 +307,14 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    refreshPlayers() {
+      console.log ("******************************************");
+      console.log ("Refreshing players...");
       this._players = new Array();
       for (var count=0; count < this.game.players.length; count++) {
          this._players.push(this.game.players[count].copy());
       }
+      console.dir (this._players);
+      console.log ("******************************************");
    }
 
    /**
@@ -387,16 +391,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
       this.game.removeEventListener("gamedeal", this.onCardDeal, this);
       this.game.removeEventListener("gamedecrypt", this.onGameDecrypt, this);
       this.game.removeEventListener("gameanalyze", this.onGameAnalyze, this);
-      this.game.removeEventListener("gameplayerkeychain", this.onPlayerKeychain, this);
-   }
-
-   /**
-   * Decactivates the analyzer by removing all game event listeners and
-   * setting the {@link CypherPokerAnalyzer#active} property to false.
-   */
-   deactivate() {
-      //this.removeGameListeners();
-      //this._active = false;
+      //"gameplayerkeychain" is removed separately, once all keychains are received
    }
 
    /**
@@ -409,6 +404,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    async onEncryptCards(event) {
+      var temp = this.table;
       this._active = true;
       var infoObj = new Object();
       if (this.deck.length == 0) {
@@ -574,6 +570,12 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    async onGameAnalyze(event) {
+      this.refreshPlayers(); //refresh the players array
+      if ((this._keychains == null) || (this._keychains == undefined)) {
+         this._keychains = new Object();
+      }
+      this._keychains[this.game.ownPID] = Array.from(this.getPlayer(this.game.ownPID).keychain);
+      this.removeGameListeners();
       this._keychainCommitTimeout = setTimeout(this.onKCSTimeout, this.keychainCommitTimeout, this, event.game);
       return (true);
    }
@@ -603,6 +605,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
    */
    async onPlayerKeychain(event) {
       console.log ("CypherPokerAnalyzer.onPlayerKeychain("+event+")");
+      console.log ("For table: "+this.table.tableID);
+      console.log ("From table: "+event.table.tableID);
       this._active = true;
       if (this._keychains == undefined) {
          this._keychains = new Object();
@@ -612,7 +616,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
       this._keychains[player.privateID] = Array.from(event.keychain);
       console.log ("this.allKeychainsCommitted="+this.allKeychainsCommitted);
       if (this.allKeychainsCommitted) {
-         this.removeGameListeners();
+         this.game.removeEventListener("gameplayerkeychain", this.onPlayerKeychain, this);
          //all keychains committed, we can clear the timeout and start the analysis
          clearTimeout(this._keychainCommitTimeout);
          event = new Event("analyzing");
@@ -622,7 +626,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
          try {
             this._analysis = await this.analyzeCards();
          } catch (err) {
-            alert ("Post-game analysis failed. Player funds being refunded...");
+            console.error(err);
+            alert ("Post-game analysis failed. Awaiting contract confirmation...");
             return (false);
          }
          event = new Event("analyzed");
@@ -676,7 +681,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
          var keychain = this.keychains[this.deck[count].fromPID];
          var promises = new Array();
          for (var count2=0; count2 < previousDeck.length; count2++) {
-            promises.push(this.cypherpoker.crypto.invoke("encrypt", {value:previousDeck[count2], keypair:keychain[0]}));
+            promises.push(this.cypherpoker.crypto.invoke("encrypt", {value:previousDeck[count2], keypair:keychain[keychain.length-1]}));
          }
          var promiseResults = await Promise.all(promises);
          var compareDeck = new Array();
@@ -685,6 +690,9 @@ class CypherPokerAnalyzer extends EventDispatcher {
          }
          if (this.compareDecks(currentDeck, compareDeck) == false) {
             var error = new Error("Deck encryption at stage "+count+" by \""+this.deck[count].fromPID+"\" failed.");
+            console.dir(keychain);
+            console.dir (currentDeck);
+            console.dir (compareDeck);
             error.code = 1;
             this._analysis.error = error;
             this._analysis.complete = true;
@@ -749,7 +757,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                promises = new Array();
                promiseResults = new Array();
                for (count2=0; count2 < previousCards.length; count2++) {
-                  promises.push(this.cypherpoker.crypto.invoke("decrypt", {value:previousCards[count2], keypair:keychain[0]}));
+                  promises.push(this.cypherpoker.crypto.invoke("decrypt", {value:previousCards[count2], keypair:keychain[keychain.length-1]}));
                }
                promiseResults = await Promise.all(promises);
                var dealtCards = new Array();
@@ -785,7 +793,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                   promises = new Array();
                   promiseResults = new Array();
                   for (count2=0; count2 < cards.length; count2++) {
-                     promises.push(this.cypherpoker.crypto.invoke("decrypt", {value:cards[count2], keypair:keychain[0]}));
+                     promises.push(this.cypherpoker.crypto.invoke("decrypt", {value:cards[count2], keypair:keychain[keychain.length-1]}));
                   }
                   promiseResults = await Promise.all(promises);
                   for (count2 = 0; count2 < promiseResults.length; count2++) {
@@ -811,7 +819,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
                   promiseResults = new Array();
                   //decrypt current cards to compare to what was sent by current player...
                   for (count2=0; count2 < previousCards.length; count2++) {
-                     promises.push(this.cypherpoker.crypto.invoke("decrypt", {value:previousCards[count2], keypair:keychain[0]}));
+                     promises.push(this.cypherpoker.crypto.invoke("decrypt", {value:previousCards[count2], keypair:keychain[keychain.length-1]}));
                   }
                   promiseResults = await Promise.all(promises);
                   for (count2 = 0; count2 < promiseResults.length; count2++) {

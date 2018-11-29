@@ -878,12 +878,7 @@ class CypherPokerUI {
          event.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
       } catch (err) {
          console.error(err);
-      }
-      try {
-         event.contract.game.analyzer.deactivate();
-      } catch (err) {
-         console.error(err);
-      }
+      }   
       var nextDealerPID = event.contract.game.getNextPlayer(event.contract.game.getDealer().privateID).privateID;
       //if (event.contract.game.getDealer().privateID == event.contract.game.ownPID) {
       if (nextDealerPID == event.contract.game.ownPID) {
