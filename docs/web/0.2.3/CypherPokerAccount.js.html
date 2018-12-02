@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: CypherPokerAccount.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: CypherPokerAccount.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Contains information and functionality associated with a single managed account.
+*
+* @version 0.2.3
+* @author Patrick Bay
+* @copyright MIT License
+*/
+
+/**
+* @class Information and functionality associated with a single managed account.
+* The account is independently managed by either a TTP service or a smart contract
+* and represents a deposit by the player that can be used to provide a balance
+* in games.
+*/
+class CypherPokerAccount extends EventDispatcher {
+
+   /**
+   * Creates a new player account instance.
+   *
+   * @param {CypherPoker} cypherpokerRef A reference to a {@link CypherPoker}
+   * instance through which managed account requests can be made.
+   * @param {Object} [initData=null] Data with which to initialize the new instance.
+   */
+   constructor(cypherpokerRef, initData=null) {
+      super();
+      this._cypherpoker = cypherpokerRef;
+      if (initData != null) {
+         for (var item in initData) {
+            try {
+               this[item] = initData[item];
+            } catch (err) {
+            }
+         }
+      }
+   }
+
+   /**
+   * @property {CypherPoker} cypherpoker A reference to the active {@link CypherPoker}
+   * instance through which API functions can be invoked.
+   *
+   * @readonly
+   */
+   get cypherpoker() {
+      return (this._cypherpoker);
+   }
+
+   /**
+   * @property {String} address The managed cryptocurrency deposit address
+   * associated with the account. Typically the address is also the unique account
+   * identifier ({@link CypherPokerAccount#id}), but may differ.
+   */
+   set address(addrSet) {
+      this._address = addrSet;
+   }
+
+   get address() {
+      if (this._address == undefined) {
+         this._address = null;
+      }
+      return (this._address);
+   }
+
+   /**
+   * @property {String} type The type of cryptocurrency associated with the
+   * {@link CypherPokerAccount#address}. Valid types include: "bitcoin"
+   */
+   set type(typeSet) {
+      this._type = typeSet;
+   }
+
+   get type() {
+      if (this._type == undefined) {
+         this._type = null;
+      }
+      return (this._type);
+   }
+
+   /**
+   * @property {String} network The network sub-type, if applicable.
+   * For example, if {@link CypherPokerAccount#type} is "bitcoin",
+   * the &lt;code>network&lt;/code> may be "main" or "test3".
+   */
+   set network(networkSet) {
+      this._network = networkSet;
+   }
+
+   get network() {
+      if (this._network == undefined) {
+         this._network = null;
+      }
+      return (this._network);
+   }
+
+   /**
+   * @property {BigInteger} balance="0" The current total account balance. Note that
+   * this is different than the {@link CypherPokerPlayer#balance} property
+   * which reflects the player balance for a single game (e.g. buy-in).
+   */
+   set balance(balanceSet) {
+      this._balance = bigInt(balanceSet);
+   }
+
+   get balance() {
+      if (this._balance == undefined) {
+         this._balance = bigInt(0);
+      }
+      return (this._balance);
+   }
+
+   /**
+   * @property {String} balance=null The password associated with the account.
+   */
+   set password(pwSet) {
+      this._password = pwSet;
+   }
+
+   get password() {
+      if (this._password == undefined) {
+         this._password = null;
+      }
+      return (this._password);
+   }
+
+   /**
+   * Returns a condensed data object with copies of most of the properties of this
+   * instance. Use the returned data from this function rathen than using
+   * &lt;code>JSON.stringify&lt;/code> on the instance as this may cause
+   * a circular reference error.
+   *
+   * @param {Boolean} [includePassword=false] If true, the account password
+   * is included in the returned data.
+   *
+   * @return {Object} A condensed data object containing copies of the
+   * most properties of this instance.
+   */
+   toObject(includePassword=false) {
+      var returnObj = new Object();
+      returnObj.address = this.address;
+      returnObj.type = this.type;
+      returnObj.network = this.network;
+      returnObj.balance = this.balance.toString(10);
+      if (includePassword) {
+         returnObj.password = this.password;
+      }
+      delete returnObj.onEventPromise;
+      return (returnObj);
+   }
+
+   /**
+   * Creates a new account by calling the "CP_Account"/"new" RPC service using
+   * the properties of this instance.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the account was succcessfully created, &lt;code>false&lt;/code> otherwise.
+   * @async
+   */
+   async create() {
+      if ((this.password == null) || (this.password == null)) {
+         return (false);
+      }
+      var params = new Object();
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      var JSONObj = await this.callAccountAPI("new", params);
+      if (JSONObj.error != undefined) {
+         console.error (JSONObj.error);
+         return (false);
+      }
+      this._address = JSONObj.result.address;
+      return (true);
+   }
+
+   /**
+   * Updates this account's properties by calling the "CP_Account"/"info" RPC service.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the account was succcessfully updated. An &lt;code>Error&lt;/code> object
+   * is included with a rejection.
+   * @async
+   */
+   async update() {
+      if ((this.password == null) || (this.password == null)) {
+         return (false);
+      }
+      var params = new Object();
+      params.address = this.address;
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      var JSONObj = await this.callAccountAPI("info", params);
+      if (JSONObj.error != undefined) {
+         this.balance = 0;
+         throw(new Error(JSONObj.error.message));
+      }
+      //balance confirmed = JSONObj.result.confirmed
+      this.balance = JSONObj.result.balance;
+      return (true);
+   }
+
+   /**
+   * Partially or fully cashes out the account, sending the funds to a
+   * specified address.
+   *
+   * @param {String|Number|BigInteger} amount The full amount to send to
+   * &lt;code>toAddress&lt;/code>, including miner &lt;code>fees&lt;/code>. This value is in the
+   * smallest denominition of the associated cryptocurrency (e.g. satoshis if
+   * &lt;code>type="bitcoin&lt;/code>").
+   * @param {String} toAddress The target or receiving address. This address
+   * must be of the same cryptocurrency &lt;code>type&lt;/code> and on the same
+   * &lt;code>network&lt;/code> as this account.
+   * @param {String|Number|BigInteger} [fees=null] The miner fee to include
+   * in this transaction in the smallest denomination of the associated cryptocurrency.
+   * If &lt;code>null&lt;/code>, the default miner fee is used. The amount that
+   * will be received by &lt;code>toAddress&lt;/code> will be the sending &lt;code>amount&lt;/code>
+   * minus this value.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the cashout was successfully completed. An &lt;code>Error&lt;/code> object is
+   * included with a rejection.
+   * @async
+   */
+   async cashout(amount, toAddress, fees=null) {
+      if ((this.password == "") || (this.password == null)) {
+         throw(new Error("Account password not set"));
+      }
+      var params = new Object();
+      params.address = this.address;
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      params.toAddress = toAddress;
+      if (bigInt.isInstance(amount)) {
+         params.amount = amount.toString(10);
+      } else {
+         params.amount = String(amount);
+      }
+      if (fees != null) {
+         if (bigInt.isInstance(fees)) {
+            params.feeAmount = fees.toString(10);
+         } else {
+            params.feeAmount = String(fees);
+         }
+      }
+      var JSONObj = await this.callAccountAPI("cashout", params);
+      if (JSONObj.error != undefined) {
+         throw (new Error(JSONObj.error.message));
+      }
+      this.balance = JSONObj.result.balance;
+      return (true);
+   }
+
+   /**
+   * Partially or fully transfers the account balance to another account.
+   *
+   * @param {String|Number|BigInteger} amount The full amount to transfer to
+   * &lt;code>toAddress&lt;/code>. This value is in the smallest denominition of the
+   * associated cryptocurrency (e.g. satoshis if &lt;code>type="bitcoin&lt;/code>").
+   * @param {String} toAccount The target or receiving account. This account
+   * must be of the same cryptocurrency &lt;code>type&lt;/code> and on the same
+   * &lt;code>network&lt;/code> as this account.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the transfer was successfully completed. An &lt;code>Error&lt;/code>
+   * object is included with a rejection.
+   * @async
+   */
+   async transfer(amount, toAccount) {
+      if ((this.password == "") || (this.password == null)) {
+         throw(new Error("Account password not set"));
+      }
+      var params = new Object();
+      params.address = this.address;
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      params.toAccount = toAccount;
+      if (bigInt.isInstance(amount)) {
+         params.amount = amount.toString(10);
+      } else {
+         params.amount = String(amount);
+      }
+      var JSONObj = await this.callAccountAPI("transfer", params);
+      if (JSONObj.error != undefined) {
+         throw (new Error(JSONObj.error.message));
+      }
+      this.balance = JSONObj.result.balance;
+      return (true);
+   }
+
+   /**
+   * Asynchronously calls the account API and returns the JSON-RPC 2.0 result / error
+   * of the call.
+   *
+   * @param {String} action The account action to apply to the &lt;code>APIFunc&lt;/code> call.
+   * This value is automatically appended to the &lt;code>params&lt;/code> object as an
+   * &lt;code>action&lt;/code> property and will override any existing &lt;code>action&lt;/code> property.
+   * @param {Object} [params=null] The parameters to include with the remote function call.
+   * If &lt;code>null&lt;/code>, an empty params object is created.
+   * @param {String} [APIFunc="CP_Account"] The remote API function to invoke.
+   *
+   * @return {Promise} The promise resolves with the parsed JSON-RPC 2.0 result or
+   * error (native object) of the call. Currently there is no rejection state.
+   */
+   async callAccountAPI(action, params=null, APIFunc="CP_Account") {
+      if (params == null) {
+         params = new Object();
+      }
+      var sendObj = new Object();
+      for (var item in params) {
+         sendObj[item] = params[item];
+      }
+      delete sendObj.onEventPromise;
+      sendObj.action = action;
+      sendObj.user_token = this.cypherpoker.p2p.userToken;
+      sendObj.server_token = this.cypherpoker.p2p.serverToken;
+      var requestID = "CP" + String(Math.random()).split(".")[1];
+      var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.p2p.webSocket, false, requestID);
+      var result = JSON.parse(rpc_result.data);
+      //since messages over web sockets are asynchronous the next immediate message may not be ours so:
+      while (requestID != result.id) {
+         rpc_result = await this.cypherpoker.p2p.webSocket.onEventPromise("message");
+         result = JSON.parse(rpc_result.data);
+         //we could include a max wait limit here
+      }
+      return (result);
+   }
+
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Dec 02 2018 10:37:51 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
