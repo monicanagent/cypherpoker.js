@@ -145,9 +145,9 @@ async function CP_SmartContract (sessionObj) {
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
             return(false);
          }
-         console.log ("New contract created: \""+newContract.contractID+"\"");
-         console.log ("   Owner PID: \""+privateID+"\"");
-         console.log ("   Owner Account: \""+playerAccount[0].address+"\"");
+         //console.log ("New contract created: \""+newContract.contractID+"\"");
+         //console.log ("   Owner PID: \""+privateID+"\"");
+         //console.log ("   Owner Account: \""+playerAccount[0].address+"\"");
          break;
       case "agree":
          var contractOwnerPID = requestParams.ownerPID;
@@ -197,6 +197,7 @@ async function CP_SmartContract (sessionObj) {
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
             return(false);
          }
+         //console.log ("Player has agreed to contract: "+privateID);
          break;
       case "store":
          if (typeof(requestParams.type) != "string") {
@@ -362,7 +363,7 @@ async function CP_SmartContract (sessionObj) {
                         keychainsFound++;
                      }
                      if (keychainsFound == gameContract.players.length) {
-                        console.log ("Contract "+contractID+" played to end. Analyzing...");
+                        //console.log ("Contract "+contractID+" played to end. Analyzing...");
                         try {
                            var nonFoldedPlayers = new Array();
                            for (count = 0; count < gameContract.players.length; count++) {
@@ -390,16 +391,16 @@ async function CP_SmartContract (sessionObj) {
                                  sendError(JSONRPC_ERRORS.PLAYER_ACTION_ERROR, "Contract validation failed.", sessionObj);
                                  return (false);
                               }
-                              console.log ("Contract "+contractID+" being scored...");
+                              //console.log ("Contract "+contractID+" being scored...");
                               var scoreResult = await scoreHands(gameContract);
                               //Additional information can be gathered from:
                               //   scoreResult.winningPlayers
                               //   scoreResult.winningHands
-                              console.log ("Contract "+contractID+" completed.");
+                              //console.log ("Contract "+contractID+" completed.");
                            } else {
                               //all but player nonFoldedPlayers[0].privateID have folded
-                              console.log ("Contract "+contractID+" played to end.");
-                              console.log ("All but one player have folded: "+nonFoldedPlayers[0].privateID);
+                              //console.log ("Contract "+contractID+" played to end.");
+                              //console.log ("All but one player have folded: "+nonFoldedPlayers[0].privateID);
                               scoreResult = new Object();
                               scoreResult.winningPlayers = new Array();
                               scoreResult.winningPlayers.push(nonFoldedPlayers[0]);
@@ -918,9 +919,19 @@ async function scoreHands(contract) {
             newWinningPlayers.push(player);
             newWinningHands.push(winningHand);
          } else if (currentScore == highestScore) {
-            //both private card values are the same -- split pot
-            newWinningPlayers.push(player);
-            newWinningHands.push(winningHand);
+            //both private card values are the same -- possible split pot
+            var playerExists = false;
+            for (count2 = 0; count2 < newWinningPlayers.length; count2++) {
+               if (newWinningPlayers[count2].privateID == player.privateID) {
+                  playerExists = true;
+                  break;
+               }
+            }
+            //only add player once (since some hands generate multiple similar results)
+            if (playerExists == false) {
+               newWinningPlayers.push(player);
+               newWinningHands.push(winningHand);
+            }
          }
       }
       winningPlayers = newWinningPlayers;
@@ -928,6 +939,10 @@ async function scoreHands(contract) {
    }
    cardsObj.winningPlayers = winningPlayers;
    cardsObj.winningHands = winningHands;
+   //console.log ("Winning players:");
+   //console.dir (winningPlayers);
+   //console.log ("Winning Hands:");
+   //console.dir (winningHands);
    return (cardsObj);
 }
 
@@ -1262,7 +1277,7 @@ async function applyPenalty (contract, playerPIDs, penaltyType) {
                penalizedPIDs.push(player.privateID);
             }
          }
-         console.log ("Player \""+penalizedPIDs+"\" has timed out contract: "+contract.contractID);
+         //console.log ("Player \""+penalizedPIDs+"\" has timed out contract: "+contract.contractID);
          var distributionPIDs = new Array();
          for (count = 0; count < contract.players.length; count++) {
             var currentPlayer = contract.players[count];
@@ -1902,30 +1917,6 @@ function updatePlayersTimeout(privateID, sourcePID, contract, action, storeActio
             //nextBettingPlayer is betting next
          }
       }
-      /*
-      //check for missing encryption actions
-      if (storeAction == "encrypt") {
-         //deck creation (multi-party encryption)
-         var numActions = 1;
-         for (count = 0; count < storeArray.length; count++) {
-            var currentStoreItem = storeArray[count];
-            if (currentStoreItem.type == "select") {
-               //restart action count
-               numActions = 1;
-            } else {
-               numActions++;
-            }
-         }
-         if (numActions == (contract.players.length + 2)) {
-            //action includes extra storage for plaintext and fully-encrypted decks (hence +2)
-            for (count = 0; count < contract.players.length; count++) {
-               var player = contract.players[count];
-               //deck is now created, everyone is reset to same timeout for selection
-               player.updated = now;
-            }
-         }
-      }
-      */
    } else if (action == "keychain") {
       getPlayer(contract, privateID).updated = now;
    } else {

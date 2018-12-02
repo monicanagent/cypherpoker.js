@@ -4,7 +4,7 @@
 * manages accounts and tables, launches games, and provides accesss to other shared
 * functionality.
 *
-* @version 0.2.2
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -222,7 +222,7 @@ class CypherPoker extends EventDispatcher {
    * @property {Object} p2p Reference to a peer-to-peer networking interface
    * supporting the property <code>privateID</code> and functions <code>connect(serverURL)</code>,
    * <code>broadcast(message)</code>, and <code>direct(message, [recipient,recipient...])</code>.
-   * For example, {@link WSS.js}
+   * For example, {@link WSS}
    * @readonly
    */
    get p2p() {

@@ -1,7 +1,7 @@
 /**
 * @file Information management for an individual CypherPoker.JS player.
 *
-* @version 0.2.0
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -66,7 +66,6 @@ class CypherPokerPlayer extends EventDispatcher {
    set account(accountSet) {
       this._account = accountSet;
    }
-
 
    /**
    * @property {Boolean} isDealer=false Set to true when the associated player
@@ -330,4 +329,3 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
 }
-totalBet

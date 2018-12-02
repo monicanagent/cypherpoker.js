@@ -2,25 +2,25 @@
    "CP": {
       "API": {
          "database":{
-            "enabled":true,
-            "url":"https://127.0.0.1/rdb.php",
+            "enabled":false,
+            "url":"http://localhost/rdb.php",
             "host":"localhost",
-            "accessKey":"PRIVATE DATABASE ACCESS KEY"
+            "accessKey":"DATABASE_ACCESS_KEY"
          },
          "wallets":{
             "bitcoin":{
                "xprv":"xprv...",
                "startChain":0,
-               "startIndex":2
+               "startIndex":1
             },
             "test3":{
                "tprv":"tprv...",
                "startChain":0,
-               "startIndex":2
+               "startIndex":1
             }
          },
          "tokens": {
-            "blockcypher":"PRIVATE BLOCKCYPHER TOKEN"
+            "blockcypher":"BLOCKCYPHER_TOKEN"
          },
          "bitcoin":{
             "networks":{
@@ -32,11 +32,11 @@
                "updateLimitSeconds": 120,
                "baseDenom": "satoshi",
                "main":{
-                  "cashOutAddrPath":"m/0/1",
+                  "cashOutAddrPath":"m/0/0",
                   "minerFee": "50000"
                },
                "test3":{
-                  "cashOutAddrPath":"m/0/1",
+                  "cashOutAddrPath":"m/0/0",
                   "minerFee": "50000"
                }
             },

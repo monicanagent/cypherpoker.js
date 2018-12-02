@@ -7,13 +7,13 @@
    */
 
    //External API access key:
-   $_accessKey = "PRIVATE ACCESS KEY";
+   $_accessKey = "DATABASE_ACCESS_KEY";
 
    //Database settings:
    $_dbhost = "localhost"; //the MySQL database host URL
-   $_dbname = "db_name"; //the MySQL database name
-   $_dbuser = "db_user"; //the authorized database user account
-   $_dbpw = "db_password"; //password for $_dbuser
+   $_dbname = "database_name"; //the MySQL database name
+   $_dbuser = "database_user"; //the authorized database user account
+   $_dbpw = "database_password"; //password for $_dbuser
    $db = NULL; //active database connection
 
    /**

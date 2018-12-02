@@ -2,7 +2,7 @@
 * @file Monitors and analyzes a CypherPoker game (hand) for cryptographic correctness
 * and ranks the completed hands of the game to determine the winner.
 *
-* @version 0.2.0
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -118,7 +118,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
             numCommitted++;
          }
       }
-      console.log ("Keychains committed: "+numCommitted);
       if (allPlayersCommitted) {
          return (true);
       }
@@ -243,7 +242,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
 
    /**
    * @property {CypherPoker} cypherpoker A reference to the
-   * {@link CypherPokerContract#game}'s <code>cypherpoker</code> instance or
+   * {@link CypherPokerAnalyzer#game}'s <code>cypherpoker</code> instance or
    * <code>null</code> if none exists.
    */
    get cypherpoker() {
@@ -254,7 +253,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    }
 
    /**
-   * @property {TableObject} A copy of the table associated with the {@link CypherPokerContract#game}
+   * @property {TableObject} A copy of the table associated with the {@link CypherPokerAnalyzer#game}
    * instance.
    */
    get table() {
@@ -266,7 +265,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
 
    /**
    * @property {Array} Indexed list of {CypherPokerPlayer} instances copied
-   * from the associated {@link CypherPokerContract#game} instance.
+   * from the associated {@link CypherPokerAnalyzer#game} instance.
    */
    get players() {
       if (this._players == undefined) {
@@ -307,14 +306,10 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    refreshPlayers() {
-      console.log ("******************************************");
-      console.log ("Refreshing players...");
       this._players = new Array();
       for (var count=0; count < this.game.players.length; count++) {
          this._players.push(this.game.players[count].copy());
       }
-      console.dir (this._players);
-      console.log ("******************************************");
    }
 
    /**
@@ -324,7 +319,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @param {String} privateID The private ID of the player to return.
    *
    * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} for the private ID
-   * associated with this game. <code>null</code> is returned if no matching
+   * associated with this instance. <code>null</code> is returned if no matching
    * player private ID can be found.
    */
    getPlayer(privateID) {
@@ -363,7 +358,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
 
    /**
    * Returns the {@link CypherPokerPlayer} that is currently flagged as the dealer
-   * in the {@link CypherPokerContract#players} array.
+   * in the {@link CypherPokerAnalyzer#players} array.
    *
    * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} instance that
    * is flagged as a dealer. <code>null</code> is returned if no dealer is flagged.
@@ -604,9 +599,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * @private
    */
    async onPlayerKeychain(event) {
-      console.log ("CypherPokerAnalyzer.onPlayerKeychain("+event+")");
-      console.log ("For table: "+this.table.tableID);
-      console.log ("From table: "+event.table.tableID);
       this._active = true;
       if (this._keychains == undefined) {
          this._keychains = new Object();
@@ -614,7 +606,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
       var player = event.player;
       var game = event.game;
       this._keychains[player.privateID] = Array.from(event.keychain);
-      console.log ("this.allKeychainsCommitted="+this.allKeychainsCommitted);
       if (this.allKeychainsCommitted) {
          this.game.removeEventListener("gameplayerkeychain", this.onPlayerKeychain, this);
          //all keychains committed, we can clear the timeout and start the analysis
@@ -641,9 +632,9 @@ class CypherPokerAnalyzer extends EventDispatcher {
          event.analyzer = this;
          event.analysis = this.analysis;
          this.dispatchEvent(event);
-         console.log ("Final analysis:");
-         console.dir (this.analysis);
-         console.dir (this.deals);
+         this.game.debug ("Final hand/game analysis:");
+         this.game.debug (this.analysis, "dir");
+         this.game.debug (this.deals, "dir");
          this._active = false;
       }
       return (true);
@@ -690,9 +681,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
          }
          if (this.compareDecks(currentDeck, compareDeck) == false) {
             var error = new Error("Deck encryption at stage "+count+" by \""+this.deck[count].fromPID+"\" failed.");
-            console.dir(keychain);
-            console.dir (currentDeck);
-            console.dir (compareDeck);
             error.code = 1;
             this._analysis.error = error;
             this._analysis.complete = true;
@@ -740,9 +728,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
                }
                if (this.removeFromDeck(cards, encryptedDeck) == false) {
                   var error = new Error("Duplicates found in \"select\" deal index "+count+" for \""+fromPID+"\" for \""+sourcePID+"\".");
-                  console.dir (cards);
-                  console.dir (encryptedDeck);
-                  console.dir (this.deals);
                   error.code = 2;
                   this._analysis.error = error;
                   this._analysis.complete = true;
@@ -765,8 +750,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
                   var card = this.getMappedCard(promiseResults[count2].data.result);
                   if (card == null) {
                      var error = new Error("Final decryption (deal "+count+") by \""+this.getPlayer(fromPID).account.address+"\" for \""+this.getPlayer(sourcePID).account.address+"\" does not map: "+promiseResults[count2].data.result);
-                     console.dir (card);
-                     console.dir (promiseResults[count2].data.result);
                      error.code = 2;
                      this._analysis.error = error;
                      this._analysis.complete = true;
@@ -827,8 +810,6 @@ class CypherPokerAnalyzer extends EventDispatcher {
                   }
                   if (this.compareDecks(compareDeck, cards) == false) {
                      var error = new Error("Previous round ("+count+") of decryption by \""+this.getPlayer(fromPID).account.address+"\" for \""+this.getPlayer(sourcePID).account.address+"\" does not match computed results.");
-                     console.dir(compareDeck);
-                     console.dir(cards);
                      error.code = 2;
                      this._analysis.error = error;
                      this._analysis.complete = true;
