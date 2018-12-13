@@ -1,7 +1,7 @@
 {
    "p2p":{
       "create":"return (new WSS())",
-      "connectURL":"wss://cpserver-zzglebfiyy.now.sh"
+      "connectURL":"wss://cpserver-qcdyuxqsza.now.sh"
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",
