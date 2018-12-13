@@ -1,5 +1,17 @@
 {
    "CP": {
+      "rootPeers": {
+         "bitcoin":[
+            {"address":"18H1HYoNGVW11X8xhQmPNCuZ5rbd4pJaF3"},
+            {"address":"1DKKp72YvUzWWSF9fR3qErg4EkH9uAvH6s"},
+            {"address":"136vTdtTvoNkxuYVQHBU8g4b38o6MZNHJQ"}
+         ],
+         "test3":[
+            {"address":"n22LEtuzgniSXeMBoUjgpqkDm6Nf7SEMi4"},
+            {"address":"mpeC1sTb7titSPgraQu6YATfz4LanUPfFv"},
+            {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
+         ]
+      },
       "API": {
          "database":{
             "enabled":false,

@@ -1,7 +1,7 @@
 /**
 * @file Information management for an individual CypherPoker.JS player.
 *
-* @version 0.2.0
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -66,7 +66,6 @@ class CypherPokerPlayer extends EventDispatcher {
    set account(accountSet) {
       this._account = accountSet;
    }
-
 
    /**
    * @property {Boolean} isDealer=false Set to true when the associated player
@@ -293,6 +292,28 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
    /**
+   * Creates a copy of this instance and returns that copy.
+   *
+   * @return {CypherPokerPlayer} A new player instance with the properties
+   */
+   copy() {
+      var returnPlayer = new CypherPokerPlayer(this.privateID, this.info);
+      returnPlayer._account = this.account;
+      returnPlayer._dealtCards = Array.from(this.dealtCards);
+      returnPlayer._selectedCards = Array.from(this.selectedCards);
+      returnPlayer._hasBet = this.hasBet;
+      returnPlayer._hasFolded = this.hasFolded;
+      returnPlayer._isDealer = this.isDealer;
+      returnPlayer._isSmallBlind = this.isSmallBlind;
+      returnPlayer._isBigBlind = this.isBigBlind;
+      returnPlayer._totalBet = this.totalBet.toString(10);
+      returnPlayer._balance = this.balance.toString(10);
+      returnPlayer._ready = this.ready;
+      returnPlayer._keychain = Array.from(this.keychain);
+      return (returnPlayer);
+   }
+
+   /**
    * Irrevocably resets the {@link CypherPokerPlayer#keychain} array (to an
    * empty array).
    */
@@ -308,4 +329,3 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
 }
-totalBet

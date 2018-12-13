@@ -1,14 +1,15 @@
 /**
 * @file A CypherPoker.JS implementation of Texas Hold'em poker for 2+ players.
 *
-* @version 0.2.0
+* @version 0.3.0
 * @author Patrick Bay
 * @copyright MIT License
 */
 
 /**
-* @class Manages game logic, {@link CypherPokerPlayer} instances,
-* and other game-specific properties for CypherPoker.JS Texas Hold'em.
+* @class Manages game logic, {@link CypherPokerPlayer}, {@link CypherPokerContract}, and
+* {@link CypherPokerAnalyzer} instances, and other game-specific properties for
+* a single CypherPoker.JS Texas Hold'em game (hand).
 *
 * @extends EventDispatcher
 */
@@ -272,6 +273,7 @@ class CypherPokerGame extends EventDispatcher {
          if (newPlayer.privateID == this.ownPID) {
             newPlayer.info = playerInfo;
          }
+         newPlayer.balance = tableObj.tableInfo.buyIn;
          this._players.push(newPlayer);
       }
       this.assignPlayerRoles(null); //table owner becomes initial dealer
@@ -517,7 +519,7 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * @property {Boolean} gameStarted True if the game has been started (all
+   * @property {Boolean} gameStarted=false True if the game has been started (all
    * players have introduced themselves and game parameters have been set).
    * @readonly
    */
@@ -527,6 +529,32 @@ class CypherPokerGame extends EventDispatcher {
       }
       return (this._gameStarted);
    }
+
+   /**
+   * @property {Boolean} gameEnding=false True if the game is currently ending
+   * (game play has completed but verification/validation has not).
+   * @readonly
+   */
+   get gameEnding() {
+      if (this._gameEnding == undefined) {
+         this._gameEnding = false;
+      }
+      return (this._gameEnding);
+   }
+
+   /**
+   * @property {Array} messageQueue Peer-to-peer message events that have been
+   * queued while {@link CypherPokerGame#gameEnding} is <code>true</code>.
+   * Message events are stored in order of age of receipt with the most
+   * recent events appearing last.
+   */
+   get messageQueue() {
+      if (this._messageQueue == undefined) {
+         this._messageQueue = new Array();
+      }
+      return (this._messageQueue);
+   }
+
 
    /**
    * Returns the next betting player following a specified one.
@@ -1052,6 +1080,20 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
+   * Processes any queued message events found in the {@link CypherPokerGame#messageQueue}.
+   *
+   * @async
+   * @private
+   */
+   async processMessageQueue() {
+      while (this.messageQueue.length > 0) {
+         var nextMessageEvent = this.messageQueue.shift(); //process oldest first
+         var result = await this.handleP2PMessage(nextMessageEvent);
+      }
+      return (true);
+   }
+
+   /**
    * Sends a message to player(s) associated with this game. Table
    * information is automatically appended to the message.
    *
@@ -1522,12 +1564,12 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns true if the supplied JSON-RPC result structure contains the same
-   * {@link CypherPoker#TableObject} identifiers as the table associated with this game instance.
+   * {@link CypherPoker#TableObject} identifiers as a table associated with this game instance.
    *
    * @param {Object} msgResultObj The JSON-RPC result object to check.
    *
    * @return {Boolean} True if the supplied table has the same identifiers
-   * (table ID, table name, table owner, member private ID), as the one associated
+   * (table ID, table name, table owner, member private ID), as one associated
    * with this game.
    * @private
    */
@@ -1538,6 +1580,8 @@ class CypherPokerGame extends EventDispatcher {
       if ((msgResultObj.data == null) || (msgResultObj.data == undefined)) {
          return (false);
       }
+      //todo: update this to use a history of past tables played by this game
+      //which should fix post-game verificaion problem (not triggering on subsequent rounds)
       if ((this.table.tableID == msgResultObj.data.tableID) &&
          (this.table.tableName == msgResultObj.data.tableName) &&
          (this.table.ownerPID == msgResultObj.data.ownerPID)) {
@@ -1590,9 +1634,13 @@ class CypherPokerGame extends EventDispatcher {
             throw (new Error("Bet amount (\""+betAmount.toString(10)+"\") must be at least \"" + minBet.toString(10) + "\"."));
          }
       }
+      if (betAmount.greater(this.getPlayer(this.ownPID).balance)) {
+         throw (new Error("Bet amount exceeds available balance."));
+      }
       var biggestBet = this.largestBet;
       if (betAmount.greaterOrEquals(0)) {
          var totalCurrentBet = this.getPlayer(this.ownPID).totalBet.add(betAmount);
+         this.getPlayer(this.ownPID).balance = this.getPlayer(this.ownPID).balance.minus(betAmount);
          if (totalCurrentBet.equals(biggestBet)) {
             //we are checking / calling
             this.getPlayer(this.ownPID).totalBet = totalCurrentBet;
@@ -1647,7 +1695,6 @@ class CypherPokerGame extends EventDispatcher {
    /**
    * Ends the current game (hand), and sends keyring to other players for verification.
    *
-   *
    * @return {Promise} Resolves with a result of <code>true</code> when the game is
    * completely ended and optionally restarted.
    * @fires CypherPokerGame#gameanalyze
@@ -1655,7 +1702,7 @@ class CypherPokerGame extends EventDispatcher {
    * @async
    */
    async endGame () {
-      this.debug ("endGame()");
+      this.debug ("CypherPokerGame.endGame()");
       try {
          this._gameStarted = false;
          var event = new Event("gameanalyze");
@@ -1676,6 +1723,10 @@ class CypherPokerGame extends EventDispatcher {
       } catch (err) {
          console.error(err);
       }
+      //reset all players' ready flags for possible restart
+      for (var count=0; count < this.players.length; count++) {
+         this.players[count].ready = false;
+      }
       return (true);
       //the instance's data should now be assumed to be unstable
    }
@@ -1683,9 +1734,9 @@ class CypherPokerGame extends EventDispatcher {
    /**
    * Attempts to restart the game by resetting all cards and player selections,
    * shifting player roles, and finally starting the game (if we're the current dealer).
-   * If the game is awaiting analysis, the restart is put on indefinite pause.
+   * If the game is awaiting analysis, the restart is held until complete.
    *
-   * @param {CypherPokerGame} context=null The game context in which to execute
+   * @param {CypherPokerGame} [context=null] The game context in which to execute
    * the restart. If <code>null</code>, <code>this</code> is assumed.
    *
    * @return {Promise} Resolves to <code>true</code> when game is immediately
@@ -1697,15 +1748,16 @@ class CypherPokerGame extends EventDispatcher {
       if (context == null) {
          context = this;
       }
+      context._gameEnding = true;
       if (context.analyzer != null) {
          if (context.analyzer.active != false) {
-            //re-check every 0.5 seconds
+            //re-check every half second
             setTimeout(context.restartGame, 500, context);
             return (false);
          }
       }
-      this.pot = 0;
-      this._gameStarted = false;
+      context.pot = 0;
+      context._gameStarted = false;
       context.resetPlayerStates(true, true, true);
       context.cardDecks.public = new Array();
       context.cardDecks.dealt = new Array();
@@ -1719,15 +1771,16 @@ class CypherPokerGame extends EventDispatcher {
          context.players[count].hasFolded = false;
          context.players[count].totalBet = 0;
          context.players[count].numActions = 0;
-         //player roles are not currently adjusted
          context.players[count].isBigBlind = false;
          context.players[count].isSmallBlind = false;
          context.players[count].isDealer = false;
          context.players[count].resetKeychain();
       }
-      this._lastBetPID = null;
-      //dealer currently stays in place
       context.assignPlayerRoles(nextDealerPID);
+      context.players.push(context.players.shift());
+      context.table.joinedPID.push(context.table.joinedPID.shift());
+      context.table.ownerPID = nextDealerPID;
+      context._lastBetPID = null;
       context._gameParams = new Object();
       context._contract.stopContractTimeout();
       context._analyzer.removeGameListeners();
@@ -1739,14 +1792,28 @@ class CypherPokerGame extends EventDispatcher {
       event.game = context;
       event.table = context.table;
       context.dispatchEvent.call(context, event);
-      try {
-         var event = await context.sendGameParams(true);
-         event = await context.generateKeypair();
-         event = await context.generateCardDeck();
-         event = await context.encryptCards();
-      } catch (err) {
-         //anyone but the current dealer will throw an error in sendGameParams
+      context.getPlayer(context.ownPID).ready = true;
+      context.sendToPlayers("gamerestart");
+      var allPlayersReady = true;
+      for (count=0; count < context.players.length; count++) {
+         if (context.players[count].ready == false) {
+            allPlayersReady = false;
+            break;
+         }
       }
+      if (allPlayersReady == true) {
+         try {
+            var event = await context.sendGameParams(true);
+            event = await context.generateKeypair();
+            event = await context.generateCardDeck();
+            event = await context.encryptCards();
+         } catch (err) {
+            //anyone but the current dealer will throw an error in sendGameParams
+         }
+      }
+      //context._gameStarted = true;
+      context._gameEnding = false;
+      var result = await context.processMessageQueue();
       return (true);
    }
 
@@ -1869,6 +1936,7 @@ class CypherPokerGame extends EventDispatcher {
    * @param {Event} event A "message" event dispatched by the communication interface.
    * A <code>data</code> property is expected to contain the parsed JSON-RPC 2.0
    * message received.
+   *
    * @fires CypherPokerGame#gamehello
    * @fires CypherPokerGame#gameplayerready
    * @fires CypherPokerGame#gameparams
@@ -1882,13 +1950,12 @@ class CypherPokerGame extends EventDispatcher {
    async handleP2PMessage(event) {
       if (this.cypherpoker.isCPMsgEvent(event) == false) {
          //don't process any further
-         return;
+         return (false);
       }
       var resultObj = event.data.result;
       var eventData = event.data;
-      if (this.matchesThisTable(resultObj) == false) {
-         //included table information doesn't match this game's table
-         return;
+       if ((this.matchesThisTable(resultObj) == false) && (resultObj.data.cpMsg != "gameend") && (resultObj.data.cpMsg != "gamerestart") && (this.gameEnding == false)) {
+         return (false);
       }
       var message = resultObj.data;
       var payload = message.payload; //similar to a generic "tableInfo" object
@@ -1902,6 +1969,10 @@ class CypherPokerGame extends EventDispatcher {
       this.debug("CypherPokerGame.handleP2PMessage("+event+") => \""+messageType+"\"");
       switch (messageType) {
          case "gameready":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             player.ready = true;
             this.sendPlayerInfo([fromPID]);
             event = new Event("gameplayerready");
@@ -1912,6 +1983,10 @@ class CypherPokerGame extends EventDispatcher {
             this.dispatchEvent(event);
             break;
          case "gamehello":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             if (player.ready == false) {
                //we weren't ready for this player's "gameready"
                player.ready = true;
@@ -1932,7 +2007,7 @@ class CypherPokerGame extends EventDispatcher {
             this.dispatchEvent(event);
             for (var count=0; count < this.players.length; count++) {
                if (this.players[count].ready == false) {
-                  return;
+                  return (false);
                }
             }
             //all players are now ready - send game parameters
@@ -1946,6 +2021,10 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gameparams":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             this._gameParams = payload;
             event = new Event("gameparams");
             event.data = event.data;
@@ -1960,6 +2039,10 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gamedeck":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             if (this.cardDecks.faceup.length >= this.cypherpoker.settings.cards.length) {
                throw (new Error("A deck for this game has already been generated."));
             }
@@ -1974,6 +2057,10 @@ class CypherPokerGame extends EventDispatcher {
             this.dispatchEvent(event);
             break;
          case "gamecardsencrypt":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             //dispatch this event before potentially calling "encryptCards" below
             event = new Event("gamecardsencrypt");
             event.selected = Array.from(payload);
@@ -2009,6 +2096,10 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gamedeal":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             event = new Event("gamedealmsg");
             event.data = eventData;
             event.player = this.getPlayer(fromPID);
@@ -2016,14 +2107,16 @@ class CypherPokerGame extends EventDispatcher {
             event.table = this.table;
             this.dispatchEvent(event);
             payload.fromPID = fromPID;
-            //store encrypted private card selections for a player
-            if ((payload.private == true) && (payload.sourcePID == fromPID)) {
+            //if ((payload.private == true) && (payload.sourcePID == fromPID)) {
+            if (payload.sourcePID == fromPID) {
                for (var count = 0; count < payload.selected.length; count++) {
                    for (var count2 = (this.cardDecks.facedown.length-1); count2 >= 0; count2--) {
                       if (this.cardDecks.facedown[count2] == payload.selected[count]) {
                          this.cardDecks.dealt.push(this.cardDecks.facedown[count2]);
                          //todo: ensure that this only gets done once!
-                         this.getPlayer(fromPID).selectedCards.push(this.cardDecks.facedown[count2]);
+                          if (payload.private == true) {
+                            this.getPlayer(fromPID).selectedCards.push(this.cardDecks.facedown[count2]);
+                         }
                          this.cardDecks.facedown.splice(count2, 1);
                       }
                    }
@@ -2044,6 +2137,10 @@ class CypherPokerGame extends EventDispatcher {
             }
             break;
          case "gamebet":
+            if (this._gameEnding == true) {
+               this.messageQueue.push(event);
+               return (false);
+            }
             if (payload.fold == true) {
                this.getPlayer(fromPID).hasFolded = true;
                this.getPlayer(fromPID).hasBet = true;
@@ -2053,6 +2150,7 @@ class CypherPokerGame extends EventDispatcher {
                var betAmount = bigInt(payload.amount);
                this.pot = this.pot.add(betAmount);
                this.getPlayer(fromPID).totalBet = this.getPlayer(fromPID).totalBet.add(betAmount);
+               this.getPlayer(fromPID).balance = this.getPlayer(fromPID).balance.minus(betAmount);
                this.getPlayer(fromPID).hasFolded = false;
                this.getPlayer(fromPID).hasBet = true;
                this.getPlayer(fromPID).numActions++;
@@ -2102,6 +2200,26 @@ class CypherPokerGame extends EventDispatcher {
             event.table = this.table;
             this.dispatchEvent(event);
             break;
+         case "gamerestart":
+            //player has signalled that they're ready for a restart (post-game analysis complete)
+            player.ready = true;
+            for (count=0; count<this.players.length;count++) {
+               if (this.players[count].ready == false) {
+                  return (false);
+               }
+            }
+            try {
+               var event = await this.sendGameParams(true);
+               event = await this.generateKeypair();
+               event = await this.generateCardDeck();
+               event = await this.encryptCards();
+            } catch (err) {
+               //anyone but the current dealer will throw an error in sendGameParams
+            }
+            this._gameStarted = true;
+            this._gameEnding = false;
+            var result = await this.processMessageQueue();
+            break;
          default:
             //not a recognized CypherPoker.JS game message type
             break;
@@ -2117,7 +2235,7 @@ class CypherPokerGame extends EventDispatcher {
    * @private
    */
    onGameAnalyzed(event) {
-      event.analyzer.removeEventListener("scored", this.onGameAnalyzed);
+      event.analyzer.removeEventListener("scored", this.onGameAnalyzed, this);
       var newEvent = new Event("gamescored");
       newEvent.analyzer = event.analyzer;
       newEvent.game = this;

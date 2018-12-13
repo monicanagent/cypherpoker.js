@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: libs/EventDispatcher.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: libs/EventDispatcher.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Extensible class intended to (nearly) mimic standard DOM event dispatchers.
+*
+* @version 0.2.0
+*/
+/**
+* @class Extend this class to enable standard event dispatcher functionality
+* in non-native (DOM) objects.
+*
+* &lt;p>&lt;b>&lt;i>This class requires ECMAScript 2017 support.&lt;/i>&lt;/b>&lt;/p>
+*
+* @example
+*
+* class myEventDispatcher extends EventDispatcher {
+*  constructor() {
+*   this.dispatchEvent(new Event("created"));
+*  }
+* }
+*
+* @version 0.2.3
+* @mixin
+* @mixes Object
+* @see https://www.w3.org/TR/uievents/
+*/
+class EventDispatcher {
+
+   constructor () {
+       this._registrations = new Object();
+   }
+
+   /**
+   * Returns all registered listeners for a specific event type.
+   *
+   * @param {String} type The event type to return registered listeners for.
+   *
+   * @return {Array} A list of registered event listener objects for the specific event.
+   * Each object contains a &lt;code>listener&lt;/code> function reference and an
+   * execution &lt;code>context&lt;/code> reference.
+   */
+   getListeners (type) {
+       if ((this._registrations[type] == undefined) || (this._registrations[type] == null)) {
+          this._registrations[type] = new Array();
+       }
+       return (this._registrations[type]);
+   }
+
+   /**
+   * Registers a new event listener with the extending class instance.
+   *
+   * @param {String} type The event type to register.
+   * @param {Function} listener The listening function to invoke on the event.
+   * @param {Object} [context=null] Unlike the traditional &lt;code>addEventListener&lt;/code> parameter, this is
+   * the context or scope in which to invoke the listening function (since we can't use capture phases).
+   * If null, the listener is invoked in the context of the EventDispatcher or extending instance.
+   */
+   addEventListener (type, listener, eventContext = null) {
+       var listeners = this.getListeners(type);
+       var listenerObj = new Object();
+       listenerObj.listener = listener;
+       listenerObj.context = eventContext;
+       listeners.push(listenerObj);
+   }
+
+   /**
+   * Removes an event listener from the extending instance.
+   *
+   * @param {String} type The event type to remove the function from.
+   * @param {Function} listener The listening function to remove.
+   * @param {Object} [context=null] The context or scope in which the listener exists.
+   *
+   * @augments EventDispatcher
+   */
+   removeEventListener (type, listener, context=null) {
+       var listeners = this.getListeners(type);
+       for (var count=0; count &lt; listeners.length; count++) {
+          if (context == null) {
+             if (listeners[count].listener === listener) {
+                listeners.splice(count, 1);
+                return;
+             }
+          } else {
+             if ((listeners[count].listener === listener) &amp;&amp; (listeners[count].context === context)) {
+                listeners.splice(count, 1);
+                return;
+             }
+          }
+       }
+   }
+
+   dispatchEvent (evt) {
+       var listeners = Array.from(this.getListeners(evt.type));
+       for (var i= 0; i &lt; listeners.length; i++) {
+         if (listeners[i].context != null) {
+            listeners[i].listener.call(listeners[i].context, evt);
+         } else {
+            listeners[i].listener.call(this, evt);
+         }
+       }
+       return !evt.defaultPrevented;
+   }
+
+   toString() {
+      return ("[object EventDispatcher]");
+   }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Dec 13 2018 01:23:04 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

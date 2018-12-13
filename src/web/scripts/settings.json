@@ -8,6 +8,18 @@
       "bitLength": 512,
       "radix": 16
    },
+   "rootPeers": {
+      "bitcoin":[
+         {"address":"18H1HYoNGVW11X8xhQmPNCuZ5rbd4pJaF3"},
+         {"address":"1DKKp72YvUzWWSF9fR3qErg4EkH9uAvH6s"},
+         {"address":"136vTdtTvoNkxuYVQHBU8g4b38o6MZNHJQ"}
+      ],
+      "test3":[
+         {"address":"n22LEtuzgniSXeMBoUjgpqkDm6Nf7SEMi4"},
+         {"address":"mpeC1sTb7titSPgraQu6YATfz4LanUPfFv"},
+         {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
+      ]
+   },
    "cards":[
          {"name":"Ace of Spades","shortname":"A♠","suit":"spades","colour":"black","value":1,"highvalue":14,"imageURI":"./assets/cards/AS.svg"},
          {"name":"Two of Spades","shortname":"2♠","suit":"spades","colour":"black","value":2,"highvalue":2,"imageURI":"./assets/cards/2S.svg"},

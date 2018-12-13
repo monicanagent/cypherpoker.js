@@ -1,6 +1,6 @@
 {
   "name": "CypherPoker.JS_client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "CypherPoker.JS client API interface.",
   "engines": {
     "node": ">=8.0.0"
@@ -20,28 +20,28 @@
     "start": "node_modules/.bin/http-server -c-1"
   },
   "keywords": [
-   "CypherPoker",
-   "poker",
-   "client",
-   "crypto",
-   "cryptosystem",
-   "SRA",
-   "game",
-   "p2p",
-   "peer-to-peer",
-   "websocket",
-   "session",
-   "sessions",
-   "wss",
-   "json-rpc",
-   "jsonrpc",
-   "2.0",
-   "http",
-   "ws"
+    "CypherPoker",
+    "poker",
+    "client",
+    "crypto",
+    "cryptosystem",
+    "SRA",
+    "game",
+    "p2p",
+    "peer-to-peer",
+    "websocket",
+    "session",
+    "sessions",
+    "wss",
+    "json-rpc",
+    "jsonrpc",
+    "2.0",
+    "http",
+    "ws"
   ],
   "author": {
     "name": "Patrick Bay (Monican Agent)",
-    "url" : "https://github.com/monicanagent"
+    "url": "https://github.com/monicanagent"
   },
   "license": "MIT",
   "dependencies": {

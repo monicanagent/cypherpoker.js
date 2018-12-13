@@ -1,7 +1,7 @@
 /**
 * @file Contains information and functionality associated with a single managed account.
 *
-* @version 0.2.0
+* @version 0.2.3
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -82,13 +82,6 @@ class CypherPokerAccount extends EventDispatcher {
    */
    set network(networkSet) {
       this._network = networkSet;
-   }
-
-   get network() {
-      if (this._network == undefined) {
-         this._network = null;
-      }
-      return (this._network);
    }
 
    get network() {
@@ -200,7 +193,7 @@ class CypherPokerAccount extends EventDispatcher {
          this.balance = 0;
          throw(new Error(JSONObj.error.message));
       }
-      //balance confirmed? JSONObj.result.confirmed
+      //balance confirmed = JSONObj.result.confirmed
       this.balance = JSONObj.result.balance;
       return (true);
    }

@@ -17,7 +17,7 @@
 *  }
 * }
 *
-* @version 0.2.0
+* @version 0.2.3
 * @mixin
 * @mixes Object
 * @see https://www.w3.org/TR/uievents/
@@ -51,15 +51,10 @@ class EventDispatcher {
    * @param {Function} listener The listening function to invoke on the event.
    * @param {Object} [context=null] Unlike the traditional <code>addEventListener</code> parameter, this is
    * the context or scope in which to invoke the listening function (since we can't use capture phases).
-   * If null, the listener is invoked in the context of the EventDispatcher instance.
+   * If null, the listener is invoked in the context of the EventDispatcher or extending instance.
    */
    addEventListener (type, listener, eventContext = null) {
-       var listeners= this.getListeners(type);
-       for (var count=0; count < listeners.length; count++) {
-          if (listeners[count].listener == listener) {
-             return;
-          }
-       }
+       var listeners = this.getListeners(type);
        var listenerObj = new Object();
        listenerObj.listener = listener;
        listenerObj.context = eventContext;
@@ -67,26 +62,33 @@ class EventDispatcher {
    }
 
    /**
-   * Removes an event listener from the extending instance. The standard capture phase
-   * parameter is ignored.
+   * Removes an event listener from the extending instance.
    *
    * @param {String} type The event type to remove the function from.
    * @param {Function} listener The listening function to remove.
+   * @param {Object} [context=null] The context or scope in which the listener exists.
    *
    * @augments EventDispatcher
    */
-   removeEventListener (type, listener) {
-       var listeners= this.getListeners(type);
+   removeEventListener (type, listener, context=null) {
+       var listeners = this.getListeners(type);
        for (var count=0; count < listeners.length; count++) {
-          if (listeners[count].listener == listener) {
-             listeners.splice(count, 1);
-             return;
+          if (context == null) {
+             if (listeners[count].listener === listener) {
+                listeners.splice(count, 1);
+                return;
+             }
+          } else {
+             if ((listeners[count].listener === listener) && (listeners[count].context === context)) {
+                listeners.splice(count, 1);
+                return;
+             }
           }
        }
    }
 
    dispatchEvent (evt) {
-       var listeners = this.getListeners(evt.type).slice();
+       var listeners = Array.from(this.getListeners(evt.type));
        for (var i= 0; i < listeners.length; i++) {
          if (listeners[i].context != null) {
             listeners[i].listener.call(listeners[i].context, evt);

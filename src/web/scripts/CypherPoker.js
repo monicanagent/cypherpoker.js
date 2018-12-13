@@ -4,7 +4,7 @@
 * manages accounts and tables, launches games, and provides accesss to other shared
 * functionality.
 *
-* @version 0.2.3
+* @version 0.3.0
 * @author Patrick Bay
 * @copyright MIT License
 */

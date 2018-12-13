@@ -1,0 +1,170 @@
+<div id="help" class="helpContent">
+   <div id="create_account_password" hidden="true">
+      Enter a secure password or passphrase for the new account.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_account_type" hidden="true">
+      Select the cryptocurrency type for the new account.<br/>
+      <br/>
+      Choose "Bitcoin" to create a live (real) Bitcoin account<br/>
+      or "Test Bitcoin" to create a Testnet3 account.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="select_copy_account" hidden="true">
+      Use the selection box on the left to choose an account for game play, <br/>
+      cash outs, or transfers.<br/>
+      <br/>
+      Click on the clipboard button on the right to copy the account address to the<br/>
+      system clipboard. You can user the copied address to check on the status of a<br/>
+      deposit or transfer using a third-party service.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="account_balance" hidden="true">
+      This area displays your current account balance.<br/>
+      <br/>
+      If a deposit has been made but not yet confirmed, the balance will display 0.<br/>
+      Refresh the page to see the new balance once the deposit is confirmed.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="account_password" hidden="true">
+      Use this field to enter the password associated with the selected account.<br/>
+      <br/>
+      If saving of account passwords is enabled (default), the password for an account<br/>
+      is automatically entered here when the account is selected.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="use_create_account" hidden="true">
+      Click on the "USE ACCOUNT" button to use the selected account with the<br/>
+      specified "Password" to create or join a table.<br/>
+      <br/>
+      Click on the "CREATE NEW ACCOUNT" to create a new cryptocurrency account<br/>
+      (you will be taken to a new form).<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="cashout_account" hidden="true">
+      Use this feature to send some or all of the selected account's balance to another address.<br/>
+      <br/>
+      Enter the amount to send in the "Amount" field, in satoshis.<br/>
+      A nominal miner fee is automatically subtracted from this amount.<br/>
+      <br/>
+      Enter the recipient address in the "Address" field.<br/>
+      <br/>
+      When the required information has been entered, click the "CASH OUT" button on the left.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="transfer_account" hidden="true">
+      Use this feature to transfer some or all of the selected account's balance to another account.<br/>
+      <br/>
+      Enter the amount to transfer in the "Amount" field, in satoshis.
+      <br/>
+      Enter the recipient account address in the "Account" field. The account address<br/>
+      <i>must</i> be one created by this account system.<br/>
+      <br/>
+      When the required information has been entered, click the "TRANSFER" button on the left.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_form" hidden="true">
+      This form is used to create a new table (game).<br/>
+      <br/>
+      As the table's creator you will automatically join it and begin advertising
+      it to other players.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_player_alias" hidden="true">
+      Enter your desired player alias (name) in this field.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_name" hidden="true">
+      Enter a descriptive name for the table (game) in this field.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_num_players" hidden="true">
+      Enter the required number of players, including yourself, that must join the table<br/>
+      in order for the game to begin.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_buyin" hidden="true">
+      Enter the required buy-in, in satoshis, for each player joining this table (game).<br/>
+      <br/>
+      Once all required players have joined, this amount is subtracted from their accounts<br/>
+      and transferred to in-game balances managed by an associated game contract<br/>
+      until either the hand is completed or a player times out.<br/>
+      <br/>
+      When a hand (game) is restarted, this process is repeated.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_bigblind" hidden="true">
+      Enter the amount, in satoshis, to be posted by the big blind for this table.<br/>
+      <br/>
+      This amount must be less than or equal to the buy-in.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_smallblind" hidden="true">
+      Enter the amount, in satoshis, to be posted by the small blind for this table.<br/>
+      <br/>
+      This amount must be less than or equal to the big blind amount.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="create_table_button" hidden="true">
+      Click on this button when all of the above fields have been correctly completed in order<br/>
+      to create the new table and automatically start advertising it to other players.<br/>
+      <br/>
+      Once the required number of players has joined the table, the buy-in amount is automatically<br/>
+      subtracted from their accounts and transfered to their in-game balance where it's managed<br/>
+      by the associated game contract.<br/>
+      <br/>
+      The contract handles the in-game balances until either a winner(s) is determined or<br/>
+      a player times out.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="join_table_list" hidden="true">
+      Any tables created and advertised by other players will appear below.<br/>
+      <br/>
+      Once you've reviewed the information, click on the desired table to join it.<br/>
+      <br/>
+      When the required number of players have joined the table, the game will automatically begin.<br/>
+      <br/>
+      The advertised buy-in amount will be subtracted from your selected account and<br/>
+      transferred to an in-game balance where it'll be handled by an associated game contract until<br/>
+      the hand (game) has either completed or a player has timed out.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="game_buttons" hidden="true">
+      Use the number field on the left to enter an amount to bet or raise, in satoshis, then<br/>
+      click the "BET" button. A bet/raise/call amount is automatically entered for you based<br/>
+      on the current state of the game.<br/>
+      <br/>
+      You may fold by clicking on the "FOLD" button when it's your turn.<br/>
+      <br/>
+      A new hand may be dealt by clicking on the "NEW HAND" button when the previous<br/>
+      hand has completed and you're the next dealer. The same table parameters as the previous hand<br/>
+      are used to start the new hand.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+   <div id="game_hand_history" hidden="true">
+      This area displays a history of completed hands (games).<br/>
+      <br/>
+      Winning hand(s) and associated player(s) are displayed in order<br/>
+      from oldest to newest.<br/>
+      <br/>
+      <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
+   </div>
+</div>

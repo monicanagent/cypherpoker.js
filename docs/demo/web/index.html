@@ -27,94 +27,34 @@
   <body>
 
       <!--
-        Main / default dialog element controlled by the CypherPokerUI instance.
-      -->
-      <dialog id="mainDialog" class="dialog" open="true">
-         <p>Connecting to peer-to-peer network...</p>
-      </dialog>
-
-      <!--
          CypherPoker.JS logo.
       -->
       <div class="logo"><span id="cypherpoker"><span id="text">CypherPoker</span></span><span id="JS"><span id="text">.JS</span></span></div>
 
       <!--
-         Main account(s) management element.
+        Main / default dialog element.
       -->
-      <div id="accounts" class="accountsContainer">
-         <div id="loginForm" class="loginFormContainer">
-            <select id="currentAccounts" class="currentAccountsList">
-            </select><button id="copyToClipboardButton" class="copyToClipboardButton">📋</button><br/>
-            Password: <input type="password" id="accountPassword" name="accountPassword" placeholder="Account password" /><br/>
-            <button id="useAccountButton" class="useAccountButton">USE ACCOUNT</button>
-            <button id="createAccountButton" class="createAccountButton">CREATE NEW ACCOUNT</button><br/>
-         </div>
-         <div id="manageForm" class="manageFormContainer">
-            Balance: <span id="accountBalance" class="accountBalanceContainer"></span>
-            <br/><button id="cashoutButton" class="cashoutButton">Cash out:</button>&nbsp;&nbsp;<input type="number" id="cashoutAmount" name="cashoutAmount" placeholder="Amount" /> to <input type="text" id="cashoutAddress" name="cashoutAddress" placeholder="Address" />
-            <br/><button id="transferButton" class="transferButton">Transfer:</button>&nbsp;&nbsp;<input type="number" id="transferAmount" name="transferAmount" placeholder="Amount" /> to <input type="text" id="transferAccount" name="transferAccount" placeholder="Account" />
-         </div>
-         <div id="createAccountForm" name="createAccountForm" class="createAccountFormContainer" hidden="true">
-            <input type="password" id="newAccountPassword" name="newAccountPassword" placeholder="New account password" /><br/>
-            <select id="newAccountType" class="newAccountList">
-              <option value="bitcoin/main">Bitcoin</option>
-              <option value="bitcoin/test3">Test Bitcoin</option>
-            </select><br/>
-            <button id="newAccountButton" class="accountButton">CREATE ACCOUNT</button>
-         </div>
-      </div>
+      <dialog id="mainDialog" class="dialog" open="true">
+         <!-- Generic dialog message container -->
+         <div id="message"><p>Loading game components...</p></div>
+      </dialog>
 
       <!--
-         Main lobby element controlled by the CypherPokerUI instance.
+         Main account management element.
       -->
-      <div id="lobby" class="lobbyContainer" hidden="true">
-
-         Create Table:
-         <div id="createGameForm" name="createGameForm" class="createGameFormContainer">
-            <input type="text" id="playerAlias" name="playerAlias" placeholder="Player alias for table" /><br/>
-            <input type="text" id="tableName" name="tableName" placeholder="Table name" /><br/>
-            <input type="number" id="numPlayers" name="numPlayers" placeholder="Number of players" step="1" min="2" /><br/>
-            <!-- use text fields instead of numbers in order to support cryptocurrency (large) values -->
-            <input type="text" id="buyInAmount" name="buyInAmount" placeholder="Buy-in amount" step="100" min="2" /><br/>
-            <input type="text" id="bigBlindAmount" name="bigBlindAmount" placeholder="Big blind amount" step="100" min="2" /><br/>
-            <input type="text" id="smallBlindAmount" name="smallBlindAmount" placeholder="Small blind amount" step="100" min="1" /><br/>
-            <!-- input type="text" id="inactivityTimeoutAmount" name="inactivityTimeoutAmount" placeholder="Inactivity timeout (seconds)" step="1" min="1" value="30"/><br/ -->
-            <br/>
-            <button id="createGameButton" class="lobbyButton">CREATE TABLE</button>
-         </div>
-         <br/>
-
-         Join Table:
-         <div id="tableList" name="tableList" class="tableListContainer">
-            <!-- New table buttons are created here by the CypherPokerUI.onNewTableAnnouncement function -->
-         </div>
-      </div>
+      <div id="accounts" class="accountsContainer"></div>
 
       <!--
-         Prototype game element cloned for each new game. A reference to this parent element is passed
-         to the CypherPokerUI constructor. It should start and remain hidden / invisible unless you're editing
-         the base design.
+         Main lobby element.
       -->
-      <div id="game" class="gameContainer" hidden="true">
-         <div id="publicCards" class="publicCardsContainer"></div>
-         <div id="privateCards" class="privateCardsContainer"></div>
-         <span id="totalBetLabel" class="gameLabel">Total bet for this hand: </span><span id="totalBet" name="totalBet" class="gameAmount">0</span><br/>
-         <span id="potLabel" class="gameLabel">Pot: </span><span id="potAmount" name="potAmount" class="gameAmount">0</span><br/>
-         <span id="timeoutLabel" class="timeoutLabel">⏱&nbsp;</span><span id="timeoutAmount" name="timeoutAmount" class="gameAmount"><span id="timeout">0</span></span><br/>
-         <br/>
-         <input type="number" id="betAmount" name="betAmount" class="betAmountInput" placeholder="Bet Amount" step="1" />
-         <button id="betButton" class="gameButton" disabled="true">BET</button>
-         <button id="foldButton" class="gameButton" disabled="true">FOLD</button>
-         <button id="newHandButton" class="newHandButton" disabled="true">NEW HAND</button>
-         <!--
-            Hand history element.
-         -->
-         <div id="handHistory" name="handHistory" class="handHistoryContainer">
-            <span class="header">Hand History</span>
-         </div>
-      </div>
+      <div id="lobby" class="lobbyContainer"></div>
+
+      <!--
+         Game(s) container element.
+      -->
+      <div id="games" class="gamesContainer"></div>
 
       <!-- Proxy data container for global copy-to-clipboard commands. This element should almost always remain off-screen (but not hidden!). -->
-      <input id="clipboardData" name="clipboardData" type="text" style="width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;opacity:0;" value=""></input>
+      <input id="clipboardData" name="clipboardData" type="text" style="width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;opacity:0;" value="" />
    </body>
 </html>

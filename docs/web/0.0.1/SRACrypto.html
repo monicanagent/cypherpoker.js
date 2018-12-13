@@ -1,810 +1,0 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Class: SRACrypto</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
-
-<body>
-
-<div id="main">
-
-    <h1 class="page-title">Class: SRACrypto</h1>
-
-    
-
-
-
-
-<section>
-
-<header>
-    
-        <h2><span class="attribs"><span class="type-signature"></span></span>SRACrypto<span class="signature">(hostInstances<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
-        
-            <div class="class-description">Uses Web Workers to asynchronously perform various SRA cryptosystemfunctions.</div>
-        
-    
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-    
-    <h2>Constructor</h2>
-    
-
-    
-    <h4 class="name" id="SRACrypto"><span class="type-signature"></span>new SRACrypto<span class="signature">(hostInstances<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Creates an instance of the SRACrypto class.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>hostInstances</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    4
-                
-                </td>
-            
-
-            <td class="description last">The maximum number of concurrent <a href="WorkerHost.html">WorkerHost</a>instances to use / manage within the new SRACrypto instance.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line15">line 15</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>SRACryptoWorker.js</li>
-        </ul>
-    </dd>
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    </div>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id=".requestQueue"><span class="type-signature">(static) </span>requestQueue<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>requestQueue</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">All currently queued requests being managed bythe class instance.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line275">line 275</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id=".workerHosts"><span class="type-signature">(static) </span>workerHosts<span class="type-signature"></span></h4>
-
-
-
-
-
-
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>workerHosts</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">All of the registered <a href="WorkerHost.html">WorkerHost</a> instancesbeing managed by this class instance.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line267">line 267</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
-
-    
-        <h3 class="subsection-title">Methods</h3>
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="invoke"><span class="type-signature">(async) </span>invoke<span class="signature">(method, params, requestID<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Invokes an asynchronous SRA cryptosystem method using a free <a href="WorkerHost.html">WorkerHost</a>instance. If no instance is currently available the request is added tothe queue and made when the first available host signals that it's ready.
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Attributes</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>method</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">The method to invoke in the hosted Worker instance.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>params</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">The parameters to invoke the method with.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>requestID</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">*</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">A request ID that can be used to track therequest over its lifetime (useful when re-assembling multiple discreteinvokations that could otherwise result in a race condition).</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line228">line 228</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    An asynchronous promise object that will either resolveand return a result (data type and format vary depending on the methodinvoked), or a rejection / error throw.
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-    <h5>Examples</h5>
-    
-    <pre class="prettyprint"><code>//simple 1 worker examplelet SRA = new SRACrypto (1);//generate a random, 1024-bit prime value and return it in the given radix (base)://MUST BE either -> 16 (hex) or 10 (decimal) -- other bases not internally recognized by//crypto worker.SRA.invoke("randomPrime", {bitLength:1024, radix:16}).then(event => {  console.log ("Generated prime value (hex): " + event.data.result);});</code></pre>
-
-    <pre class="prettyprint"><code>//using 2 workers; here we don't care about the order of generated keypairsvar SRA = new SRACrypto(2);//generate 25 random keypairs (usually we want just one)for (var count = 0; count &lt; 25; count++) {  //"primeVal" was pre-generated in a previous step; MUST BE in hex or decimal (radix=16 or radix=10)  SRA.invoke("randomKeypair", {prime:primeVal}).then(event =>  {       console.log ("Generated keypair: "+JSON.stringify(event.data.result));  });}</code></pre>
-
-    <pre class="prettyprint"><code>//using 4 workers but here we need to store results in the order requestedvar SRA = new SRACrypto(4);//generate 52 quadraric residues (e.g. as plaintext identifiers for a card deck)var cards = new Array();for (var count = 0; count &lt; 25; count++) {   //primeVal was pre-generated in a previous step, count is the result index (requestID in result)   SRA.invoke("randomQuadResidues", {prime:primeVal, numValues:1}, count).then(event =>   {       cards[event.data.requestID] = event.data.result;       for (var count2 = startNum; count2 &lt; cards.length; count2++) {         if (isNaN(cards[count2])) {            return;         }       }       //all values accounted for       for (count2 = 0; count2 &lt; cards.length; count2++) {          //we could include additional information from an exteral source          //here (e.g. card names, values, colours, etc.)          console.log ("Card #" + count2 + ": " + cards[count2]);       }    } });}</code></pre>
-
-    <pre class="prettyprint"><code>//similar to the example above but using a promise to resolve ordered resultsvar SRA = new SRACrypto(4);//encrypt 52 "cards" (quadratic residues) with a given keypairfunction doEncrypt(cards, keypairObject) {    var promise = new Promise((resolve, reject) => {      var encCards = new Array(cards.length);      for (var count=0; count &lt; cards.length; count++) {        SRA.invoke("encrypt", {value: cards[count], keypair: keypairObject}, count).then(event =>        {           encCards[event.data.requestID] = event.data.result;           for (var count2 = startNum; count2 &lt; decCards.length; count2++) {             if (isNaN(ordereredResults[count2])) {                return;             }           }           //promise is resolved only when all cards have been stored           resolve (encCards);         });       }   });   return (promise);}//cards and keypair were pre-generated in a previous stepdoEncrypt(cards, keypair).then(encCards => { for (var count=0; count &lt; encCards.length; count++ )   console.log ("Card #"+count+" "+cards[count]+" encrypted to "+encCards[count]); }})</code></pre>
-
-    <pre class="prettyprint"><code>//using an intermediate async function to perform similar functionality as abovevar SRA = new SRACrypto(4);//decrypt a deck of single-encrypted cardsfunction doDecrypt(encCards, keypair) {  var promise = new Promise((resolve, reject) => {     var decCards = new Array(encCards.length);     for (var count=0; count &lt; encCards.length; count++) {        SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}, count).then(event =>        {           decCards[event.data.requestID] = event.data.result;           for (var count2 = startNum; count2 &lt; decCards.length; count2++) {              if (isNaN(ordereredResults[count2])) {                 return;              }           }           resolve (ordereredResults);        }     });    }  });  return (promise);}async function decryptAsync(encryptedCardsArray, encryptingKeypairObject) { var decCards = await doDecrypt(encryptedCardsArray, encryptingKeypairObject); for (var count=0; count&lt;decCards.length; count++) {   console.log ("Card #"+count+" "+encryptedCardsArray[count]+" decypted to "+decCards[count]); }}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair);</code></pre>
-
-    <pre class="prettyprint"><code>var SRA = new SRACrypto(4);//a smaller async example of the above, this time using Promises.all to//resolve the queued results but still using requestIDs for orderingasync function decryptAsync(encCards, keypair) {  var promises = new Array();  for (var count=0; count &lt; encCards.length; count++) {     promises.push(SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}, count));  }  var resultPromises = await Promise.all(promises);  //at this point we know that all promises have been fulfilled  var decCards = new Array(resultPromises.length);  for (var count=0; count &lt; resultPromises.length; count++) {     decCards[resultPromises[count].data.requestID] = resultPromises[count].data.result;  } return (decCards);}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair).then(decCards => {   for (var count=0; count&lt;decCards.length; count++) {    console.log ("Card #"+count+" "+encCards[count]+" decypted to "+decCards[count]);   }})</code></pre>
-
-    <pre class="prettyprint"><code>var SRA = new SRACrypto(4);//an even smaller example of the above without using a requestIDvar promises = new Array();async function decryptAsync(encCards, keypair) {  var promises = new Array();  for (var count=0; count &lt; encCards.length; count++) {     promises.push(SRA.invoke("decrypt", {value:encCards[count], keypair:keypair}));  }  var resultPromises = await Promise.all(promises);  return (resultPromises);}//encCards and keypair were pre-generated in a previous stepdecryptAsync(encCards, keypair).then(results => {   for (var count=0; count&lt;results.length; count++) {    console.log ("Card #"+count+" "+encCards[count]+" decrypted to "+results[count].data.result);   }})</code></pre>
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="onHostReady"><span class="type-signature">(async) </span>onHostReady<span class="signature">()</span><span class="type-signature"></span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    Event listener triggered when a <a href="WorkerHost.html">WorkerHost</a> instance reports that itis ready for new requests. The internal queue is automatically adjustedand a new request triggered if there are queued requests.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_SRACrypto.js.html">libs/SRACrypto.js</a>, <a href="libs_SRACrypto.js.html#line253">line 253</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-    
-
-    
-
-    
-</article>
-
-</section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Mon Sep 10 2018 10:41:38 GMT-0500 (GMT-05:00)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>

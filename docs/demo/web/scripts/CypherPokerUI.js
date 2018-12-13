@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.2.0
+* @version 0.3.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -10,9 +10,6 @@
 * @class Basic user interface management for CypherPoker.JS
 */
 class CypherPokerUI {
-
-   //TODO: Externalize this data to a JSON file or something similar so that we don't have to manage
-   //all of these selectors here in the class header.
 
    /**
    * @property {Object} UISelectors Name/value pairs for general UI elements and their
@@ -28,79 +25,13 @@ class CypherPokerUI {
    get UISelectors() {
       return({
          "dialog":"#mainDialog",
+         "dialogMessage":"#mainDialog > #message",
          "accounts":"#accounts",
          "accountLoginForm": "#accounts > #loginForm",
          "accountManageForm": "#accounts > #manageForm",
          "accountCreateForm": "#accounts > #createAccountForm",
          "clipboardData":"#clipboardData",
          "lobby":"#lobby"
-      });
-   }
-
-   /**
-   * @property {Object} accountsUISelectors Name/value pairs for accounts UI elements and their
-   * associated CSS-style DOM selectors. Note that these are direct selectors combining selectors from
-   * {@link CypherPokerUI#UISelectors}<code>.accountLoginForm</code> and {@link CypherPokerUI#UISelectors}<code>.accountCreateForm</code>.
-   * @property {String} accountsUISelectors.currentAccounts="#currentAccounts" The element containing a list of existing / current accounts in the login form.
-   * @property {String} accountsUISelectors.accountBalance="#accountBalance" The element containing the balance of the currently-selected account.
-   * @property {String} accountsUISelectors.cashoutButton="#cashoutButton" The account "cash out" button.
-   * @property {String} accountsUISelectors.cashoutAmount="#cashoutAmount" The "cash out" amount input field.
-   * @property {String} accountsUISelectors.cashoutAddress="#cashoutAddress" The cash out address input field.
-   * @property {String} accountsUISelectors.transferButton="#transferButton" The account "transfer" button.
-   * @property {String} accountsUISelectors.transferAmount="#transferAmount" The "transfer" amount input field.
-   * @property {String} accountsUISelectors.transferAccount="#transferAccount" The transfer account input field.
-   * @property {String} accountsUISelectors.accountPassword="#accountPassword" The login form password input field to use with the currently selected account.
-   * @property {String} accountsUISelectors.useAccountButton="#useAccountButton" The login form  "use account" button.
-   * @property {String} accountsUISelectors.createAccountButton="#createAccountButton" The login form  "create account" button.
-   * @property {String} accountsUISelectors.newAccountButton="#newAccountButton" The new account form's new account button.
-   * @property {String} accountsUISelectors.newAccountType="#newAccountType" The new account form's new account type selection element.
-   * @property {String} accountsUISelectors.newAccountPassword="#newAccountPassword" The new account form's new account password input element.
-   * @property {String} accountsUISelectors.copyToClipboardButton="#copyToClipboardButton" The "copy to clipboard" button in the accounts interface.
-   */
-   get accountsUISelectors() {
-      return({
-         "currentAccounts":this.UISelectors.accountLoginForm + " > #currentAccounts",
-         "accountBalance":this.UISelectors.accountManageForm + " > #accountBalance",
-         "cashoutButton":this.UISelectors.accountManageForm + " > #cashoutButton",
-         "cashoutAmount":this.UISelectors.accountManageForm + " > #cashoutAmount",
-         "cashoutAddress":this.UISelectors.accountManageForm + " > #cashoutAddress",
-         "transferButton":this.UISelectors.accountManageForm + " > #transferButton",
-         "transferAmount":this.UISelectors.accountManageForm + " > #transferAmount",
-         "transferAccount":this.UISelectors.accountManageForm + " > #transferAccount",
-         "accountPassword":this.UISelectors.accountLoginForm + " > #accountPassword",
-         "useAccountButton":this.UISelectors.accountLoginForm + " > #useAccountButton",
-         "createAccountButton":this.UISelectors.accountLoginForm + " > #createAccountButton",
-         "newAccountButton":this.UISelectors.accountCreateForm + " > #newAccountButton",
-         "newAccountType":this.UISelectors.accountCreateForm + " > #newAccountType",
-         "newAccountPassword":this.UISelectors.accountCreateForm + "  > #newAccountPassword",
-         "copyToClipboardButton":this.UISelectors.accountLoginForm  + " > #copyToClipboardButton"
-      });
-   }
-
-   /**
-   * @property {Object} lobbyUISelectors Name/value pairs for lobby UI elements and their
-   * associated CSS-style DOM selectors. Note that these selectors are relative to/children of the
-   * main lobby element defined in {@link CypherPokerUI#UISelectors}<code>.lobby</code>.
-   * @property {String} lobbyUISelectors.createGameButton="#createGameForm>#createGameButton" The lobby's create game button.
-   * @property {String} lobbyUISelectors.createPlayerAlias="#createGameForm>#playerAlias" The player alias field in the create table form.
-   * @property {String} lobbyUISelectors.createTableName="#createGameForm>#tableName" The table name field in the create table form.
-   * @property {String} lobbyUISelectors.createNumPlayers="#createGameForm>#numPlayers" The number of players field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.createBigBlind="#createGameForm>#bigBlindAmount" The big blind amount field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.createSmallBlind="#createGameForm>#smallBlindAmount" The big blind amount field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.inactivityTimeout="#createGameForm>#inactivityTimeoutAmount" The inactivity timeout amount (in seconds) field for the new table in the create table form.
-   * @property {String} lobbyUISelectors.tableList="#tableList" The lobby's announced table list.
-   */
-   get lobbyUISelectors() {
-      return({
-         "createGameButton":"#createGameForm > #createGameButton",
-         "createPlayerAlias":"#createGameForm > #playerAlias",
-         "createTableName":"#createGameForm > #tableName",
-         "createNumPlayers":"#createGameForm > #numPlayers",
-         "createBuyIn":"#createGameForm > #buyInAmount",
-         "createBigBlind":"#createGameForm > #bigBlindAmount",
-         "createSmallBlind":"#createGameForm > #smallBlindAmount",
-         "inactivityTimeout":"#createGameForm > #inactivityTimeoutAmount",
-         "tableList":"#tableList"
       });
    }
 
@@ -112,6 +43,7 @@ class CypherPokerUI {
    * @property {String} gameUISelectors.foldButton="#foldButton" The game's fold button.
    * @property {String} gameUISelectors.newHandButton="#newHandButton" The game's new hand button.
    * @property {String} gameUISelectors.totalBet="#totalBet" The game's total bet amount display element.
+   * @property {String} gameUISelectors.balance="#balance" The remaining game balance amount display element.
    * @property {String} gameUISelectors.potAmount="#potAmount" The game's pot amount input element.
    * @property {String} gameUISelectors.betAmount="#betAmount" The game's bet amount input element.
    * @property {String} gameUISelectors.publicCards="#publicCards" The game's public cards container element.
@@ -124,6 +56,7 @@ class CypherPokerUI {
          "foldButton":"#foldButton",
          "newHandButton":"#newHandButton",
          "totalBet":"#totalBet",
+         "balance":"#balance",
          "potAmount":"#potAmount",
          "betAmount":"#betAmount",
          "timeoutAmount":"#timeoutAmount",
@@ -142,8 +75,22 @@ class CypherPokerUI {
    */
    constructor(protoElement) {
       this._protoGameElement = protoElement;
-      this.addLobbyUIHandlers(document.querySelector(this.UISelectors.lobby));
-      this.addAccountsUIHandlers(document.querySelector(this.UISelectors.accounts));
+      this.loadTemplates().then(complete => {
+      //   this.addLobbyUIHandlers(document.querySelector(this.UISelectors.lobby));
+      //   this.addAccountsUIHandlers(document.querySelector(this.UISelectors.accounts));
+         this._ready = true;
+      })
+   }
+
+   /**
+   * @property {Boolean} ready=false Becomes true when the UI has completed loading and initializing
+   * all data such as templates, configurations, etc.
+   */
+   get ready() {
+      if (this._ready == undefined) {
+         this._ready = false;
+      }
+      return (this._ready);
    }
 
    /**
@@ -233,51 +180,149 @@ class CypherPokerUI {
    }
 
    /**
-   * Adds lobby event listeners and callbacks to user interface elements defined in
-   * {@link CypherPokerUI#lobbyUISelectors}.
-   *
-   * @param {HTMLElement} lobbyElement The lobby element to which to add handlers to.
+   * @property {Array} templates The indexed list of sucecssfully loaded, parsed,
+   * and appended HTML templates as specified in the templates index JSON data.
+   * In addition to containing a copy of that data, each element in the array also
+   * contains a <code>document</code> property containing the original <code>HTMLDocument</code>
+   * object of the template and a <code>elements</code> array which contains references
+   * appended element(s), copied from the <code>document</code> within the main index HTML.
    */
-   addLobbyUIHandlers(lobbyElement) {
-      for (var item in this.lobbyUISelectors) {
-         try {
-            let element = lobbyElement.querySelector(this.lobbyUISelectors[item]);
-            element.ui = this;
-         } catch (err) {
-         }
+   get templates() {
+      if (this._templates == undefined) {
+         this._templates = new Array();
       }
-      var createGameButton = lobbyElement.querySelector(this.lobbyUISelectors.createGameButton);
-      createGameButton.addEventListener("click", this.onCreateGameButtonClick);
+      return (this._templates);
    }
 
    /**
-   * Adds accounts event listeners and callbacks to user interface elements defined in
-   * {@link CypherPokerUI#accountsUISelectors}.
+   * Returns a successfully loaded HTML template by its name from the {@link CypherPokerUI@templates}
+   * array.
    *
+   * @param {String} name The HTML template name to reterieve, as specified in the associated
+   * templates JSON data.
+   *
+   * @return {Object} The object containing data and references matching the specified template,
+   * or <code>null</code> if no matching template can be found.
    */
-   addAccountsUIHandlers() {
-      for (var item in this.accountsUISelectors) {
-         try {
-            let element = document.querySelector(this.accountsUISelectors[item]);
-            element.ui = this;
-         } catch (err) {
+   getTemplateByName(name) {
+      for (var count=0; count < this.templates.length; count++) {
+         if (this.templates[count].name == name) {
+            return (this.templates[count]);
          }
       }
-      //note that these are all direct selectors
-      var accountSelect = document.querySelector(this.accountsUISelectors.currentAccounts);
-      var cashoutButton = document.querySelector(this.accountsUISelectors.cashoutButton);
-      var transferButton = document.querySelector(this.accountsUISelectors.transferButton);
-      var newAccountButton = document.querySelector(this.accountsUISelectors.newAccountButton);
-      var useAccountButton = document.querySelector(this.accountsUISelectors.useAccountButton);
-      var createAccountButton = document.querySelector(this.accountsUISelectors.createAccountButton);
-      var copyToClipboardButton = document.querySelector(this.accountsUISelectors.copyToClipboardButton);
-      accountSelect.addEventListener("change", this.onSelectAccount)
-      cashoutButton.addEventListener("click", this.onCashoutButtonClick)
-      transferButton.addEventListener("click", this.onTransferButtonClick)
-      useAccountButton.addEventListener("click", this.onUseAccountButtonClick);
-      newAccountButton.addEventListener("click", this.onNewAccountButtonClick);
-      createAccountButton.addEventListener("click", this.onCreateAccountButtonClick);
-      copyToClipboardButton.addEventListener("click", this.onCopyToClipboardButtonClick);
+      return (null);
+   }
+
+   /**
+   * Loads and parses HTML templates for the application, then adds them to their
+   * specified targets within the main page HTML. Every successfully loaded template
+   * can be accessed via the {@link CypherPokerUI#templates} array or the
+   * {@link CypherPokerUI#getTemplate} function.
+   *
+   * Note that templates are appended to their specified targets in the order listed.
+   *
+   * @param {String} [indexURL="./templates/index.json"] The URL of the JSON file containing
+   * the list of templates to load.
+   *
+   * @private
+   * @async
+   */
+   async loadTemplates(indexURL="./templates/index.json") {
+      this.debug("CypherPokerUI: Loading HTML templates...");
+      var promise = await loadJSON(indexURL).onEventPromise("load");
+      var templatesData = promise.target.response;
+      for (var count=0; count < templatesData.length; count++) {
+         var templateInfo = templatesData[count];
+         templateInfo.document = await this.loadHTMLTemplate(templateInfo.url);
+         templateInfo.sourceHTML = templateInfo.document.body.innerHTML
+         this.templates.push(templateInfo);
+         if (templateInfo.append == true) {
+            var target = document.querySelector(templateInfo.target);
+            this.buildHTMLTemplate(templateInfo, target, templateInfo.hidden);
+         }
+      }
+      return (true);
+   }
+
+   /**
+   * Builds a template by generating the elements specified and processing any included parameters.
+   * The built template is then attached to the target DOM element.
+   *
+   * @param {Object} templateInfo An object containing information about the template to generate.
+   * @param {HTMLElement} target The target element to append the generated template to as a child.
+   * @param {Boolean} hidden=false If true, the generated element is initially hidden.
+   * @param {Object} metaData Name-value pairs containing the data to replace in the
+   * document body. Each name is automatically surrounded by "%"; for example,
+   * <code>metaData["version"]="0.3.0"</code> replaces any <code>%version%</code> metatag
+   * in the document with <code>0.3.0</code>.
+   *
+   * @reutrn {HTMLElement} The newly built and appended element.
+   *
+   * @private
+   */
+   buildHTMLTemplate(templateInfo, target, hidden=false, metaData=null) {
+      //assume document only has <head> (firstChild) and <body> (lastChild) tags within a <html> (documentElement) tag
+      var bodyNode = templateInfo.document.documentElement.lastChild;
+      if (templateInfo.elements == undefined) {
+         templateInfo.elements = new Array();
+      }
+      var nodeCopy = document.importNode(bodyNode.firstChild, true);
+      if (metaData != null) {
+         this.parseHTMLTemplateTags(nodeCopy, metaData);
+      }
+      var newChild = target.appendChild(nodeCopy);
+      templateInfo.elements.push(newChild);
+      if (hidden == true) {
+         this.hide(templateInfo.elements[templateInfo.elements.length-1]);
+      }
+      return (templateInfo.elements[templateInfo.elements.length-1]);
+   }
+
+   /**
+   * Loads and parses an external HTML template file using XMLHTTPRequest.
+   *
+   * @param {String} htmlURL The URL of the HTML template file to load.
+   * @return {HTMLDocument} A HTMLDocument object containing the loaded HTML
+   * document. Any meta tags found in the main body are automatically parsed
+   * using the {@link CypherPokerUI#parseTemplateTags} function.
+   *
+   * @private
+   * @async
+   */
+   async loadHTMLTemplate(htmlURL) {
+      var xhr = new XMLHttpRequest();
+      if (_useCache == false) {
+         //force new data load
+         htmlURL = htmlURL + "?" + String(Math.random()).split("0.")[1];
+      }
+      xhr.open("GET", htmlURL);
+      xhr.responseType = "document";
+      xhr.send();
+      var promise = await xhr.onEventPromise("load");
+      if (promise.target.response != null) {
+         return (promise.target.response);
+      } else {
+         throw (new Error(`Couldn't load HTML template: (${htmlURL})`));
+      }
+   }
+
+   /**
+   * Parses/replaces any meta tags found in a HTML element.
+   *
+   * @param {HTMLElement} The element in which to search/replace metatags.
+   * @param {Object} metaData Name-value pairs containing the data to replace in the
+   * document body. Each name is automatically surrounded by "%"; for example,
+   * <code>metaData["version"]="0.3.0"</code> replaces any <code>%version%</code> metatag
+   * in the document with <code>0.3.0</code>.
+   *
+   * @private
+   */
+   parseHTMLTemplateTags(element, metaData) {
+      var html = element.innerHTML;
+      for (var tag in metaData) {
+         html = html.split("%"+tag+"%").join(metaData[tag]);
+      }
+      element.innerHTML = html; //copy back to document body
    }
 
    /**
@@ -408,72 +453,387 @@ class CypherPokerUI {
    }
 
    /**
-   * Event handler invoked when the "Create Account" button is clicked in the accounts
-   * div. This function hides the login form and displays the new account form.
+   * Event listener invoked when an account-related button is clicked. The event
+   * is raised by the DOM via something like a <code>onclick</code> attribute.
    *
-   * @param {Event} event A standard DOM button click event.
+   * @param {String} buttonType The type of button being clicked.
+   * @param {String} [subType=subType] Additional information provided with the button click.
+   *
+   * @async
    * @private
    */
-   onCreateAccountButtonClick(event) {
-      var ui = event.target.ui;
-      ui.hide(document.querySelector(ui.UISelectors.accountLoginForm));
-      ui.show(document.querySelector(ui.UISelectors.accountCreateForm));
-   }
-
-   /**
-   * Event handler invoked when the "Create Account" button is clicked in the DOM.
-   *
-   * @param {Event} event A standard DOM button click event.
-   * @private
-   */
-   onNewAccountButtonClick(event) {
-      var ui = event.target.ui;
-      var accountTypeSelect = document.querySelector(ui.accountsUISelectors.newAccountType);
-      var accountType = accountTypeSelect.options[accountTypeSelect.selectedIndex].value;
-      var password = document.querySelector(ui.accountsUISelectors.newAccountPassword).value;
-      var typeSplit = accountType.split("/");
-      ui.cypherpoker.createAccount(typeSplit[0], password, typeSplit[1]).then(newAccount => {
-         var newOptionElement = document.createElement("option");
-         var optionValue = newAccount.address + ":" + newAccount.type + "/" + newAccount.network;
-         newOptionElement.setAttribute("value", optionValue);
-         newOptionElement.innerHTML = newAccount.address + " ("+newAccount.type+" / "+newAccount.network+")";
-         newOptionElement.account = newAccount;
-         var currentAccounts = document.querySelector(ui.accountsUISelectors.currentAccounts);
-         currentAccounts.appendChild(newOptionElement);
-         currentAccounts.value = optionValue; //set new item as current selection
-         document.querySelector(ui.accountsUISelectors.accountPassword).value = newAccount.password; //set password for account
-         ui.showDialog("Account created: "+newAccount.address);
-         ui.hideDialog(4000);
-         ui.show(document.querySelector(ui.UISelectors.accountLoginForm));
-         ui.hide(document.querySelector(ui.UISelectors.accountCreateForm));
-      }).catch(error => {
-         ui.showDialog(error);
-      });
-   }
-
-   /**
-   * Event handler invoked when the "copy to clipboard" button is
-   * clicked in the accounts UI. The function copies data to the clipboard.
-   *
-   * @param {Event} event A HTML DOM button click event.
-   *
-   * @private
-   */
-   onCopyToClipboardButtonClick(event) {
-      var ui = event.target.ui;
-      console.log ("onCopyToClipboardButtonClick");
-      var accountsList = document.querySelector(ui.accountsUISelectors.currentAccounts);
-      if (accountsList.length == 0) {
-         ui.showDialog("No account.");
-         ui.hideDialog(3000);
-         return;
+   async onAccountButtonClick(buttonType, subType=null) {
+      switch (buttonType) {
+         case "first_run_yes":
+            this.hide(this.getTemplateByName("firstRun").elements[0]);
+            this.hideDialog();
+            this.show(this.getTemplateByName("accountCreate").elements[0]);
+            break;
+         case "first_run_no":
+            this.hide(this.getTemplateByName("firstRun").elements[0]);
+            this.showDialog("You need to create an account in order to play.");
+            this.hideDialog(5000);
+            break;
+         case "create_account":
+            if (subType == "login") {
+               var element = this.getTemplateByName("accountCreate").elements[0];
+               this.show(element);
+               element = this.getTemplateByName("accountLogin").elements[0];
+               this.hide(this.getTemplateByName("accountManage").elements[0]);
+               this.hide(element);
+               return (true);
+            }
+            this.hide(this.getTemplateByName("firstRun").elements[0]);
+            element = this.getTemplateByName("accountCreate").elements[0];
+            var accountTypeSelect = element.querySelector("#newAccountType");
+            var accountType = accountTypeSelect.options[accountTypeSelect.selectedIndex].value;
+            var password = element.querySelector("#newAccountPassword").value;
+            if (password.split(" ").join("") == "") {
+               //insert additional password valifity checks here
+               this.showDialog("Password can't be empty.");
+               this.hideDialog(4000);
+               return (false);
+            }
+            var typeSplit = accountType.split("/");
+            this.cypherpoker.createAccount(typeSplit[0], password, typeSplit[1]).then(newAccount => {
+               this.hide(element);
+               var newOptionElement = document.createElement("option");
+               var optionValue = newAccount.address + ":" + newAccount.type + "/" + newAccount.network;
+               newOptionElement.setAttribute("value", optionValue);
+               newOptionElement.innerHTML = newAccount.address + " ("+newAccount.type+" / "+newAccount.network+")";
+               newOptionElement.account = newAccount;
+               element = this.getTemplateByName("accountLogin").elements[0];
+               var manageElement = this.getTemplateByName("accountManage").elements[0];
+               var currentAccounts = element.querySelector("#currentAccounts");
+               currentAccounts.appendChild(newOptionElement);
+               currentAccounts.value = optionValue; //set new item as current selection
+               element.querySelector("#accountPassword").value = newAccount.password; //set password for account
+               this.showDialog("Account created: "+newAccount.address);
+               this.hideDialog(4000);
+               this.show(element);
+               this.show(manageElement);
+            }).catch(error => {
+               this.showDialog(error);
+            });
+            break;
+         case "use_account":
+            this.hide(this.getTemplateByName("accountManage").elements[0]);
+            var element = this.getTemplateByName("accountLogin").elements[0];
+            var password = element.querySelector("#accountPassword").value;
+            var accountsList = element.querySelector("#currentAccounts");
+            if (accountsList.length == 0) {
+               this.showDialog("No accounts available.");
+               this.hideDialog(3000);
+               return;
+            }
+            if (password == "") {
+               this.showDialog("Password can't be empty.");
+               this.hideDialog(3000);
+               return;
+            }
+            var selectedOption = accountsList.options[accountsList.selectedIndex];
+            var useAccount = selectedOption.account;
+            if (useAccount.balance.equals(0)) {
+               this.showDialog("Account has 0 balance.");
+               this.hideDialog(3000);
+               return;
+            }
+            this.selectedAccount = useAccount;
+            this.hide(element);
+            element = this.getTemplateByName("lobby").elements[0];
+            this.show(element);
+            break;
+         case "select_account":
+            var element = this.getTemplateByName("accountLogin").elements[0];
+            var selectElement = element.querySelector("#currentAccounts");
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
+            var selectedAccount = selectedOption.account;
+            element.querySelector("#accountPassword").value = selectedAccount.password;
+            selectedAccount.update().then(done => {
+               var satoshiAmount = selectedAccount.balance.toString(10);
+               var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
+               element.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+            }).catch(error => {
+               element.querySelector("#accountBalance").innerHTML =  "unavailable";
+               console.error(error);
+            });
+            break;
+         case "copy_account_to_clipboard":
+            var element = this.getTemplateByName("accountLogin").elements[0];
+            var accountsList = element.querySelector("#currentAccounts");
+            if (accountsList.length == 0) {
+               this.showDialog("No account.");
+               this.hideDialog(3000);
+               return;
+            }
+            var selectedOption = accountsList.options[accountsList.selectedIndex];
+            var useAccount = selectedOption.account;
+            this.copyToClipboard(useAccount.address, this);
+            this.showDialog("Copied to clipboard.");
+            this.hideDialog(3000);
+            break
+         case "cashout_account":
+            var manageElement = this.getTemplateByName("accountManage").elements[0];
+            element = this.getTemplateByName("accountLogin").elements[0];
+            var cashoutAddress = manageElement.querySelector("#cashoutAddress").value;
+            var cashoutAmount = manageElement.querySelector("#cashoutAmount").value;
+            var selectElement = element.querySelector("#currentAccounts");
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
+            var selectedAccount = selectedOption.account;
+            if (cashoutAmount.split(" ").join("") == "") {
+               this.showDialog("Enter an amount to cash out.");
+               this.hideDialog(3000);
+               return (false);
+            } else {
+               try {
+                  cashoutAmount = bigInt(cashoutAmount);
+               } catch (err) {
+                  this.showDialog("Invalid cashout amount. Must be in satoshis.");
+                  this.hideDialog(3000);
+                  return (false);
+               }
+            }
+            if (cashoutAmount.equals(0)) {
+               this.showDialog("Cashout amount must be greater than 0.");
+               this.hideDialog(3000);
+               return (false);
+            }
+            if (cashoutAddress.length == 0) {
+               this.showDialog("Enter a valid address.");
+               this.hideDialog(3000);
+               return (false);
+            }
+            var minerFees = null; //use default for now
+            selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFees).then(done => {
+               var satoshiAmount = selectedAccount.balance.toString(10);
+               var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
+               element.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+            }).catch(error => {
+               this.showDialog(error);
+               this.hideDialog(3000);
+               console.error(error);
+            });
+            break;
+         case "transfer_account":
+            var manageElement = this.getTemplateByName("accountManage").elements[0];
+            element = this.getTemplateByName("accountLogin").elements[0];
+            var transferAccount = manageElement.querySelector("#transferAccount").value;
+            var transferAmount = manageElement.querySelector("#transferAmount").value;
+            var selectElement = element.querySelector("#currentAccounts");
+            var selectedOption = selectElement.options[selectElement.selectedIndex];
+            var selectedAccount = selectedOption.account;
+            if (transferAmount.split(" ").join("") == "") {
+               ui.showDialog("Enter an amount to transfer.");
+               ui.hideDialog(3000);
+               return;
+            } else {
+               try {
+                  transferAmount = bigInt(transferAmount);
+               } catch (err) {
+                  this.showDialog("Invalid transfer amount. Must be in satoshis.");
+                  this.hideDialog(3000);
+                  return;
+               }
+            }
+            if (transferAmount.equals(0)) {
+               this.showDialog("Transfer amount must be greater than 0.");
+               this.hideDialog(3000);
+               return;
+            }
+            if (transferAccount.length == 0) {
+               this.showDialog("Enter a valid address.");
+               this.hideDialog(3000);
+               return;
+            }
+            selectedAccount.transfer(transferAmount, transferAccount).then(done => {
+               var satoshiAmount = selectedAccount.balance.toString(10);
+               var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
+               element.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+            }).catch(error => {
+               console.error(error);
+               this.showDialog(error);
+               this.hideDialog(3000);
+            });
+            break;
+         default:
+            return (false);
+            break;
       }
-      var selectedOption = accountsList.options[accountsList.selectedIndex];
-      var useAccount = selectedOption.account;
-      ui.copyToClipboard(useAccount.address, ui);
-      ui.showDialog("Copied to clipboard.");
-      ui.hideDialog(3000);
-   //   console.log ("Selected account: "+useAccount.address)
+      return (true);
+   }
+
+   /**
+   * Event listener invoked when an lobby-related button is clicked. The event
+   * is raised by the DOM via something like a <code>onclick</code> attribute.
+   *
+   * @param {String} buttonType The type of button being clicked.
+   * @param {String} [subType=subType] Additional information provided with the button click.
+   *
+   * @async
+   * @private
+   */
+   async onLobbyButtonClick(buttonType, subType=null) {
+      switch (buttonType) {
+         case "create_game":
+            var element = this.getTemplateByName("lobby").elements[0];
+            var createGameElement = element.querySelector("#createGame");
+            var joinGameElement = element.querySelector("#joinGame");
+            var ownGamesElement = element.querySelector("#ownGames");
+            this.hide(createGameElement);
+            this.hide(joinGameElement);
+            this.show(ownGamesElement);
+            var tableInfo = new Object();
+            var lobbyElement = document.querySelector(ui.UISelectors.lobby);
+            var alias = createGameElement.querySelector("#playerAlias").value;
+            var tableName = createGameElement.querySelector("#tableName").value;
+            var numPlayers = Number(createGameElement.querySelector("#numPlayers").value);
+            numPlayers--; //exclude self
+            var buyInAmount = createGameElement.querySelector("#buyInAmount").value;
+            var bigBlindAmount = createGameElement.querySelector("#bigBlindAmount").value;
+            var smallBlindAmount = createGameElement.querySelector("#smallBlindAmount").value;
+            tableInfo.buyIn = buyInAmount;
+            tableInfo.bigBlind = bigBlindAmount;
+            tableInfo.smallBlind = smallBlindAmount;
+            ownGamesElement.innerHTML = "Game \""+alias+"\" created. Awaiting other player(s)...";
+            this.cypherpoker.createTable(tableName, numPlayers, tableInfo);
+            this.cypherpoker.onEventPromise("tableready").then(event =>{
+               var playerInfo = new Object();
+               playerInfo.alias = alias;
+               var game = this.cypherpoker.createGame(event.table, this.selectedAccount, playerInfo).start();
+               try {
+                  game.addEventListener("gamerestart", this.onRestartGame, this);
+                  game.contract.addEventListener("timeoutstart", this.onStartContractTimeout, this);
+                  game.contract.addEventListener("timeout", this.onContractTimeout, this);
+                  game.contract.addEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
+               } catch (err) {
+                  this.showDialog(err);
+               }
+            })
+            break;
+         default:
+            break;
+      }
+      return (false);
+   }
+
+   /**
+   * Event listener invoked when a help button is clicked. The event
+   * is raised by the DOM via something like a <code>onclick</code> attribute.
+   *
+   * @param {String} buttonType The type of button being clicked.
+   *
+   * @async
+   * @private
+   */
+   async onHelpButtonClick(buttonType) {
+      var element = this.getTemplateByName("help").elements[0];
+      //hide all children first
+      for (var count=0; count < element.children.length; count++) {
+         this.hide(element.children[count]);
+      }
+      switch (buttonType) {
+         case "create_account_password":
+            var helpElement = element.querySelector("#create_account_password");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_account_type":
+            var helpElement = element.querySelector("#create_account_type");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "select_copy_account":
+            var helpElement = element.querySelector("#select_copy_account");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "account_balance":
+            var helpElement = element.querySelector("#account_balance");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "account_password":
+            var helpElement = element.querySelector("#account_password");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "use_create_account":
+            var helpElement = element.querySelector("#use_create_account");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "cashout_account":
+            var helpElement = element.querySelector("#cashout_account");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "transfer_account":
+            var helpElement = element.querySelector("#transfer_account");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_form":
+            var helpElement = element.querySelector("#create_table_form");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_player_alias":
+            var helpElement = element.querySelector("#create_table_player_alias");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_name":
+            var helpElement = element.querySelector("#create_table_name");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_num_players":
+            var helpElement = element.querySelector("#create_table_num_players");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_buyin":
+            var helpElement = element.querySelector("#create_table_buyin");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_bigblind":
+            var helpElement = element.querySelector("#create_table_bigblind");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_smallblind":
+            var helpElement = element.querySelector("#create_table_smallblind");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "create_table_button":
+            var helpElement = element.querySelector("#create_table_button");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "join_table_list":
+            var helpElement = element.querySelector("#join_table_list");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "game_buttons":
+            var helpElement = element.querySelector("#game_buttons");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "game_hand_history":
+            var helpElement = element.querySelector("#game_hand_history");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "close":
+            this.hideDialog();
+            break;
+         default:
+            break;
+      }
+      return (true);
    }
 
    /**
@@ -498,140 +858,6 @@ class CypherPokerUI {
    }
 
    /**
-   * Event handler invoked when the "Use Account" button is clicked in the accounts
-   * div. This function logs the player in using the currently selected account
-   * ({@link CypherPokerUI#accountsUISelector}<code>.currentAccounts</code>), and
-   * password ({@link CypherPokerUI#accountsUISelector}<code>.accountPassoword</code>)
-   *
-   * @param {Event} event A standard DOM button click event.
-   * @private
-   */
-   onUseAccountButtonClick(event) {
-      var ui = event.target.ui;
-      var password = document.querySelector(ui.accountsUISelectors.accountPassword).value;
-      var accountsList = document.querySelector(ui.accountsUISelectors.currentAccounts);
-      if (accountsList.length == 0) {
-         ui.showDialog("No accounts available.");
-         ui.hideDialog(3000);
-         return;
-      }
-      if (password == "") {
-         ui.showDialog("Password can't be empty.");
-         ui.hideDialog(3000);
-         return;
-      }
-      var selectedOption = accountsList.options[accountsList.selectedIndex];
-      var useAccount = selectedOption.account;
-      if (useAccount.balance.equals(0)) {
-         ui.showDialog("Account has 0 balance.");
-         ui.hideDialog(3000);
-         return;
-      }
-      ui.selectedAccount = useAccount;
-      ui.hide(document.querySelector(ui.UISelectors.accounts));
-      ui.show(document.querySelector(ui.UISelectors.lobby));
-   }
-
-   /**
-   * Event handler invoked when the "Cash Out" button is clicked in the accounts
-   * div.
-   *
-   * @param {Event} event A standard DOM button click event.
-   * @private
-   */
-   onCashoutButtonClick(event) {
-      var ui = event.target.ui;
-      var cashoutAddress = document.querySelector(ui.accountsUISelectors.cashoutAddress).value;
-      var cashoutAmount = document.querySelector(ui.accountsUISelectors.cashoutAmount).value;
-      var selectElement = document.querySelector(ui.accountsUISelectors.currentAccounts);
-      var selectedOption = selectElement.options[selectElement.selectedIndex];
-      var selectedAccount = selectedOption.account;
-      if (cashoutAmount.split(" ").join("") == "") {
-         ui.showDialog("Enter an amount to cash out.");
-         ui.hideDialog(3000);
-         return;
-      } else {
-         try {
-            cashoutAmount = bigInt(cashoutAmount);
-         } catch (err) {
-            ui.showDialog("Invalid cashout amount. Must be in satoshis.");
-            ui.hideDialog(3000);
-            return;
-         }
-      }
-      if (cashoutAmount.equals(0)) {
-         ui.showDialog("Cashout amount must be greater than 0.");
-         ui.hideDialog(3000);
-         return;
-      }
-      if (cashoutAddress.length == 0) {
-         ui.showDialog("Enter a valid address.");
-         ui.hideDialog(3000);
-         return;
-      }
-      var minerFees = null; //use default for now
-      selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFees).then(done => {
-         var satoshiAmount = selectedAccount.balance.toString(10);
-         var btcAmount = ui.convertDenom(satoshiAmount, "satoshi", "bitcoin");
-         //document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  btcAmount+ " BTC";
-         document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  satoshiAmount+ " satoshis";
-      }).catch(error => {
-         ui.showDialog(error);
-         ui.hideDialog(3000);
-         console.error(error);
-      });
-   }
-
-   /**
-   * Event handler invoked when the "Transfer" button is clicked in the accounts
-   * div.
-   *
-   * @param {Event} event A standard DOM button click event.
-   * @private
-   */
-   onTransferButtonClick(event) {
-      var ui = event.target.ui;
-      var transferAccount = document.querySelector(ui.accountsUISelectors.transferAccount).value;
-      var transferAmount = document.querySelector(ui.accountsUISelectors.transferAmount).value;
-      var selectElement = document.querySelector(ui.accountsUISelectors.currentAccounts);
-      var selectedOption = selectElement.options[selectElement.selectedIndex];
-      var selectedAccount = selectedOption.account;
-      if (transferAmount.split(" ").join("") == "") {
-         ui.showDialog("Enter an amount to transfer.");
-         ui.hideDialog(3000);
-         return;
-      } else {
-         try {
-            transferAmount = bigInt(transferAmount);
-         } catch (err) {
-            ui.showDialog("Invalid transfer amount. Must be in satoshis.");
-            ui.hideDialog(3000);
-            return;
-         }
-      }
-      if (transferAmount.equals(0)) {
-         ui.showDialog("Transfer amount must be greater than 0.");
-         ui.hideDialog(3000);
-         return;
-      }
-      if (transferAccount.length == 0) {
-         ui.showDialog("Enter a valid address.");
-         ui.hideDialog(3000);
-         return;
-      }
-      selectedAccount.transfer(transferAmount, transferAccount).then(done => {
-         var satoshiAmount = selectedAccount.balance.toString(10);
-         var btcAmount = ui.convertDenom(satoshiAmount, "satoshi", "bitcoin");
-         //document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  btcAmount+ " BTC";
-         document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  satoshiAmount+ " satoshis";
-      }).catch(error => {
-         console.error(error);
-         ui.showDialog(error);
-         ui.hideDialog(3000);
-      });
-   }
-
-   /**
    * Event handler invoked when the account list select element is updated (a new
    * account is selected).
    *
@@ -653,44 +879,6 @@ class CypherPokerUI {
          document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  "? BTC";
          console.error(error);
       });
-   }
-
-   /**
-   * Event handler invoked when the "Create Game" button is clicked in the DOM.
-   *
-   * @param {Event} event A standard DOM button click event.
-   *
-   * @private
-   */
-   onCreateGameButtonClick(event) {
-      var ui = event.target.ui; //this CypherPokerUI instance
-      ui.disable (event.target);
-      var tableInfo = new Object();
-      var lobbyElement = document.querySelector(ui.UISelectors.lobby);
-      var alias = lobbyElement.querySelector(ui.lobbyUISelectors.createPlayerAlias).value;
-      var tableName = lobbyElement.querySelector(ui.lobbyUISelectors.createTableName).value;
-      var numPlayers = Number(lobbyElement.querySelector(ui.lobbyUISelectors.createNumPlayers).value);
-      numPlayers--; //exclude self
-      var buyInAmount = lobbyElement.querySelector(ui.lobbyUISelectors.createBuyIn).value;
-      var bigBlindAmount = lobbyElement.querySelector(ui.lobbyUISelectors.createBigBlind).value;
-      var smallBlindAmount = lobbyElement.querySelector(ui.lobbyUISelectors.createSmallBlind).value;
-      tableInfo.buyIn = buyInAmount;
-      tableInfo.bigBlind = bigBlindAmount;
-      tableInfo.smallBlind = smallBlindAmount;
-      ui.cypherpoker.createTable(tableName, numPlayers, tableInfo);
-      ui.cypherpoker.onEventPromise("tableready").then(event =>{
-         var playerInfo = new Object();
-         playerInfo.alias = alias;
-         var game = ui.cypherpoker.createGame(event.table, ui.selectedAccount, playerInfo).start();
-         try {
-            game.addEventListener("gamerestart", ui.onRestartGame, ui);
-            game.contract.addEventListener("timeoutstart", ui.onStartContractTimeout, ui);
-            game.contract.addEventListener("timeout", ui.onContractTimeout, ui);
-            game.contract.addEventListener("timeoutinvalid", ui.onContractTimeoutInvalid, ui);
-         } catch (err) {
-            //game may not have contract
-         }
-      })
    }
 
    /**
@@ -723,8 +911,8 @@ class CypherPokerUI {
             //game may not have contract
          }
       }).catch(error => {
-         this.showDialog(error);
-         this.hideDialog(4000);
+         ui.showDialog(error);
+         ui.hideDialog(4000);
       });
    }
 
@@ -745,12 +933,21 @@ class CypherPokerUI {
       ui.disable(game.DOMElement.querySelector(ui.gameUISelectors.foldButton));
       var betAmount = game.DOMElement.querySelector(ui.gameUISelectors.betAmount);
       try {
+         var amount = bigInt(betAmount.value);
+         if (amount.lesser(0)) {
+            this.showDialog("Bet amount must be positive.");
+            this.hideDialog(4000);
+            return;
+         }
          game.placeBet(betAmount.value);
       } catch (err) {
          //probably wrong bet amount
+         ui.showDialog(err.message);
+         ui.hideDialog(4000);
          ui.enable(event.target);
+         ui.enable(game.DOMElement.querySelector(ui.gameUISelectors.foldButton));
       }
-      game.DOMElement.querySelector(ui.gameUISelectors.potAmount).innerHTML = game.pot.toString(10);
+      game.DOMElement.querySelector(ui.gameUISelectors.potAmount).innerHTML = game.pot.toString(10) + " satoshis";
       ui.updateTotalBet.call(ui, game);
       if (game.bettingDone && ui.autoDeal && (game.gameDone == false)) {
          //try to automatically deal cards
@@ -845,10 +1042,10 @@ class CypherPokerUI {
       var timeoutElement = event.contract.game.DOMElement.querySelector(ui.gameUISelectors.timeoutAmount);
       this.stopTimeoutTimer(timeoutElement);
       try {
-         event.game.contract.removeEventListener("gamerestart", this.onRestartGame);
-         event.game.contract.removeEventListener("timeoutstart", this.onStartContractTimeout);
-         event.game.contract.removeEventListener("timeout", this.onContractTimeout);
-         event.game.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid);
+         event.game.contract.removeEventListener("gamerestart", this.onRestartGame, this);
+         event.game.contract.removeEventListener("timeoutstart", this.onStartContractTimeout, this);
+         event.game.contract.removeEventListener("timeout", this.onContractTimeout, this);
+         event.game.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
       } catch (err) {}
    }
 
@@ -860,26 +1057,22 @@ class CypherPokerUI {
    * @private
    */
    onContractTimeout(event) {
-      var timeoutNotification = "The following player(s) have timed out:<br/>";
+      var timeoutNotification = "The following player(s) have timed out:<br/><br/>";
       for (var count = 0; count < event.penalized.length; count++) {
-         var timedOutPlayer = event.contract.game.getPlayer(event.penalized[count].privateID);
-         event.contract.game.debug ("Player has timed out: "+timedOutPlayer.account.address, "err");
+         var timedOutPlayer = event.contract.getPlayer(event.penalized[count].privateID);
+         event.contract.game.debug ("Player has timed out: "+timedOutPlayer.account.address+"<br/>", "err");
          timeoutNotification += timedOutPlayer.info.alias + " ("+timedOutPlayer.account.address+")<br/>";
+         timeoutNotification += " Private ID: "+event.penalized[count].privateID+"<br/>";
       }
       this.showDialog(timeoutNotification);
       this.hideDialog(10000);
       var timeoutElement = event.contract.game.DOMElement.querySelector(ui.gameUISelectors.timeoutAmount);
       this.stopTimeoutTimer(timeoutElement);
       try {
-         event.contract.removeEventListener("gamerestart", this.onRestartGame);
-         event.contract.removeEventListener("timeoutstart", this.onStartContractTimeout);
-         event.contract.removeEventListener("timeout", this.onContractTimeout);
-         event.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid);
-      } catch (err) {
-         console.error(err);
-      }
-      try {
-         event.contract.game.analyzer.deactivate();
+         event.contract.removeEventListener("gamerestart", this.onRestartGame, this);
+         event.contract.removeEventListener("timeoutstart", this.onStartContractTimeout, this);
+         event.contract.removeEventListener("timeout", this.onContractTimeout, this);
+         event.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
       } catch (err) {
          console.error(err);
       }
@@ -904,15 +1097,14 @@ class CypherPokerUI {
    */
    onNewTableAnnouncement(event) {
       var tableData = event.data.result.data;
-      var newTableButton = document.createElement("button");
-      newTableButton.setAttribute("class", "joinTableButton");
-      var buttonDescriptionHTML = "<span class=\"tableName\">"+tableData.tableName+"</span><br/>"
-      buttonDescriptionHTML += "<span class=\"numPlayers\"><small>Number of players: "+(tableData.requiredPID.length+1)+"</small></span><br/>";
-      buttonDescriptionHTML += "<span class=\"bigBlindAmount\"><small>Big blind: "+tableData.tableInfo.bigBlind+"</small></span><br/>";
-      buttonDescriptionHTML += "<span class=\"smallBlindAmount\"><small>Small blind: "+tableData.tableInfo.smallBlind+"</small></span>";
-      newTableButton.innerHTML = buttonDescriptionHTML;
-      var containerElement = document.querySelector(this.lobbyUISelectors.tableList);
-      var joinTableButton = containerElement.appendChild(newTableButton);
+      var templateInfo = this.getTemplateByName("tableButton");
+      var containerElement = document.querySelector(templateInfo.target);
+      var metaTags = new Object();
+      metaTags.tableName = tableData.tableName;
+      metaTags.numPlayers = String(tableData.requiredPID.length+1);
+      metaTags.bigBlind = tableData.tableInfo.bigBlind;
+      metaTags.smallBlind = tableData.tableInfo.smallBlind;
+      var joinTableButton = this.buildHTMLTemplate(templateInfo, containerElement, false, metaTags);
       joinTableButton.table = this.cypherpoker.announcedTables[0]; //newest table reference
       joinTableButton.ui = this;
       joinTableButton.addEventListener("click", this.onJoinTableButtonClick);
@@ -928,7 +1120,10 @@ class CypherPokerUI {
    * @private
    */
    onNewGame(event) {
-      var newGameElement = this._protoGameElement.insertAdjacentElement("beforebegin", this._protoGameElement.cloneNode(true));
+      var gameTemplate = this.getTemplateByName("game");
+      var target = document.querySelector(gameTemplate.target);
+      var metaData = new Object();
+      var newGameElement = this.buildHTMLTemplate(gameTemplate, target, gameTemplate.hidden, metaData);
       var namePrefix = newGameElement.getAttribute("name");
       if ((namePrefix == null) || (namePrefix == "")) {
          namePrefix = newGameElement.getAttribute("id");
@@ -965,7 +1160,7 @@ class CypherPokerUI {
          event.cards[count].addToDOM(targetElement);
       }
       //pot may have changed if we've auto-posted blinds
-      game.DOMElement.querySelector(this.gameUISelectors.potAmount).innerHTML = game.pot.toString();
+      game.DOMElement.querySelector(this.gameUISelectors.potAmount).innerHTML = game.pot.toString() + " satoshis";
       if (game.canBet) {
          this.updateMinimumBet(game);
          this.enable(game.DOMElement.querySelector(this.gameUISelectors.betButton));
@@ -987,7 +1182,7 @@ class CypherPokerUI {
    onBetPlaced(event) {
       this.debug("CypherPokerUI.onBetPlaced("+event+")");
       var game = event.game;
-      game.DOMElement.querySelector(this.gameUISelectors.potAmount).innerHTML = game.pot.toString();
+      game.DOMElement.querySelector(this.gameUISelectors.potAmount).innerHTML = game.pot.toString() + " satoshis";
       this.updateTotalBet(game);
       if (game.canBet) {
          this.updateMinimumBet(game);
@@ -1045,36 +1240,31 @@ class CypherPokerUI {
          var allHands = analysis.hands;
          var winningHands = analysis.winningHands;
          var winningPlayers = analysis.winningPlayers;
-         var historyHTML = document.createElement("div");
-         historyHTML.setAttribute("class", "handHistoryItemContainer");
-         var headerElement = document.createElement("span");
-         headerElement.setAttribute("class", "handHistoryItemHeader");
-         if (winningHands.length > 1) {
-            headerElement.innerHTML = "Best Hands<br/>";
-         } else {
-            headerElement.innerHTML = "Best Hand<br/>";
-         }
+         var templateInfo = this.getTemplateByName("handHistoryItem");
          for (var count = 0; count < winningHands.length; count++) {
             var winningHand = winningHands[count];
             var winningPlayer = winningPlayers[count];
             var hand = winningHand.hand;
-            headerElement.innerHTML += "<span class=\"historyHandName\">"+winningHand.name+"</span><br/>";
-            if (winningPlayer.privateID == event.game.ownPID) {
-               headerElement.innerHTML += "<span class=\"historyHandOwner\">Ours</span><br/>";
+            var targetElement = event.game.DOMElement.querySelector("#handHistory");
+            var metaTags = new Object();
+            if (winningHands.length > 1) {
+               metaTags.header = "Best Hands:&nbsp;";
             } else {
-               headerElement.innerHTML += "<span class=\"historyHandOwner\">Player: "+winningPlayer.privateID+"</span><br/>";
+               metaTags.header = "Best Hand:&nbsp;";
             }
-            var cardContainerElement = document.createElement("div");
-            cardContainerElement.setAttribute("class", "handHistoryItemCards");
+            metaTags.handName = winningHand.name;
+            if (winningPlayer.privateID == event.game.ownPID) {
+               metaTags.handOwner = "Ours";
+            } else {
+               metaTags.handOwner = "Player: "+winningPlayer.privateID;
+            }
+            var newHistoryElement = this.buildHTMLTemplate(templateInfo, targetElement, false, metaTags);
+            var cardContainerElement = newHistoryElement.querySelector("#handHistoryItemCards")
             for (var count2 = 0; count2 < hand.length; count2++) {
                var card = hand[count2];
                card.addToDOM(cardContainerElement, "historyCard");
             }
          }
-         historyHTML.appendChild(headerElement);
-         historyHTML.appendChild(cardContainerElement);
-         var targetElement = event.game.DOMElement.querySelector(this.gameUISelectors.handHistory);
-         targetElement.appendChild(historyHTML);
       } catch (err) {
          console.error(err);
       }
@@ -1090,7 +1280,9 @@ class CypherPokerUI {
    updateTotalBet(game) {
       var totalBetAmount = game.getPlayer(game.ownPID).totalBet.toString();
       var totalBetDiv = game.DOMElement.querySelector(this.gameUISelectors.totalBet);
-      totalBetDiv.innerHTML = totalBetAmount;
+      var balanceDiv = game.DOMElement.querySelector(this.gameUISelectors.balance);
+      balance.innerHTML = String(game.getPlayer(game.ownPID).balance) + " satoshis";
+      totalBetDiv.innerHTML = totalBetAmount + " satoshis";
    }
 
    /**
@@ -1147,35 +1339,54 @@ class CypherPokerUI {
    * Updates the account management UI with existing data (e.g. restored accounts
    * from the {@link CypherPoker} instance).
    *
+   * @param {CypherPokerUI} [context=null] Defines the context in which to execute the function.
+   * Typically this parameter is provided when delaying startup because all UI data, elements,
+   * templates, etc., have not yet loaded and been initialized.
+   *
    * @private
    */
-   updateAccountsUI() {
-      if (this.cypherpoker.accounts.length == 0) {
+   updateAccountsUI(context=null) {
+      if (context == null) {
+         context = this;
+      }
+      if (context.ready == false) {
+         //delay by 0.5 second
+         setTimeout(context.updateAccountsUI, 500, context);
          return;
       }
-      var accountsList = document.querySelector(this.accountsUISelectors.currentAccounts);
-      for (var count=0; count < this.cypherpoker.accounts.length; count++) {
-         var currentAccount = this.cypherpoker.accounts[count];
-         var newOptionElement = document.createElement("option");
-         var optionValue = currentAccount.address + ":" + currentAccount.type + "/" + currentAccount.network;
-         newOptionElement.setAttribute("value", optionValue);
-         newOptionElement.innerHTML = currentAccount.address + " ("+currentAccount.type+" / "+currentAccount.network+")";
-         newOptionElement.account = currentAccount;
-         accountsList.appendChild(newOptionElement);
+      if (context.cypherpoker.accounts.length == 0) {
+         context.show(context.getTemplateByName("firstRun").elements[0]);
+         context.showDialog();
+         return;
+      } else {
+         var loginElement = context.getTemplateByName("accountLogin").elements[0];
+         var manageElement = context.getTemplateByName("accountManage").elements[0];
+         var accountsList = loginElement.querySelector("#currentAccounts");
+         for (var count=0; count < context.cypherpoker.accounts.length; count++) {
+            var currentAccount = context.cypherpoker.accounts[count];
+            var newOptionElement = document.createElement("option");
+            var optionValue = currentAccount.address + ":" + currentAccount.type + "/" + currentAccount.network;
+            newOptionElement.setAttribute("value", optionValue);
+            newOptionElement.innerHTML = currentAccount.address + " ("+currentAccount.type+" / "+currentAccount.network+")";
+            newOptionElement.account = currentAccount;
+            accountsList.appendChild(newOptionElement);
+         }
+         var selectElement = loginElement.querySelector("#currentAccounts");
+         var selectedOption = selectElement.options[0];
+         var selectedAccount = selectedOption.account;
+         loginElement.querySelector("#accountPassword").value = selectedAccount.password;
+         selectedAccount.update().then(done => {
+            var satoshiAmount = selectedAccount.balance.toString(10);
+            var btcAmount = context.convertDenom(satoshiAmount, "satoshi", "bitcoin");
+            loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+            loginElement.querySelector("#accountPassword").value = selectedAccount.password;
+         }).catch(error => {
+            loginElement.querySelector("#accountBalance").innerHTML =  "unavailable";
+            console.error(error.stack);
+         });
+         context.show(loginElement);
+         context.show(manageElement);
       }
-      var selectElement = document.querySelector(this.accountsUISelectors.currentAccounts);
-      var selectedOption = selectElement.options[0];
-      var selectedAccount = selectedOption.account;
-      document.querySelector(this.accountsUISelectors.accountPassword).value = selectedAccount.password;
-      selectedAccount.update().then(done => {
-         var satoshiAmount = selectedAccount.balance.toString(10);
-         var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
-         //document.querySelector(this.accountsUISelectors.accountBalance).innerHTML =  btcAmount+ " BTC";
-         document.querySelector(this.accountsUISelectors.accountBalance).innerHTML =  satoshiAmount+ " satoshis";
-      }).catch(error => {
-         document.querySelector(this.accountsUISelectors.accountBalance).innerHTML =  "? BTC";
-         console.error(error.stack);
-      });
    }
 
    /**
@@ -1292,7 +1503,7 @@ class CypherPokerUI {
    */
    hideDialog(delay=0, context=null) {
       if (delay > 0) {
-         setTimeout(this.hideDialog, delay, 0, this);
+         this._dialogTimeout = setTimeout(this.hideDialog, delay, 0, this);
          return;
       }
       if (context == null) {
@@ -1304,18 +1515,22 @@ class CypherPokerUI {
    }
 
    /**
-   * Displays the main dialog with specified contents
+   * Displays the main dialog with any specified content.
    *
-   * @param {String} content The HTML contents to display in the dialog.
+   * @param {String} [content=""] The HTML contents to display in the dialog.
    */
-   showDialog(contents) {
+   showDialog(contents="") {
+      try {
+         clearTimeout(this._dialogTimeout);
+      } catch (err) {}
       var dialog = document.querySelector(this.UISelectors.dialog);
+      var dialogMsg = document.querySelector(this.UISelectors.dialogMessage);
       dialog.setAttribute("open", true);
-      dialog.innerHTML = contents;
+      dialogMsg.innerHTML = contents;
    }
 
    /**
-   * Creates a <code>console</code>-based.
+   * Creates a <code>console</code>-based log or error message.
    *
    * @param {*} msg The message to send to the console output.
    * @param {String} [type="log"] The type of output that the <code>msg</code> should

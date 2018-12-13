@@ -1,7 +1,7 @@
 /**
 * @file A CypherPoker.JS implementation of Texas Hold'em poker for 2+ players.
 *
-* @version 0.2.3
+* @version 0.3.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -273,6 +273,7 @@ class CypherPokerGame extends EventDispatcher {
          if (newPlayer.privateID == this.ownPID) {
             newPlayer.info = playerInfo;
          }
+         newPlayer.balance = tableObj.tableInfo.buyIn;
          this._players.push(newPlayer);
       }
       this.assignPlayerRoles(null); //table owner becomes initial dealer
@@ -1633,9 +1634,13 @@ class CypherPokerGame extends EventDispatcher {
             throw (new Error("Bet amount (\""+betAmount.toString(10)+"\") must be at least \"" + minBet.toString(10) + "\"."));
          }
       }
+      if (betAmount.greater(this.getPlayer(this.ownPID).balance)) {
+         throw (new Error("Bet amount exceeds available balance."));
+      }
       var biggestBet = this.largestBet;
       if (betAmount.greaterOrEquals(0)) {
          var totalCurrentBet = this.getPlayer(this.ownPID).totalBet.add(betAmount);
+         this.getPlayer(this.ownPID).balance = this.getPlayer(this.ownPID).balance.minus(betAmount);
          if (totalCurrentBet.equals(biggestBet)) {
             //we are checking / calling
             this.getPlayer(this.ownPID).totalBet = totalCurrentBet;
@@ -2145,6 +2150,7 @@ class CypherPokerGame extends EventDispatcher {
                var betAmount = bigInt(payload.amount);
                this.pot = this.pot.add(betAmount);
                this.getPlayer(fromPID).totalBet = this.getPlayer(fromPID).totalBet.add(betAmount);
+               this.getPlayer(fromPID).balance = this.getPlayer(fromPID).balance.minus(betAmount);
                this.getPlayer(fromPID).hasFolded = false;
                this.getPlayer(fromPID).hasBet = true;
                this.getPlayer(fromPID).numActions++;
