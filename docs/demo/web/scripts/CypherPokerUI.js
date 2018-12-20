@@ -497,6 +497,15 @@ class CypherPokerUI {
             var typeSplit = accountType.split("/");
             this.cypherpoker.createAccount(typeSplit[0], password, typeSplit[1]).then(newAccount => {
                this.hide(element);
+               element = this.getTemplateByName("help").elements[0];
+               if (typeSplit[1] == "test3") {
+                  var helpElement = element.querySelector("#new_account_btc_test3");
+               } else {
+                  helpElement = element.querySelector("#new_account_btc");
+               }
+               helpElement.innerHTML = helpElement.innerHTML.split("%address%").join(newAccount.address);
+               this.show(helpElement);
+               this.showDialog();
                var newOptionElement = document.createElement("option");
                var optionValue = newAccount.address + ":" + newAccount.type + "/" + newAccount.network;
                newOptionElement.setAttribute("value", optionValue);
@@ -508,10 +517,10 @@ class CypherPokerUI {
                currentAccounts.appendChild(newOptionElement);
                currentAccounts.value = optionValue; //set new item as current selection
                element.querySelector("#accountPassword").value = newAccount.password; //set password for account
-               this.showDialog("Account created: "+newAccount.address);
-               this.hideDialog(4000);
-               this.show(element);
-               this.show(manageElement);
+            //   this.showDialog("Account created: "+newAccount.address);
+            //   this.hideDialog(4000);
+            //   this.show(element);
+            //   this.show(manageElement);
             }).catch(error => {
                this.showDialog(error);
             });

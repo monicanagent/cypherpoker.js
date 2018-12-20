@@ -1,62 +1,62 @@
 [
    {
-      "url":"./templates/firstRun.html",
+      "url":"/templates/firstRun.html",
       "name":"firstRun",
       "target":"#mainDialog",
       "append":true,
       "hidden":true
    },
    {
-      "url":"./templates/help.html",
+      "url":"/templates/help.html",
       "name":"help",
       "target":"#mainDialog",
       "append":true,
       "hidden":false
    },
    {
-      "url":"./templates/accountCreate.html",
+      "url":"/templates/accountCreate.html",
       "name":"accountCreate",
       "target":"#accounts",
       "append":true,
       "hidden":true
    },
    {
-      "url":"./templates/accountLogin.html",
+      "url":"/templates/accountLogin.html",
       "name":"accountLogin",
       "target":"#accounts",
       "append":true,
       "hidden":true
    },
    {
-      "url":"./templates/accountManage.html",
+      "url":"/templates/accountManage.html",
       "name":"accountManage",
       "target":"#accounts",
       "append":true,
       "hidden":true
    },
    {
-      "url":"./templates/lobby.html",
+      "url":"/templates/lobby.html",
       "name":"lobby",
       "target":"#lobby",
       "append":true,
       "hidden":true
    },
    {
-      "url":"./templates/tableButton.html",
+      "url":"/templates/tableButton.html",
       "name":"tableButton",
       "target":"#lobby #joinGame > #tableList",
       "append":false,
       "hidden":false
    },
    {
-      "url":"./templates/game.html",
+      "url":"/templates/game.html",
       "name":"game",
       "target":"#games",
       "append":false,
       "hidden":false
    },
    {
-      "url":"./templates/handHistoryItem.html",
+      "url":"/templates/handHistoryItem.html",
       "name":"handHistoryItem",
       "target":null,
       "append":false,
