@@ -75,9 +75,9 @@ class CypherPokerUI {
    */
    constructor(protoElement) {
       this._protoGameElement = protoElement;
+      window.__closing = false;
       this.loadTemplates().then(complete => {
-      //   this.addLobbyUIHandlers(document.querySelector(this.UISelectors.lobby));
-      //   this.addAccountsUIHandlers(document.querySelector(this.UISelectors.accounts));
+         window.addEventListener("beforeunload", this.onWindowClose)
          this._ready = true;
       })
    }
@@ -358,6 +358,28 @@ class CypherPokerUI {
       gameRef.addEventListener("gameend", this.onGameEnd, this);
       gameRef.addEventListener("gamescored", this.onGameScored, this);
       this.disable(betButton);
+   }
+
+   /**
+   * Event listener invoked when the containing window is about to be closed or
+   * refreshed. A dialog box with a warning is displayed to the user if a game is
+   * currently active.
+   *
+   * @param {Event} event A standard DOM event object.
+   *
+   * @private
+   */
+   onWindowClose(event) {      
+      for (var count=0; count < this.ui.cypherpoker.games.length; count++) {
+         if (this.ui.cypherpoker.games[count].gameStarted) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            //unfortunately custom leave messages are no longer supported by most browsers
+            event.returnValue = null;
+            return (null);
+         }
+      }
    }
 
    /**
