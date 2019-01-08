@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.3.0
+* @version 0.3.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -464,15 +464,10 @@ class CypherPokerUI {
    */
    async onAccountButtonClick(buttonType, subType=null) {
       switch (buttonType) {
-         case "first_run_yes":
+         case "first_run_ok":
             this.hide(this.getTemplateByName("firstRun").elements[0]);
             this.hideDialog();
             this.show(this.getTemplateByName("accountCreate").elements[0]);
-            break;
-         case "first_run_no":
-            this.hide(this.getTemplateByName("firstRun").elements[0]);
-            this.showDialog("You need to create an account in order to play.");
-            this.hideDialog(5000);
             break;
          case "create_account":
             if (subType == "login") {

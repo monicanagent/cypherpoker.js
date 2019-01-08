@@ -104,6 +104,10 @@ button {
    font-size: 24px;
 }
 
+.dialogContent > #okButton {
+   color: #00FF00;
+}
+
 .dialogContent > #yesButton {
    color: #00FF00;
 }
