@@ -23,12 +23,12 @@
             "bitcoin":{
                "xprv":"xprv...",
                "startChain":0,
-               "startIndex":1
+               "startIndex":2
             },
             "test3":{
                "tprv":"tprv...",
                "startChain":0,
-               "startIndex":1
+               "startIndex":2
             }
          },
          "tokens": {
@@ -44,11 +44,11 @@
                "updateLimitSeconds": 120,
                "baseDenom": "satoshi",
                "main":{
-                  "cashOutAddrPath":"m/0/0",
+                  "cashOutAddrPath":"m/0/1",
                   "minerFee": "50000"
                },
                "test3":{
-                  "cashOutAddrPath":"m/0/0",
+                  "cashOutAddrPath":"m/0/1",
                   "minerFee": "50000"
                }
             },

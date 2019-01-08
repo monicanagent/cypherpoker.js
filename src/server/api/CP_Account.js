@@ -2,7 +2,7 @@
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
 *
-* @version 0.2.0
+* @version 0.3.1
 */
 async function CP_Account (sessionObj) {
    if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
@@ -29,9 +29,11 @@ async function CP_Account (sessionObj) {
    }
    if (typeof(requestParams.type) != "string") {
       sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Invalid account type parameter.", sessionObj);
+      return(false);
    }
    if (typeof(requestParams.network) != "string") {
       sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Invalid network parameter.", sessionObj);
+      return(false);
    }
    var responseObj = new Object();
    var connectionID = namespace.websocket.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
@@ -42,6 +44,9 @@ async function CP_Account (sessionObj) {
       return(false);
    }
    var resultObj = new Object(); //result to send in response
+   resultObj.fees = new Object(); //include fee(s) information
+   resultObj.fees.deposit = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
+   resultObj.fees.cashout = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
    try {
       switch (requestParams.action) {
          case "new":
@@ -78,6 +83,9 @@ async function CP_Account (sessionObj) {
             accountObj.pwhash = pwHash;
             accountObj.balance = bigInt("0");
             resultObj = accountObj;
+            resultObj.fees = new Object();
+            resultObj.fees.deposit = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
+            resultObj.fees.cashout = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
             var saved = await namespace.cp.saveAccount(fullAccountObj);
             if (saved == false) {
                sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Couldn't save account information.", sessionObj);
@@ -145,9 +153,15 @@ async function CP_Account (sessionObj) {
                         var fromWallet = wallet.derivePath(fromAddressPath);
                         var transferAmount = bigInt(balanceResult.balance);
                         //this is the current minimum fee for testnet3:
-                        var fees = bigInt(10300); //todo: move transfer fee to config
+                        //var fees = bigInt(20000); //todo: move transfer fee to config
+                        var fees = bigInt(config.CP.API[requestParams.type].default[requestParams.network].minerFee);
                         transferAmount = transferAmount.minus(fees);
-                        var txResult = await sendTransaction(fromWallet, cashoutAddress, transferAmount, fees, requestParams.type, requestParams.network);
+                        try {
+                           var txResult = await sendTransaction(fromWallet, cashoutAddress, transferAmount, fees, requestParams.type, requestParams.network);
+                        } catch (err) {
+                           sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Unable to forward transaction to cashout wallet.", sessionObj);
+                           return(false);
+                        }
                         if (txResult != null) {
                            if ((txResult.tx != undefined) && (txResult.tx != null)) {
                               if ((txResult.tx.hash != undefined) && (txResult.tx.hash != null) && (txResult.tx.hash != "")) {
@@ -160,12 +174,13 @@ async function CP_Account (sessionObj) {
                               }
                            }
                         } else {
-                           console.error("Couldn't forward new account balance:");
+                           console.log ("Couldn't forward new account balance:");
                            console.dir (txResult);
+                           //manual transfer may be required                           
                         }
                         //store updated account information
                         resultObj.confirmed = true;
-                        accountResults[0].balance = resultObj.balance;
+                        accountResults[0].balance = transferAmount.toString(10);
                         accountResults[0].updated = MySQLDateTime(new Date());
                         var saved = await namespace.cp.saveAccount(accountResults[0]);
                         if (saved == false) {
@@ -831,7 +846,7 @@ async function sendTransaction(fromWallet, toAddress, amount, fees=null, APIType
    if (network == null) {
       network = API.default.network;
    }
-   if (fees = null) {
+   if (fees == null) {
       fees = API.default[network].minerFee;
    }
    var result = null;
@@ -848,7 +863,11 @@ async function sendTransaction(fromWallet, toAddress, amount, fees=null, APIType
          if (signedTx == null) {
             throw (new Error("Couldn't sign transaction."));
          }
-         var sendTxResult = await sendBTCTx(signedTx, network);
+         try {
+            var sendTxResult = await sendBTCTx(signedTx, network);
+         } catch (err) {
+            throw (err);
+         }
          return (sendTxResult);
          break;
       default:
@@ -896,7 +915,7 @@ function newBTCTx (fromAddress, toAddress, satAmount, satFees, network=null) {
    		json: true
    	}, function (error, response, body){
    		if (error) {
-            reject(error);
+            reject (error);
          } else {
             if ((body == undefined) || (body == null)) {
                reject (response);
@@ -905,6 +924,8 @@ function newBTCTx (fromAddress, toAddress, satAmount, satFees, network=null) {
             if ((body.errors != undefined) && (body.errors != null)) {
                if (body.errors.length > 0) {
                   reject (body.errors);
+               } else {
+                  resolve (body);
                }
             } else {
                resolve (body);
