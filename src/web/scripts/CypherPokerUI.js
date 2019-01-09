@@ -77,7 +77,8 @@ class CypherPokerUI {
       this._protoGameElement = protoElement;
       window.__closing = false;
       this.loadTemplates().then(complete => {
-         window.addEventListener("beforeunload", this.onWindowClose)
+         window.addEventListener("beforeunload", this.onWindowClose);
+         window.addEventListener("click", this.onWindowClick);
          this._ready = true;
       })
    }
@@ -369,7 +370,7 @@ class CypherPokerUI {
    *
    * @private
    */
-   onWindowClose(event) {      
+   onWindowClose(event) {
       for (var count=0; count < this.ui.cypherpoker.games.length; count++) {
          if (this.ui.cypherpoker.games[count].gameStarted) {
             event.preventDefault();
@@ -472,6 +473,63 @@ class CypherPokerUI {
       this.cypherpoker.addEventListener("newgame", this.onNewGame, this);
       this.cypherpoker.addEventListener("tablenew", this.onNewTableAnnouncement, this);
       this.cypherpoker.captureNewTables = true;
+   }
+
+   /**
+   * Invoked when a dropdown button is clicked to toggle an associated menu.
+   *
+   * @param {String} dropdownSelector The dropdown menu selector to toggle.
+   *
+   * @private
+   */
+   toggleDropdown(dropdownSelector) {
+      var element = document.querySelector(dropdownSelector);
+      element.classList.toggle("showDropdownMenu");
+   }
+
+   /**
+   * Event listener invoked when the main window is clicked. This triggers
+   * functionality such as hiding any currently open dropdowns.
+   *
+   * @param {Event} event A standard DOM event object.
+   *
+   * @private
+   */
+   onWindowClick(event) {
+      //only trigger if target isn't a dropdown menu toggle button
+     if (event.target.matches(".dropdownMenuButton") == false) {
+       var dropdowns = document.querySelectorAll(".dropdownMenuContent");
+       for (var count = 0; count < dropdowns.length; count++) {
+         var openDropdown = dropdowns[count];
+         if (openDropdown.classList.contains('showDropdownMenu')) {
+           openDropdown.classList.remove('showDropdownMenu');
+         }
+       }
+     }
+   }
+
+   /**
+   * Invoked when a main menu option is clicked on.
+   *
+   * @param {String} selection The identifier of the main menu option that was
+   * just clicked on.
+   *
+   * @private
+   */
+   onMainMenuClick(selection) {
+      switch (selection) {
+         case "manageAccounts":
+            alert("Manage accounts");
+            break;
+         case "gameLobby":
+            alert("Game lobby");
+            break;
+         case "reportBug":
+            alert("Report a bug");
+            break;
+         default:
+            break;
+      }
    }
 
    /**
