@@ -99,9 +99,13 @@
       global $_dbname, $db;
       $querySQL = "SELECT * FROM `accounts` WHERE `updated`=(SELECT MAX(updated) FROM `accounts`);";
       $result = $db -> query($querySQL);
-      $row = $result -> fetch_object();
-      $date = strtotime($row -> updated);
-      return ($date);
+      if (mysqli_num_rows($result) == 0) {
+         return (0);
+      } else {
+         $row = $result -> fetch_object();
+         $date = strtotime($row -> updated);
+         return ($date);
+      }
    }
 
    /**
@@ -113,6 +117,9 @@
       $date = new DateTime('NOW');
       //unix timestamps are in seconds...
       $elapsedSeconds = ($date->getTimestamp()) - getLastRequest();
+      if ($elapsedSeconds < 0) {
+         $elapsedSeconds = 0;
+      }
       return ($elapsedSeconds);
    }
 
