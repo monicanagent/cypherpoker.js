@@ -8,6 +8,7 @@
 
    //External API access key:
    $_accessKey = "DATABASE_ACCESS_KEY";
+
    //Database settings:
    $_dbhost = "localhost"; //the MySQL database host URL
    $_dbname = "database_name"; //the MySQL database name
@@ -15,6 +16,41 @@
    $_dbpw = "database_password"; //password for $_dbuser
    $db = NULL; //active database connection
    $_db_maxmb = 20; //maximum database size in megabytes
+
+   /**
+   * Creates the database and any associated table(s). This function is usually invoked
+   * by calling the script with an "install" parameter. E.g. http://somehost.com/rdb.php?install
+   */
+   function createDatabase() {
+      global $db, $_dbhost, $_dbuser, $_dbpw, $_dbname;
+      $db = new mysqli($_dbhost, $_dbuser, $_dbpw);
+      if ($db -> connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+        return (false);
+      }
+      printf("Creating database \"".$_dbname."\"...<br/>");
+      $querySQL = "CREATE DATABASE IF NOT EXISTS ".$_dbname;
+      printf("Database created.<br/>");
+      $result = $db -> query($querySQL);
+      printf("Creating tables...<br/>");
+      mysqli_select_db($db, $_dbname);
+      $querySQL = "CREATE TABLE IF NOT EXISTS `accounts` (
+        `primary_key` int(11) NOT NULL AUTO_INCREMENT,
+        `type` text NOT NULL COMMENT 'The cryptocurrency type',
+        `network` text NOT NULL COMMENT 'Cryptocurrency subnetwork',
+        `chain` bigint(20) NOT NULL DEFAULT '-1' COMMENT 'HD derivation path first parameter',
+        `addressIndex` bigint(20) NOT NULL DEFAULT '-1' COMMENT 'HD derivation path second parameter',
+        `address` text NOT NULL COMMENT 'Account (cryptocurrency) address',
+        `pwhash` text NOT NULL COMMENT 'SHA256 hash of password',
+        `balance` text NOT NULL COMMENT 'Account balance in smallest denomination',
+        `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Date/Time this row was created.',
+        PRIMARY KEY (`primary_key`)
+     ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=latin1;";
+     $result = $db -> query($querySQL);
+     //Uncomment the following line to see any errors:
+     //echo(mysqli_error($db)."<br/>");
+     printf("Tables created.<br/>");
+   }
 
    /**
    * Returns the client IP address from the most reliable
@@ -396,7 +432,13 @@
       return ($returnVal);
    }
 
-   //call default request handler
-   handleHTTPRequest();
+   if (isset($_GET["install"])) {
+      printf ("Running installation...<br/>");
+      createDatabase();
+      printf ("Installation complete.");
+   } else {
+      //call default request handler
+      handleHTTPRequest();
+   }
 
 ?>
