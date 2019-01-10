@@ -969,6 +969,9 @@ async function createAccountSystem() {
    }
    console.log ("Initial Bitcoin HD wallet derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
    console.log ("Initial Bitcoin testnet HD wallet derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
+   console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
+   console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
+   console.log ("Database last updated "+resultObj.db.elapsedUpdateSeconds+" seconds ago");
    return (true);
 }
 

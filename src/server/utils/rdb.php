@@ -8,13 +8,13 @@
 
    //External API access key:
    $_accessKey = "DATABASE_ACCESS_KEY";
-
    //Database settings:
    $_dbhost = "localhost"; //the MySQL database host URL
    $_dbname = "database_name"; //the MySQL database name
    $_dbuser = "database_user"; //the authorized database user account
    $_dbpw = "database_password"; //password for $_dbuser
    $db = NULL; //active database connection
+   $_db_maxmb = 20; //maximum database size in megabytes
 
    /**
    * Returns the client IP address from the most reliable
@@ -38,6 +38,46 @@
            $ip = '0.0.0.0';
        }
        return ($ip);
+   }
+
+   /**
+   * Returns the size of the database.
+   *
+   * @return {number} The size of the database in megabytes, precise to 8 decimal points.
+   */
+   function getDBSize() {
+      global $_dbname, $db;
+      $querySQL = "SELECT table_name AS `Table`, round(((data_length + index_length) / 1024 / 1024), 8) `sizeMB` FROM information_schema.TABLES WHERE table_schema = '".$_dbname."' AND table_name = 'accounts';";
+      $result = $db -> query($querySQL);
+      $row = $result -> fetch_object();
+      $size = (float) $row -> sizeMB;
+      return ($size);
+   }
+
+   /**
+   * Returns the native date-time of the latest (newest) "updated" field in the database.
+   *
+   * @return {number} The size of the database in megabytes, precise to 8 decimal points.
+   */
+   function getLastRequest() {
+      global $_dbname, $db;
+      $querySQL = "SELECT * FROM `accounts` WHERE `updated`=(SELECT MAX(updated) FROM `accounts`);";
+      $result = $db -> query($querySQL);
+      $row = $result -> fetch_object();
+      $date = strtotime($row -> updated);
+      return ($date);
+   }
+
+   /**
+   * Returns the number of seconds elapsed since the last update of any account in the database.
+   *
+   * @return {number} The number of seconds elapsed since the last update of any account in the database.
+   */
+   function getElapsedUpdateSeconds() {
+      $date = new DateTime('NOW');
+      //unix timestamps are in seconds...
+      $elapsedSeconds = ($date->getTimestamp()) - getLastRequest();
+      return ($elapsedSeconds);
    }
 
    /**
@@ -195,7 +235,7 @@
    * with the request.
    */
    function processRPCRequest($requestStr) {
-      global $db, $_accessKey;
+      global $db, $_db_maxmb, $_accessKey;
       $request = json_decode($requestStr);
       if ($request != NULL) {
          //JSON correctly parsed
@@ -226,6 +266,10 @@
                   $resultObj -> bitcoin = new stdClass();
                   $resultObj -> bitcoin -> main = new stdClass();
                   $resultObj -> bitcoin -> test3 = new stdClass();
+                  $resultObj -> db = new stdClass();
+                  $resultObj -> db -> sizeMB = getDBSize();
+                  $resultObj -> db -> maxMB = $_db_maxmb;
+                  $resultObj -> db -> elapsedUpdateSeconds = getElapsedUpdateSeconds();
                   $querySQL = "SELECT * FROM `accounts` WHERE `type`=\"bitcoin\" AND `network`=\"main\" ORDER BY `chain` DESC LIMIT 1;";
                   $result = $db -> query($querySQL);
                   if (mysqli_num_rows($result) == 0) {
@@ -242,7 +286,6 @@
                      $row = $result -> fetch_object();
                      $resultObj -> bitcoin -> main -> startIndex = $row -> addressIndex;
                   }
-
                   $querySQL = "SELECT * FROM `accounts` WHERE `type`=\"bitcoin\" AND `network`=\"test3\" ORDER BY `chain` DESC LIMIT 1;";
                   $result = $db -> query($querySQL);
                   if (mysqli_num_rows($result) == 0) {
@@ -259,6 +302,7 @@
                      $row = $result -> fetch_object();
                      $resultObj -> bitcoin -> test3 -> startIndex = $row -> addressIndex;
                   }
+
                   sendResult($resultObj, $request);
                } else {
                   sendError(-32603, "Could not connect to database.", $request);
@@ -266,6 +310,10 @@
                break;
             case "getrecord":
                if (openDatabase()) {
+                  if (getDBSize() >= $_db_maxmb) {
+                     sendError(-32603, "Database limit exceeded.", $request);
+                     return;
+                  }
                   //get up to 2 latest rows for specified account
                   $querySQL = "SELECT * FROM `accounts` WHERE `address`=\"".cleanParameter($request -> params -> message -> address)."\" ORDER BY `primary_key` DESC LIMIT 2;";
                   $result = $db -> query($querySQL);
@@ -289,6 +337,10 @@
                break;
             case "putrecord":
                if (openDatabase()) {
+                  if (getDBSize() >= $_db_maxmb) {
+                     sendError(-32603, "Database limit exceeded.", $request);
+                     return;
+                  }
                   $querySQL = "INSERT INTO `accounts` (`type`, `network`, `chain`, `addressIndex`, `address`, `pwhash`, `balance`,`updated`) VALUES (";
                   $querySQL .= "\"".cleanParameter($request -> params -> message -> type)."\",";
                   $querySQL .= "\"".cleanParameter($request -> params -> message -> network)."\",";
@@ -311,6 +363,10 @@
                break;
             case "updaterecord":
                if (openDatabase()) {
+                  if (getDBSize() >= $_db_maxmb) {
+                     sendError(-32603, "Database limit exceeded.", $request);
+                     return;
+                  }
                   $querySQL = "UPDATE `accounts` SET `updated`=\"".cleanParameter($request -> params -> message -> updated)."\" WHERE `primary_key`=".cleanParameter($request -> params -> message -> primary_key).";";
                   $result = $db -> query($querySQL);
                   if ($result == false) {
