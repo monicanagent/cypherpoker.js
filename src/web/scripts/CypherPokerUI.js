@@ -777,9 +777,19 @@ class CypherPokerUI {
             var buyInAmount = createGameElement.querySelector("#buyInAmount").value;
             var bigBlindAmount = createGameElement.querySelector("#bigBlindAmount").value;
             var smallBlindAmount = createGameElement.querySelector("#smallBlindAmount").value;
+            var inactivityTimeout = Math.round(createGameElement.querySelector("#inactivityTimeoutAmount").value);
+            if (inactivityTimeout < 1) {
+               this.showDialog("Inactivity timeout must be at least 1 second.");
+               this.hideDialog(4000);
+               this.show(createGameElement);
+               this.show(joinGameElement);
+               this.hide(ownGamesElement);
+               return (false);
+            }
             tableInfo.buyIn = buyInAmount;
             tableInfo.bigBlind = bigBlindAmount;
             tableInfo.smallBlind = smallBlindAmount;
+            tableInfo.timeout = inactivityTimeout;
             ownGamesElement.innerHTML = "Game \""+alias+"\" created. Awaiting other player(s)...";
             this.cypherpoker.createTable(tableName, numPlayers, tableInfo);
             this.cypherpoker.onEventPromise("tableready").then(event =>{
@@ -893,6 +903,11 @@ class CypherPokerUI {
             this.show(helpElement);
             this.showDialog();
             break;
+         case "create_table_timeout":
+            var helpElement = element.querySelector("#create_table_timeout");
+            this.show(helpElement);
+            this.showDialog();
+            break;
          case "create_table_button":
             var helpElement = element.querySelector("#create_table_button");
             this.show(helpElement);
@@ -999,7 +1014,7 @@ class CypherPokerUI {
       ui.cypherpoker.onEventPromise("tableready").then(event =>{
          //use updated event.table here
          var playerInfo = new Object();
-         playerInfo.alias = alias;         
+         playerInfo.alias = alias;
          var game = ui.cypherpoker.createGame(event.table, ui.selectedAccount, playerInfo).start();
          try {
             game.addEventListener("gamerestart", ui.onRestartGame, ui);
@@ -1203,6 +1218,7 @@ class CypherPokerUI {
       metaTags.numPlayers = String(tableData.requiredPID.length+1);
       metaTags.bigBlind = tableData.tableInfo.bigBlind;
       metaTags.smallBlind = tableData.tableInfo.smallBlind;
+      metaTags.timeout = tableData.tableInfo.timeout;
       var joinTableButton = this.buildHTMLTemplate(templateInfo, containerElement, false, metaTags);
       joinTableButton.table = this.cypherpoker.announcedTables[0]; //newest table reference
       joinTableButton.ui = this;
