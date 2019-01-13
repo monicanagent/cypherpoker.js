@@ -10,11 +10,11 @@
    $_accessKey = "DATABASE_ACCESS_KEY";
 
    //Database settings:
+   $db = NULL; //active database connection
    $_dbhost = "localhost"; //the MySQL database host URL
    $_dbname = "database_name"; //the MySQL database name
    $_dbuser = "database_user"; //the authorized database user account
    $_dbpw = "database_password"; //password for $_dbuser
-   $db = NULL; //active database connection
    $_db_maxmb = 20; //maximum database size in megabytes
 
    /**
@@ -365,7 +365,7 @@
                      return;
                   }
                   if (mysqli_num_rows($result) == 0) {
-                     sendError(-32603, "No matching account.", $request);
+                     sendError(-32602, "No matching account.", $request);
                      return;
                   } else {
                      $rows = array();
@@ -439,12 +439,16 @@
       return ($returnVal);
    }
 
-   if (isset($_GET["install"])) {
-      printf ("Running installation...<br/>");
-      createDatabase();
-      printf ("Installation complete.");
+   if (isset($_GET)) {
+      if (isset($_GET["install"])) {
+         printf ("Running installation...<br/>");
+         createDatabase();
+         printf ("Installation complete.");
+      } else {
+         //call default request handler
+         handleHTTPRequest();
+      }
    } else {
-      //call default request handler
       handleHTTPRequest();
    }
 

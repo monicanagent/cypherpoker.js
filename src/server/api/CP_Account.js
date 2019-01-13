@@ -102,8 +102,14 @@ async function CP_Account (sessionObj) {
             searchObj.address = requestParams.address;
             searchObj.type = requestParams.type;
             searchObj.network = requestParams.network;
-            var accountResults = await namespace.cp.getAccount(searchObj);
-            if (accountResults.length == 0) {
+            try {
+               var accountResults = await namespace.cp.getAccount(searchObj);
+            } catch (err) {
+               console.dir(err);
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Database error.", sessionObj);
+               return (false);
+            }
+            if (accountResults.length < 1) {
                sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Account does not exist.", sessionObj);
                return (false);
             }
@@ -176,7 +182,7 @@ async function CP_Account (sessionObj) {
                         } else {
                            console.log ("Couldn't forward new account balance:");
                            console.dir (txResult);
-                           //manual transfer may be required                           
+                           //manual transfer may be required
                         }
                         //store updated account information
                         resultObj.confirmed = true;
@@ -248,8 +254,14 @@ async function CP_Account (sessionObj) {
             searchObj.address = requestParams.address;
             searchObj.type = requestParams.type;
             searchObj.network = requestParams.network;
-            accountResults = await namespace.cp.getAccount(searchObj);
-            if (accountResults.length == 0) {
+            try {
+               accountResults = await namespace.cp.getAccount(searchObj);
+            } catch (err) {
+               console.dir(err);
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Database error.", sessionObj);
+               return (false);
+            }
+            if (accountResults.length < 1) {
                sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Account does not exist.", sessionObj);
                return (false);
             }
@@ -319,11 +331,12 @@ async function CP_Account (sessionObj) {
             try {
                var sourceAccountRes = await namespace.cp.getAccount(sourceSearchObj);
             } catch (err) {
-               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Problem finding account.", sessionObj);
+               console.dir(err);
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Database error.", sessionObj);
                return (false);
             }
             if (sourceAccountRes.length < 1) {
-               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "No such source account.", sessionObj);
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Source account not found.", sessionObj);
                return (false);
             }
             if (checkPassword(requestParams.password, sourceAccountRes[0].pwhash) == false) {
@@ -333,11 +346,12 @@ async function CP_Account (sessionObj) {
             try {
                var targetAccountRes = await namespace.cp.getAccount(targetSearchObj);
             } catch (err) {
-               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Problem finding account.", sessionObj);
+               console.dir(err);
+               sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Database error.", sessionObj);
                return (false);
             }
             if (targetAccountRes.length < 1) {
-               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "No such target account.", sessionObj);
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Target account not found.", sessionObj);
                return (false);
             }
             try {
@@ -592,7 +606,14 @@ async function getAccount(searchObj) {
    if (result.error == undefined) {
       return (result.result);
    } else {
-      throw (new Error(result.error));
+      if (result.error.code == -32602) {
+         //no matching account, return empty result set
+         return (new Array());
+      } else {
+         console.error("Remote database error:");
+         console.dir(result);
+         throw (new Error(result.error));
+      }
    }
    //try in-memory data instead
    if (namespace.cp.accounts == undefined) {
