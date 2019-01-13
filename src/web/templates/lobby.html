@@ -2,7 +2,7 @@
    <div id="createGame">
       Create Table:&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('create_table_form')">?</button><br/><br/>
       <div id="createGameForm" name="createGameForm" class="createGameFormContainer">
-         <input type="text" id="playerAlias" name="playerAlias" placeholder="Player alias for table" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('create_table_player_alias')">?</button><br/>
+         <input type="text" id="playerAliasCreate" name="playerAliasCreate" placeholder="Player alias for new table" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('create_table_player_alias')">?</button><br/>
          <input type="text" id="tableName" name="tableName" placeholder="Table name" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('create_table_name')">?</button><br/>
          <input type="number" id="numPlayers" name="numPlayers" placeholder="Number of players" step="1" min="2" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('create_table_num_players')">?</button><br/>
          <!-- use text fields instead of numbers in order to support cryptocurrency (large) values -->
@@ -18,6 +18,7 @@
    <br/>
    <div id="joinGame">
       Join Table:&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('join_table_list')">?</button><br/><br/>
+      <input type="text" id="playerAliasJoin" name="playerAliasJoin" placeholder="Player alias to join table" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('join_table_player_alias')">?</button><br/>
       <div id="tableList" class="tableListContainer">
          <!-- New table buttons are created here by the CypherPokerUI.onNewTableAnnouncement function -->
       </div>

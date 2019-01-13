@@ -640,6 +640,8 @@ class CypherPokerUI {
             }).catch(error => {
                element.querySelector("#accountBalance").innerHTML =  "unavailable";
                console.error(error);
+               this.showDialog(error.message);
+               this.hideDialog(4000);
             });
             break;
          case "copy_account_to_clipboard":
@@ -768,7 +770,7 @@ class CypherPokerUI {
             this.show(ownGamesElement);
             var tableInfo = new Object();
             var lobbyElement = document.querySelector(ui.UISelectors.lobby);
-            var alias = createGameElement.querySelector("#playerAlias").value;
+            var alias = createGameElement.querySelector("#playerAliasCreate").value;
             var tableName = createGameElement.querySelector("#tableName").value;
             var numPlayers = Number(createGameElement.querySelector("#numPlayers").value);
             numPlayers--; //exclude self
@@ -896,6 +898,11 @@ class CypherPokerUI {
             this.show(helpElement);
             this.showDialog();
             break;
+         case "join_table_player_alias":
+            var helpElement = element.querySelector("#join_table_player_alias");
+            this.show(helpElement);
+            this.showDialog();
+            break;
          case "join_table_list":
             var helpElement = element.querySelector("#join_table_list");
             this.show(helpElement);
@@ -980,11 +987,19 @@ class CypherPokerUI {
       }
       var ui = target.ui;
       var table = target.table;
+      var element = ui.getTemplateByName("lobby").elements[0];
+      var joinGameElement = element.querySelector("#joinGame");
+      var alias = joinGameElement.querySelector("#playerAliasJoin").value;
+      if (alias.trim() == "") {
+         ui.showDialog ("You must enter an alias (name) before attempting to join a table.");
+         ui.hideDialog(4000);
+         return;
+      }
       ui.cypherpoker.joinTable(table);
       ui.cypherpoker.onEventPromise("tableready").then(event =>{
          //use updated event.table here
          var playerInfo = new Object();
-         playerInfo.alias = "A player";
+         playerInfo.alias = alias;         
          var game = ui.cypherpoker.createGame(event.table, ui.selectedAccount, playerInfo).start();
          try {
             game.addEventListener("gamerestart", ui.onRestartGame, ui);
