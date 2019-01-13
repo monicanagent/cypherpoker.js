@@ -1215,7 +1215,9 @@ class CypherPokerUI {
       var containerElement = document.querySelector(templateInfo.target);
       var metaTags = new Object();
       metaTags.tableName = tableData.tableName;
+      metaTags.tableOwnerPID = tableData.ownerPID;
       metaTags.numPlayers = String(tableData.requiredPID.length+1);
+      metaTags.buyInAmount = tableData.tableInfo.buyIn;
       metaTags.bigBlind = tableData.tableInfo.bigBlind;
       metaTags.smallBlind = tableData.tableInfo.smallBlind;
       metaTags.timeout = tableData.tableInfo.timeout;

@@ -183,6 +183,19 @@ button {
    position: relative;
 }
 
+.joinTableButton {
+   font-size: 16px;
+   width: 450px;
+}
+
+.joinTableButton > .tableName{
+   font-weight: bolder;
+}
+
+.joinTableButton > .tableOwner {
+   font-size: 10px;
+}
+
 .gamesContainer {
    top: 80px;
    position: relative;
