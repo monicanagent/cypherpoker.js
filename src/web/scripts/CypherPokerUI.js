@@ -1497,7 +1497,7 @@ class CypherPokerUI {
             var btcAmount = context.convertDenom(satoshiAmount, "satoshi", "bitcoin");
             loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
             loginElement.querySelector("#accountPassword").value = selectedAccount.password;
-         }).catch(error => {
+         }).catch(error => {            
             loginElement.querySelector("#accountBalance").innerHTML =  "unavailable";
             console.error(error.stack);
          });
