@@ -1,6 +1,6 @@
 {
   "name": "CP_server",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A CypherPoker.JS JSON-RPC 2.0 WebSocket Sessions server.",
   "engines": {
     "node": ">=8.0.0"

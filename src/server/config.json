@@ -45,18 +45,21 @@
                "baseDenom": "satoshi",
                "main":{
                   "cashOutAddrPath":"m/0/1",
-                  "minerFee": "50000"
+                  "minerFee": "50000",
+                  "feeUpdateSeconds": 900
                },
                "test3":{
                   "cashOutAddrPath":"m/0/1",
-                  "minerFee": "50000"
+                  "minerFee": "50000",
+                  "feeUpdateSeconds": 900
                }
             },
             "url": {
                "newaddr": "https://api.blockcypher.com/v1/btc/%network%/addrs",
                "balance": "https://api.blockcypher.com/v1/btc/%network%/addrs/%address%/full",
                "createtx": "https://api.blockcypher.com/v1/btc/%network%/txs/new?token=%token%",
-               "sendtx": "https://api.blockcypher.com/v1/btc/%network%/txs/send?token=%token%"
+               "sendtx": "https://api.blockcypher.com/v1/btc/%network%/txs/send?token=%token%",
+               "fees": "https://api.blockcypher.com/v1/btc/%network%"
             }
          },
          "contract":{

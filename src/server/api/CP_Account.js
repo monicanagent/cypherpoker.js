@@ -2,7 +2,7 @@
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
 *
-* @version 0.3.1
+* @version 0.3.2
 */
 async function CP_Account (sessionObj) {
    if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
@@ -1061,6 +1061,165 @@ function sendBTCTx(txObject, network=null) {
 }
 
 /**
+* Returns an estimated miner fee for a transaction. The fee estimation may either be based on an
+* external service or an internal calculation.
+*
+* @param {*} [txData=null] The transaction for which to estimate the fee. The format
+* for this parameter differs based on the <code>APIType</code> and possibly <code>network</code>.<br/>
+* If omitted, a typical (average) transaction is assumed.<br/>
+* For a "bitcoin" <code>APIType</code>, this parameter is expected to be a string of hex-encoded data
+* comprising the binary transaction. If omitted, the transaction is assumed to be 250 bytes.
+* @param {Number} [priority=1] The priority with which the transaction is to be posted. A higher-priority
+* transaction (closer to or equal to 0), is expected to be posted faster than a lower priority one (> 0).
+* This paramater is dependent on the <code>APIType</code> and possibly the <code>network</code> type.<br/>
+* When <code>APIType</code> is "bitcoin", a priority of 0 is the highest priority (to be included in the next 1-2 blocks),
+* a priority of 1 is a medium priority (3 to 6 blocks), and 2 is a low priority (> 6 blocks).
+* @param {String} [APIType="bitcoin"] The main cryptocurrency API type.
+* @param {String} [network=null] The cryptocurrency sub-network, if applicable, for the
+* transaction. Current <code>network</code> types include: "main" and "test3". If <code>null</code>,
+* the default network specified in <code>config.CP.API[APIType].default.network</code> is used.
+*
+* @return {String} The estimated transaction fee, as a numeric string in the lowest denomination of the associated
+* cryptocurrency (e.g. satoshis if <code>APIType="bitcoin"</code>), based on the supplied <code>txData</code>,
+* <code>priority</code>, <code>APIType</code>, and <code>network</code>. If any parameter is invalid or unrecognized,
+* <code>null</code> is returned.
+* @async
+*/
+async function estimateTxFee (txData=null, priority=1, APIType="bitcoin", network=null) {
+   try {
+      switch (APIType) {
+         case "bitcoin":
+            var txSize = 250; //bytes
+            if (txData != null) {
+               txSize = txData.length / 2; //hex-encoded binary data
+            }
+
+            break;
+         default:
+            return (null);
+            break;
+      }
+   } catch (err) {
+      return (null);
+   }
+}
+
+/**
+* Updates the internal transaction fee(s) for a specific cryptocurrency and sub-network if
+* not already updated within its configured time limit. The fee(s) currently stored for the cryptocurrency
+* in the main <code>config</code> is/are updated if successfully retrieved or calculated.
+*
+* @param {String} [APIType="bitcoin"] The main cryptocurrency API type.
+* @param {String} [network=null] The cryptocurrency sub-network, if applicable, for the
+* transaction. Current <code>network</code> types include: "main" and "test3". If <code>null</code>,
+* the default network specified in <code>config.CP.API[APIType].default.network</code> is used.
+* @param {Boolean} [forceUpdate=false] If true, an update is forced even if the configured time limit
+* has not yet elapsed.
+*
+* @return {Promise} Resolves with the string "updated" if the fees for the API/network were succesfully updated or
+* "skipped" the configured time limit for updates has not yet elapsed. The promise is rejected with a standard
+* <code>Error</code> object if an update could not be successfully completed (any existing fees data is not changed).
+* @private
+*/
+function updateTxFees(APIType="bitcoin", network=null, forceUpdate=false) {
+   var promise = new Promise(function(resolve, reject) {
+      var API = config.CP.API[APIType];
+      if ((network == null) || (network == "")) {
+         network = API.default.network;
+      }
+      var url = API.url.fees;
+      var updateSeconds = API.default[network].feeUpdateSeconds;
+      if ((updateSeconds > 0) && (forceUpdate == false)) {
+         var lastUpdate = API.default[network]["lastUpdated"];
+         if ((lastUpdate != undefined) && (lastUpdate != null) && (lastUpdate != "")) {
+            var lastUpdateCheck = new Date(API.default[network].lastUpdated); //this date/time must be relative to local date/time
+            var currentDateTime = new Date();
+            var deltaMS = currentDateTime.valueOf() - lastUpdateCheck.valueOf();
+            var deltaSec = deltaMS / 1000;
+            if (deltaSec < updateSeconds) {
+               resolve("skipped");
+               return;
+            }
+         }
+      }
+      url = url.split("%network%").join(network);
+      request({
+         url: url,
+         method: "GET",
+         json: true
+      }, (error, response, body) => {
+         var currentDateTime = new Date();
+         API.default[network].lastUpdated = currentDateTime.toISOString();
+         if ((body == undefined) || (body == null)) {
+            var errorObj = new Error(response);
+            reject (errorObj);
+            return;
+         }
+         if (error) {
+            errorObj = new Error(error);
+            reject(errorObj);
+         } else {
+            API.default[network].minerFee = String(body.high_fee_per_kb); //should be a string
+            resolve("updated");
+            //resolve(body);
+         }
+      });
+   });
+   return (promise);
+}
+
+/**
+* Updates the internal transaction fees for all cryptocurrencies and sub-networks defined
+* in the global <code>config</code> object using the {@link updateTxFees} function (i.e. some updates
+* may be omitted if the update time limits have not elapsed).
+*
+* @param {Boolean} [startAutoUpdate=true] If true, the automatic update interval defined in the
+* global <code>config</code> object for each cryptocurrency/network is (independently) started.
+* If false, transaction fees must be updated manually ir required.
+* @param {Boolean} [sequential=true] If true, each new update is started when the previous one is
+* completed, otherwise they're all executed simultaneously.
+*
+* @async
+*/
+async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
+   var APIType = "bitcoin"; //currently only bitcoin is updated
+   var btcAPI = config.CP.API[APIType];
+   var btcNetworks = btcAPI.networks;
+   for (var networkName in btcNetworks) {
+      var network = btcNetworks[networkName];
+      console.log("Updating "+APIType+"/"+network+" transaction fees...");
+      if (sequential) {
+         try {
+            var result = await updateTxFees(APIType, network);
+            if (result == "updated") {
+               console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
+            } else {
+               console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
+            }
+         } catch (err) {
+            console.error("Error updating "+APIType+"/"+network+" transaction fees:");
+            console.dir(err);
+         }
+         if (startAutoUpdate) {
+            var updateInterval = (btcAPI.default[network].feeUpdateSeconds) * 1000;
+            btcAPI.default[btcNetworks[network]].timeout = setInterval(updateTxFees, updateInterval, APIType, network);
+         }
+      } else {
+         updateTxFees(APIType, network).then(result => {
+            if (result == "updated") {
+               console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
+            } else {
+               console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
+            }
+         }).catch(err => {
+            console.error("Error updating "+APIType+"/"+network+" transaction fees:");
+            console.dir(err);
+         });
+      }
+   }
+}
+
+/**
 * Builds a valid CypherPoker.JS message object (usually included as the
 * <code>data</code> property of a JSON-RPC 2.0 result object).
 *
@@ -1100,3 +1259,6 @@ if (namespace.cp.bitcoinWallet == undefined) {
 if (namespace.cp.bitcoinTest3Wallet == undefined) {
    namespace.cp.bitcoinTest3Wallet = null;
 }
+
+//automatically update transaction fee estimates at startup
+updateAllTxFees();
