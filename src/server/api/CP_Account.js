@@ -1197,12 +1197,27 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
                console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
             }
          } catch (err) {
-            console.error("Error updating "+APIType+"/"+network+" transaction fees:");
-            console.dir(err);
+            console.error("Could not update "+APIType+"/"+network+" transaction fees.");
          }
          if (startAutoUpdate) {
-            var updateInterval = (btcAPI.default[network].feeUpdateSeconds) * 1000;
-            btcAPI.default[btcNetworks[network]].timeout = setInterval(updateTxFees, updateInterval, APIType, network);
+            console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
+            if (btcAPI.default[network].feeUpdateSeconds < 30) {
+               console.warn ("*WARNING* An update interval of at least 30 seconds is advised in order to deal with possible network latency.");
+            }
+            var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
+            btcAPI.default[network].timeout = setInterval((APIType, network) => {
+               updateTxFees(APIType, network, true).then(result => {
+                  /*
+                  if (result == "updated") {
+                     console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
+                  } else {
+                     console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
+                  }
+                  */
+               }).catch(err => {
+                  //console.error("Could not update "+APIType+"/"+network+" transaction fees.");
+               })
+            }, updateInterval, APIType, network);
          }
       } else {
          updateTxFees(APIType, network).then(result => {
@@ -1212,9 +1227,26 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
                console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
             }
          }).catch(err => {
-            console.error("Error updating "+APIType+"/"+network+" transaction fees:");
-            console.dir(err);
+            console.error("Could not update "+APIType+"/"+network+" transaction fees.");
          });
+         console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
+         if (btcAPI.default[network].feeUpdateSeconds < 30) {
+            console.warn ("*WARNING* An update interval of at least 30 seconds is advised in order to deal with possible network latency.");
+         }
+         var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
+         btcAPI.default[network].timeout = setInterval((APIType, network) => {
+            updateTxFees(APIType, network, true).then(result => {
+               /*
+               if (result == "updated") {
+                  console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
+               } else {
+                  console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
+               }
+               */
+            }).catch(err => {
+               //console.error("Could not update "+APIType+"/"+network+" transaction fees.");
+            })
+         }, updateInterval, APIType, network);
       }
    }
 }
