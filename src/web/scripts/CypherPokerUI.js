@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.3.1
+* @version 0.3.2
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -579,6 +579,7 @@ class CypherPokerUI {
                   helpElement = element.querySelector("#new_account_btc");
                }
                helpElement.innerHTML = helpElement.innerHTML.split("%address%").join(newAccount.address);
+               helpElement.innerHTML = helpElement.innerHTML.split("%depositfee%").join(newAccount.fees.deposit);
                this.show(helpElement);
                this.showDialog();
                var newOptionElement = document.createElement("option");
@@ -592,10 +593,6 @@ class CypherPokerUI {
                currentAccounts.appendChild(newOptionElement);
                currentAccounts.value = optionValue; //set new item as current selection
                element.querySelector("#accountPassword").value = newAccount.password; //set password for account
-            //   this.showDialog("Account created: "+newAccount.address);
-            //   this.hideDialog(4000);
-            //   this.show(element);
-            //   this.show(manageElement);
             }).catch(error => {
                this.showDialog(error);
             });
@@ -630,6 +627,8 @@ class CypherPokerUI {
          case "select_account":
             var element = this.getTemplateByName("accountLogin").elements[0];
             var selectElement = element.querySelector("#currentAccounts");
+            var manageElement = this.getTemplateByName("accountManage").elements[0];
+            var minerFeeInput = manageElement.querySelector("#minerFee");
             var selectedOption = selectElement.options[selectElement.selectedIndex];
             var selectedAccount = selectedOption.account;
             element.querySelector("#accountPassword").value = selectedAccount.password;
@@ -637,6 +636,7 @@ class CypherPokerUI {
                var satoshiAmount = selectedAccount.balance.toString(10);
                var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
                element.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               minerFeeInput.value = selectedAccount.fees.cashout;
             }).catch(error => {
                element.querySelector("#accountBalance").innerHTML =  "unavailable";
                console.error(error);
@@ -661,6 +661,7 @@ class CypherPokerUI {
          case "cashout_account":
             var manageElement = this.getTemplateByName("accountManage").elements[0];
             element = this.getTemplateByName("accountLogin").elements[0];
+            var minerFeeElement = manageElement.querySelector("#minerFee");
             var cashoutAddress = manageElement.querySelector("#cashoutAddress").value;
             var cashoutAmount = manageElement.querySelector("#cashoutAmount").value;
             var selectElement = element.querySelector("#currentAccounts");
@@ -689,8 +690,14 @@ class CypherPokerUI {
                this.hideDialog(3000);
                return (false);
             }
-            var minerFees = null; //use default for now
-            selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFees).then(done => {
+            var minerFee = bigInt(minerFeeElement.value);
+            if (minerFee.lesser(1)) {
+               this.showDialog("Miner fee must be at least 1 satoshi.");
+               this.hideDialog(3000);
+               return (false);
+            }
+            minerFee = minerFee.toString(10);
+            selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFee).then(done => {
                var satoshiAmount = selectedAccount.balance.toString(10);
                var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
                element.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
@@ -975,12 +982,14 @@ class CypherPokerUI {
       var selectElement = document.querySelector(ui.accountsUISelectors.currentAccounts);
       var selectedOption = selectElement.options[selectElement.selectedIndex];
       var selectedAccount = selectedOption.account;
+      var manageElement = ui.getTemplateByName("accountManage").elements[0];
+      var minerFeeInput = manageElement.querySelector("#minerFee");
       document.querySelector(ui.accountsUISelectors.accountPassword).value = selectedAccount.password;
       selectedAccount.update().then(done => {
          var satoshiAmount = selectedAccount.balance.toString(10);
          var btcAmount = ui.convertDenom(satoshiAmount, "satoshi", "bitcoin");
-         //document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  btcAmount+ " BTC";
          document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  satoshiAmount+ " satoshis";
+         minerFeeInput.value = selectedAccount.fees.cashout;
       }).catch(error => {
          document.querySelector(ui.accountsUISelectors.accountBalance).innerHTML =  "? BTC";
          console.error(error);
@@ -1479,6 +1488,7 @@ class CypherPokerUI {
          var loginElement = context.getTemplateByName("accountLogin").elements[0];
          var manageElement = context.getTemplateByName("accountManage").elements[0];
          var accountsList = loginElement.querySelector("#currentAccounts");
+         var minerFeeInput = manageElement.querySelector("#minerFee");
          for (var count=0; count < context.cypherpoker.accounts.length; count++) {
             var currentAccount = context.cypherpoker.accounts[count];
             var newOptionElement = document.createElement("option");
@@ -1497,7 +1507,8 @@ class CypherPokerUI {
             var btcAmount = context.convertDenom(satoshiAmount, "satoshi", "bitcoin");
             loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
             loginElement.querySelector("#accountPassword").value = selectedAccount.password;
-         }).catch(error => {            
+            minerFeeInput.value = selectedAccount.fees.cashout;
+         }).catch(error => {
             loginElement.querySelector("#accountBalance").innerHTML =  "unavailable";
             console.error(error.stack);
          });

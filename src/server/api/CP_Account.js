@@ -40,13 +40,16 @@ async function CP_Account (sessionObj) {
    var privateID = namespace.websocket.makePrivateID(requestParams.server_token, requestParams.user_token);
    if (privateID == null) {
       //must have active WSS session!
-      sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Not allowed to create game contracts.", sessionObj);
+      sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Session not established.", sessionObj);
       return(false);
    }
    var resultObj = new Object(); //result to send in response
    resultObj.fees = new Object(); //include fee(s) information
-   resultObj.fees.deposit = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
-   resultObj.fees.cashout = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
+   var fees = config.CP.API[requestParams.type].default[requestParams.network];
+   var depositFee = bigInt(fees.depositFee);
+   var minerFee = bigInt(fees.minerFee);
+   resultObj.fees.deposit = depositFee.plus(minerFee).toString(10);
+   resultObj.fees.cashout = minerFee.toString(10);
    try {
       switch (requestParams.action) {
          case "new":
@@ -82,10 +85,9 @@ async function CP_Account (sessionObj) {
             }
             accountObj.pwhash = pwHash;
             accountObj.balance = bigInt("0");
+            var feesObj = resultObj.fees; //save reference to previously created fees object
             resultObj = accountObj;
-            resultObj.fees = new Object();
-            resultObj.fees.deposit = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
-            resultObj.fees.cashout = config.CP.API[requestParams.type].default[requestParams.network].minerFee;
+            resultObj.fees = feesObj; //copy previously created fees object            
             var saved = await namespace.cp.saveAccount(fullAccountObj);
             if (saved == false) {
                sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Couldn't save account information.", sessionObj);
@@ -601,50 +603,49 @@ async function getAccount(searchObj) {
    if ((searchObj == null) || (searchObj == undefined)) {
       return (null);
    }
-   var loaded = false;
-   var result = await callAccountDatabase("getrecord", searchObj);
-   if (result.error == undefined) {
-      return (result.result);
-   } else {
-      if (result.error.code == -32602) {
-         //no matching account, return empty result set
-         return (new Array());
+   if (config.CP.API.database.enabled == true) {
+      var result = await callAccountDatabase("getrecord", searchObj);
+      if (result.error == undefined) {
+         return (result.result);
       } else {
-         console.error("Remote database error:");
-         console.dir(result);
-         throw (new Error(result.error));
+         if (result.error.code == -32602) {
+            //no matching account, return empty result set
+            return (new Array());
+         } else {
+            console.error("Remote database error:");
+            console.dir(result);
+            throw (new Error(result.error));
+         }
       }
-   }
-   //try in-memory data instead
-   if (namespace.cp.accounts == undefined) {
-      namespace.cp.accounts = new Array();
-      return (null);
-   }
-   var resultArr = new Array();
-   for (var count=(namespace.cp.accounts.length-1); count >=0 ; count--) {
-     var currentAccount = namespace.cp.accounts[count];
-     var criteriaCount = 0;
-     var matchedCount = 0;
-     for (var item in searchObj) {
-        var searchItem = searchObj[item];
-        if (typeof(searchItem) != "function") {
-          criteriaCount++;
-          if (searchItem == currentAccount[item]) {
-             //note that data types must match exactly
-             matchedCount++;
+   } else {
+      //use in-memory data instead
+      var resultArr = new Array();
+      if (namespace.cp.accounts == undefined) {
+         namespace.cp.accounts = new Array();
+         return (resultArr);
+      }
+      for (var count=(namespace.cp.accounts.length-1); count >= 0 ; count--) {
+        var currentAccount = namespace.cp.accounts[count];
+        var criteriaCount = 0;
+        var matchedCount = 0;
+        for (var item in searchObj) {
+           var searchItem = searchObj[item];
+           if (typeof(searchItem) != "function") {
+             criteriaCount++;
+             if (searchItem == currentAccount[item]) {
+                //note that data types must match exactly
+                matchedCount++;
+             }
           }
-       }
-     }
-     if (criteriaCount == matchedCount) {
-       currentAccount.primary_key = count;
-       resultArr.push (currentAccount);
-     }
-     if (resultArr.length == 2) {
-       break;
-     }
-   }
-   if (resultArr.length == 0) {
-      resultArr = null;
+        }
+        if (criteriaCount == matchedCount) {
+          currentAccount.primary_key = count;
+          resultArr.push (currentAccount);
+        }
+        if (resultArr.length == 2) {
+          break;
+        }
+      }
    }
    return (resultArr);
 }
@@ -659,16 +660,17 @@ async function getAccount(searchObj) {
 * @async
 */
 async function saveAccount(accountObj) {
-   //save to remote database if available
-   var saved = false;
-   var result = await callAccountDatabase("putrecord", accountObj);
-   if (result.error == undefined) {
-      saved = true;
+   if (config.CP.API.database.enabled == true) {
+      //save to remote database if available
+      var saved = false;
+      var result = await callAccountDatabase("putrecord", accountObj);
+      if (result.error == undefined) {
+         saved = true;
+      } else {
+         throw (new Error(result.error));
+      }
    } else {
-      throw (new Error(result.error));
-   }
-   if (saved == false) {
-      //not saved to remote database so use in-memory array instead
+      //use in-memory array database
       if (namespace.cp.accounts == undefined) {
          namespace.cp.accounts = new Array();
       }
@@ -691,16 +693,16 @@ async function saveAccount(accountObj) {
 * @async
 */
 async function updateAccount(accountObj) {
-   //save to remote database if available
-   var updated = false;
-   var result = await callAccountDatabase("updaterecord", accountObj);
-   if (result.error == undefined) {
-      updated = true;
+   if (config.CP.API.database.enabled == true) {
+      //save to remote database if available
+      var result = await callAccountDatabase("updaterecord", accountObj);
+      if (result.error == undefined) {
+         updated = true;
+      } else {
+         throw (new Error(result.error));
+      }
    } else {
-      throw (new Error(result.error));
-   }
-   if (updated == false) {
-      //not updated in remote database so use in-memory array instead
+      //use in-memory array database
       if (namespace.cp.accounts == undefined) {
          namespace.cp.accounts = new Array();
          return (false);
@@ -1187,64 +1189,34 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
    var btcNetworks = btcAPI.networks;
    for (var networkName in btcNetworks) {
       var network = btcNetworks[networkName];
-      console.log("Updating "+APIType+"/"+network+" transaction fees...");
       if (sequential) {
          try {
             var result = await updateTxFees(APIType, network);
-            if (result == "updated") {
-               console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
-            } else {
-               console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
-            }
          } catch (err) {
-            console.error("Could not update "+APIType+"/"+network+" transaction fees.");
+            //console.error("Could not update "+APIType+"/"+network+" transaction fees.");
          }
          if (startAutoUpdate) {
-            console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
             if (btcAPI.default[network].feeUpdateSeconds < 30) {
-               console.warn ("*WARNING* An update interval of at least 30 seconds is advised in order to deal with possible network latency.");
+               console.warn ("*WARNING* A transaction fee(s) update interval of at least 30 seconds is advised in order to deal with possible network latency.");
             }
             var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
             btcAPI.default[network].timeout = setInterval((APIType, network) => {
                updateTxFees(APIType, network, true).then(result => {
-                  /*
-                  if (result == "updated") {
-                     console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
-                  } else {
-                     console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
-                  }
-                  */
                }).catch(err => {
-                  //console.error("Could not update "+APIType+"/"+network+" transaction fees.");
                })
             }, updateInterval, APIType, network);
          }
       } else {
          updateTxFees(APIType, network).then(result => {
-            if (result == "updated") {
-               console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
-            } else {
-               console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
-            }
          }).catch(err => {
-            console.error("Could not update "+APIType+"/"+network+" transaction fees.");
          });
-         console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
          if (btcAPI.default[network].feeUpdateSeconds < 30) {
-            console.warn ("*WARNING* An update interval of at least 30 seconds is advised in order to deal with possible network latency.");
+            console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
          }
          var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
          btcAPI.default[network].timeout = setInterval((APIType, network) => {
             updateTxFees(APIType, network, true).then(result => {
-               /*
-               if (result == "updated") {
-                  console.log ("Transaction fees for "+APIType+"/"+network+" successfully updated.");
-               } else {
-                  console.log ("Transaction fees for "+APIType+"/"+network+" not updated; update interval not elapsed.");
-               }
-               */
             }).catch(err => {
-               //console.error("Could not update "+APIType+"/"+network+" transaction fees.");
             })
          }, updateInterval, APIType, network);
       }

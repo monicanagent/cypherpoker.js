@@ -1,6 +1,6 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.3.1
+* @version 0.3.2
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -954,32 +954,38 @@ async function createAccountSystem() {
    } else {
       console.log ("Could not configure Bitcoin testnet wallet.");
    }
-   //the second parameter is there to provide a value for the HMAC
-   var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
-   var resultObj = walletStatusObj.result;
    var wallets = config.CP.API.wallets;
-   //force-convert values in case the database returned them as strings
-   var btcStartChain = Number(String(resultObj.bitcoin.main.startChain));
-   var btcStartIndex = Number(String(resultObj.bitcoin.main.startIndex));
-   var test3StartChain = Number(String(resultObj.bitcoin.test3.startChain));
-   var test3StartIndex = Number(String(resultObj.bitcoin.test3.startIndex));
-   if (btcStartChain > wallets.bitcoin.startChain) {
-      wallets.bitcoin.startChain = Number(String(resultObj.bitcoin.main.startChain));
+   if (config.CP.API.database.enabled == true) {
+      //the second parameter is there to provide a value for the HMAC
+      var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
+      var resultObj = walletStatusObj.result;
+      //force-convert values in case the database returned them as strings
+      var btcStartChain = Number(String(resultObj.bitcoin.main.startChain));
+      var btcStartIndex = Number(String(resultObj.bitcoin.main.startIndex));
+      var test3StartChain = Number(String(resultObj.bitcoin.test3.startChain));
+      var test3StartIndex = Number(String(resultObj.bitcoin.test3.startIndex));
+      if (btcStartChain > wallets.bitcoin.startChain) {
+         wallets.bitcoin.startChain = Number(String(resultObj.bitcoin.main.startChain));
+      }
+      if (btcStartIndex > wallets.bitcoin.startIndex) {
+         wallets.bitcoin.startIndex = Number(String(resultObj.bitcoin.main.startIndex));
+      }
+      if (test3StartChain > wallets.test3.startChain) {
+         wallets.test3.startChain = Number(String(resultObj.bitcoin.test3.startChain));
+      }
+      if (test3StartIndex > wallets.test3.startIndex) {
+         wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
+      }
    }
-   if (btcStartIndex > wallets.bitcoin.startIndex) {
-      wallets.bitcoin.startIndex = Number(String(resultObj.bitcoin.main.startIndex));
+   console.log ("Initial Bitcoin account derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
+   console.log ("Initial Bitcoin testnet account derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
+   if (config.CP.API.database.enabled == true) {
+      console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
+      console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
+      console.log ("Database last updated "+resultObj.db.elapsedUpdateSeconds+" seconds ago");
+   } else {
+      console.log ("Remote database disabled; using in-memory storage.");
    }
-   if (test3StartChain > wallets.test3.startChain) {
-      wallets.test3.startChain = Number(String(resultObj.bitcoin.test3.startChain));
-   }
-   if (test3StartIndex > wallets.test3.startIndex) {
-      wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
-   }
-   console.log ("Initial Bitcoin HD wallet derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
-   console.log ("Initial Bitcoin testnet HD wallet derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
-   console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
-   console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
-   console.log ("Database last updated "+resultObj.db.elapsedUpdateSeconds+" seconds ago");
    return (true);
 }
 
