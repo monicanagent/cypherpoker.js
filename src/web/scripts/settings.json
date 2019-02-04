@@ -20,6 +20,9 @@
          {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
       ]
    },
+   "lobbyDefaults": {
+      "announceTimeout": 20
+   },
    "cards":[
          {"name":"Ace of Spades","shortname":"A♠","suit":"spades","colour":"black","value":1,"highvalue":14,"imageURI":"./assets/cards/AS.svg"},
          {"name":"Two of Spades","shortname":"2♠","suit":"spades","colour":"black","value":2,"highvalue":2,"imageURI":"./assets/cards/2S.svg"},

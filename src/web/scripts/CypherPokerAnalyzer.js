@@ -985,7 +985,8 @@ class CypherPokerAnalyzer extends EventDispatcher {
    * Scores a 5 cards (or fewer) poker hand. The higher the score the
    * better the hand.
    *
-   * @param {Object} handObj A hand permutation and score object.
+   * @param {Object} handObj A hand permutation and score object. This object
+   * is updated with the resulting score, hand name, and other information.
    * @param {Array} handObj.hand Array of {@link CypherPokerCard} instances
    * comprising the hand to score.
    * @param {Number} handObj.score=-1 Calculated score of final hand. -1 means

@@ -605,7 +605,7 @@ class CypherPoker extends EventDispatcher {
    */
    joinTable(tableObj=null, replyTimeout=20000) {
       this.debug("CypherPoker.joinTable("+tableObj+", "+replyTimeout+")");
-      var promise = new Promise((resolve, reject) => {
+      var promise = new Promise((resolve, reject) => {         
          if (!this.connected) {
             throw(new Error("Peer-to-peer network connection not established."));
          }
@@ -1076,6 +1076,8 @@ class CypherPoker extends EventDispatcher {
             numTables++;
             if (this._announcedTables[count].tableID == tableResult.data.tableID) {
                //table previously announced by this peer
+               var now = new Date();
+               this._announcedTables[count].tableInfo.announcedAt = now.toISOString(); //update announcement timestamp
                return (false);
             }
             if (numTables > this.maxCapturesPerPeer) {
@@ -1089,8 +1091,10 @@ class CypherPoker extends EventDispatcher {
       newTable.toString = function() {
          return ("[object CypherPoker#TableObject]");
       }
-      this.debug("CypherPoker.captureTable("+newTable+")");
+      now = new Date();
+      this.debug("CypherPoker.captureTable("+newTable+") @ "+now.toTimeString());
       newTable.ownerPID = tableResult.from; //make sure only owner can announce their own table
+      newTable.tableInfo.announcedAt = now.toISOString(); //set announcement timestamp
       this._announcedTables.unshift(tableResult.data); //add table to the beginning of array
       if (this._announcedTables.length > this.maxCapturedTables) {
          this._announcedTables.pop(); //remove the last table from end of array

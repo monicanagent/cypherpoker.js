@@ -78,6 +78,8 @@
       If a deposit has been made but not yet confirmed, the balance will display 0.<br/>
       Refresh the page to see the new balance once the deposit is confirmed.<br/>
       <br/>
+      If there's a problem retrieving the account balance it will be "unavailable".<br/>
+      <br/>
       <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
    </div>
    <div id="account_password" hidden="true">
@@ -101,15 +103,14 @@
       Use this feature to send some or all of the selected account's balance to another address.<br/>
       <br/>
       Enter the amount to send in the "Amount" field, in satoshis.<br/>
-      A nominal miner fee is automatically subtracted from this amount.<br/>
       <br/>
       Enter the recipient address in the "Address" field.<br/>
       <br/>
       The final input field (Miner Fee), will be automatically filled with the recommended<br/>
-      miner fee, in satoshis, for the transaction. You can change this value but be aware<br/>
+      optimal miner fee, in satoshis, for the transaction. You can change this value but be aware<br/>
       that it may affect the time required for the transaction to be included in a block.<br/>
       <br/>
-      When the required information has been entered, click the "CASH OUT" button on the left.<br/>
+      When the required information has been entered, click the "CASH OUT / WITHDRAW" button on the left.<br/>
       <br/>
       <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
    </div>

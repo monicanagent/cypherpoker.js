@@ -49,6 +49,13 @@
       "hidden":true
    },
    {
+      "url":"./templates/lobbyConfirm.html",
+      "name":"lobbyConfirm",
+      "target":"#mainDialog",
+      "append":true,
+      "hidden":true
+   },
+   {
       "url":"./templates/tableButton.html",
       "name":"tableButton",
       "target":"#lobby #joinGame > #tableList",
