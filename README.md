@@ -12,7 +12,7 @@ The [CypherPoker.JS wiki](https://github.com/monicanagent/cypherpoker.js/wiki) i
 
 The latest code documentation can be found here:
 
-Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.3.1/](https://monicanagent.github.io/cypherpoker.js/web/0.3.1/)<br/>
-Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.3.1/](https://monicanagent.github.io/cypherpoker.js/server/0.3.1/)
+Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.3.2/](https://monicanagent.github.io/cypherpoker.js/web/0.3.2/)<br/>
+Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.3.2/](https://monicanagent.github.io/cypherpoker.js/server/0.3.2/)
 ***
 CypherPoker.JS uses [semantic versioning](https://semver.org/).

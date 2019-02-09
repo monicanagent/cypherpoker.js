@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: CypherPokerUI.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: CypherPokerUI.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
 * @file Basic user interface management for CypherPoker.JS.
 *
 * @version 0.3.2
@@ -105,10 +133,10 @@ class CypherPokerUI {
    }
 
    set lobbyActive(activeSet) {
-      if ((activeSet == true) && (this._lobbyActive == false)) {
+      if ((activeSet == true) &amp;&amp; (this._lobbyActive == false)) {
          this.startLobbyCull();
       }
-      if ((activeSet == false) && (this._lobbyActive == true)) {
+      if ((activeSet == false) &amp;&amp; (this._lobbyActive == true)) {
          this.stopLobbyCull();
       }
       this._lobbyActive = activeSet;
@@ -139,7 +167,7 @@ class CypherPokerUI {
    * @private
    */
    onLobbyCullTick(ui) {
-      for (var count=0; count<ui.cypherpoker.announcedTables.length; count++) {
+      for (var count=0; count&lt;ui.cypherpoker.announcedTables.length; count++) {
          var currentTable = ui.cypherpoker.announcedTables[count];
          var tableInfo = currentTable.tableInfo;
          var announceTimeout = Number(ui.cypherpoker.settings.lobbyDefaults.announceTimeout) * 1000; //seconds to milliseconds
@@ -157,7 +185,7 @@ class CypherPokerUI {
 
    /**
    * @property {Boolean} autoDeal=true If true, cards are automatically dealt when
-   * betting is done and it's our turn to deal. If <code>false</code>, the
+   * betting is done and it's our turn to deal. If &lt;code>false&lt;/code>, the
    * {@link CypherPokerGame#dealCards} function of the {@link CypherPokerUI#game}
    * reference will need to be invoked manually.
    */
@@ -245,9 +273,9 @@ class CypherPokerUI {
    * @property {Array} templates The indexed list of sucecssfully loaded, parsed,
    * and appended HTML templates as specified in the templates index JSON data.
    * In addition to containing a copy of that data, each element in the array also
-   * contains a <code>document</code> property containing the original <code>HTMLDocument</code>
-   * object of the template and a <code>elements</code> array which contains references
-   * appended element(s), copied from the <code>document</code> within the main index HTML.
+   * contains a &lt;code>document&lt;/code> property containing the original &lt;code>HTMLDocument&lt;/code>
+   * object of the template and a &lt;code>elements&lt;/code> array which contains references
+   * appended element(s), copied from the &lt;code>document&lt;/code> within the main index HTML.
    */
    get templates() {
       if (this._templates == undefined) {
@@ -264,10 +292,10 @@ class CypherPokerUI {
    * templates JSON data.
    *
    * @return {Object} The object containing data and references matching the specified template,
-   * or <code>null</code> if no matching template can be found.
+   * or &lt;code>null&lt;/code> if no matching template can be found.
    */
    getTemplateByName(name) {
-      for (var count=0; count < this.templates.length; count++) {
+      for (var count=0; count &lt; this.templates.length; count++) {
          if (this.templates[count].name == name) {
             return (this.templates[count]);
          }
@@ -293,7 +321,7 @@ class CypherPokerUI {
       this.debug("CypherPokerUI: Loading HTML templates...");
       var promise = await loadJSON(indexURL).onEventPromise("load");
       var templatesData = promise.target.response;
-      for (var count=0; count < templatesData.length; count++) {
+      for (var count=0; count &lt; templatesData.length; count++) {
          var templateInfo = templatesData[count];
          templateInfo.document = await this.loadHTMLTemplate(templateInfo.url);
          templateInfo.sourceHTML = templateInfo.document.body.innerHTML
@@ -315,15 +343,15 @@ class CypherPokerUI {
    * @param {Boolean} hidden=false If true, the generated element is initially hidden.
    * @param {Object} metaData Name-value pairs containing the data to replace in the
    * document body. Each name is automatically surrounded by "%"; for example,
-   * <code>metaData["version"]="0.3.0"</code> replaces any <code>%version%</code> metatag
-   * in the document with <code>0.3.0</code>.
+   * &lt;code>metaData["version"]="0.3.0"&lt;/code> replaces any &lt;code>%version%&lt;/code> metatag
+   * in the document with &lt;code>0.3.0&lt;/code>.
    *
    * @reutrn {HTMLElement} The newly built and appended element.
    *
    * @private
    */
    buildHTMLTemplate(templateInfo, target, hidden=false, metaData=null) {
-      //assume document only has <head> (firstChild) and <body> (lastChild) tags within a <html> (documentElement) tag
+      //assume document only has &lt;head> (firstChild) and &lt;body> (lastChild) tags within a &lt;html> (documentElement) tag
       var bodyNode = templateInfo.document.documentElement.lastChild;
       if (templateInfo.elements == undefined) {
          templateInfo.elements = new Array();
@@ -374,8 +402,8 @@ class CypherPokerUI {
    * @param {HTMLElement} The element in which to search/replace metatags.
    * @param {Object} metaData Name-value pairs containing the data to replace in the
    * document body. Each name is automatically surrounded by "%"; for example,
-   * <code>metaData["version"]="0.3.0"</code> replaces any <code>%version%</code> metatag
-   * in the document with <code>0.3.0</code>.
+   * &lt;code>metaData["version"]="0.3.0"&lt;/code> replaces any &lt;code>%version%&lt;/code> metatag
+   * in the document with &lt;code>0.3.0&lt;/code>.
    *
    * @private
    */
@@ -432,7 +460,7 @@ class CypherPokerUI {
    * @private
    */
    onWindowClose(event) {
-      for (var count=0; count < this.ui.cypherpoker.games.length; count++) {
+      for (var count=0; count &lt; this.ui.cypherpoker.games.length; count++) {
          if (this.ui.cypherpoker.games[count].gameStarted) {
             event.preventDefault();
             event.stopPropagation();
@@ -486,7 +514,7 @@ class CypherPokerUI {
    * display.
    * @param {Number} timeoutAmount The timeout amount, in seconds, being tracked.
    * @param {CypherPokerGame} game The game instance for which the timer is active.
-   * @param {CypherPokerUI} ui The UI handler to be used to update the <code>timeoutElement</code>.
+   * @param {CypherPokerUI} ui The UI handler to be used to update the &lt;code>timeoutElement&lt;/code>.
    *
    * @private
    */
@@ -495,7 +523,7 @@ class CypherPokerUI {
       //use system timestamp to determine number of elapsed seconds rather than imprecise timer
       var secondsElapsed = Math.floor((now.valueOf() - timeoutElement._startTime) / 1000);
       var secondsRemaining = timeoutAmount - secondsElapsed;
-      if (secondsRemaining < 0) {
+      if (secondsRemaining &lt; 0) {
          secondsRemaining = 0;
       }
       if (secondsRemaining > 0) {
@@ -503,24 +531,24 @@ class CypherPokerUI {
          var timeoutMinutes = Math.floor(secondsRemaining / 60) % 60;
          var timeoutSeconds = secondsRemaining % 60;
          var timeStr = String(timeoutHours) + ":";
-         if (timeoutMinutes < 10) {
+         if (timeoutMinutes &lt; 10) {
             timeStr += "0";
          }
          timeStr += String(timeoutMinutes) + ":";
-         if (timeoutSeconds < 10) {
+         if (timeoutSeconds &lt; 10) {
             timeStr += "0";
          }
          timeStr += String(timeoutSeconds);
-         if (secondsRemaining <= 5) {
-            timeoutElement.innerHTML = "<span id=\"timeoutCritical\">" + timeStr + "</span>";
+         if (secondsRemaining &lt;= 5) {
+            timeoutElement.innerHTML = "&lt;span id=\"timeoutCritical\">" + timeStr + "&lt;/span>";
          } else {
-            timeoutElement.innerHTML = "<span id=\"timeout\">" + timeStr + "</span>";
+            timeoutElement.innerHTML = "&lt;span id=\"timeout\">" + timeStr + "&lt;/span>";
          }
          timeoutElement._timeoutID = setTimeout(ui.onTimeoutTimerTick, 1000, timeoutElement, timeoutAmount, game, ui);
       } else {
          //contract has timed out
          timeStr = "0:00:00";
-         timeoutElement.innerHTML = "<span id=\"timeoutCritical\">" + timeStr + "</span>";
+         timeoutElement.innerHTML = "&lt;span id=\"timeoutCritical\">" + timeStr + "&lt;/span>";
          ui.disableGameUI.call(ui, game);
          ui.showDialog("A player has timed out. Awaiting confirmation from contract...");
       }
@@ -560,7 +588,7 @@ class CypherPokerUI {
       //only trigger if target isn't a dropdown menu toggle button
      if (event.target.matches(".dropdownMenuButton") == false) {
        var dropdowns = document.querySelectorAll(".dropdownMenuContent");
-       for (var count = 0; count < dropdowns.length; count++) {
+       for (var count = 0; count &lt; dropdowns.length; count++) {
          var openDropdown = dropdowns[count];
          if (openDropdown.classList.contains('showDropdownMenu')) {
            openDropdown.classList.remove('showDropdownMenu');
@@ -618,7 +646,7 @@ class CypherPokerUI {
                this.showDialog();
                return;
             } else {
-               for (var count=0; count < this.cypherpoker.games.length; count++) {
+               for (var count=0; count &lt; this.cypherpoker.games.length; count++) {
                   var currentGame = this.cypherpoker.games[count];
                   if ((currentGame.gameStarted == true) || (currentGame.gameEnding == true)) {
                      confirmElement = this.getTemplateByName("lobbyConfirm").elements[0];
@@ -654,7 +682,7 @@ class CypherPokerUI {
                this.showDialog();
                return;
             } else {
-               for (var count=0; count < this.cypherpoker.games.length; count++) {
+               for (var count=0; count &lt; this.cypherpoker.games.length; count++) {
                   var currentGame = this.cypherpoker.games[count];
                   if ((currentGame.gameStarted == true) || (currentGame.gameEnding == true)) {
                      this.show(confirmElement.querySelector("#gameActive"));
@@ -758,7 +786,7 @@ class CypherPokerUI {
       //reset table join field(s)...
       joinGameElement.querySelector("#playerAliasJoin").value = "";
       //clear out any tables remaining in UI...
-      for (var count=0; count < this.cypherpoker.announcedTables.length; count++) {
+      for (var count=0; count &lt; this.cypherpoker.announcedTables.length; count++) {
          var currentTable = this.cypherpoker.announcedTables[count];
          var tableInfo = currentTable.tableInfo;
          try {
@@ -774,7 +802,7 @@ class CypherPokerUI {
 
    /**
    * Event listener invoked when an account-related button is clicked. The event
-   * is raised by the DOM via something like a <code>onclick</code> attribute.
+   * is raised by the DOM via something like a &lt;code>onclick&lt;/code> attribute.
    *
    * @param {String} buttonType The type of button being clicked.
    * @param {String} [subType=subType] Additional information provided with the button click.
@@ -1010,7 +1038,7 @@ class CypherPokerUI {
 
    /**
    * Event listener invoked when an lobby-related button is clicked. The event
-   * is raised by the DOM via something like a <code>onclick</code> attribute.
+   * is raised by the DOM via something like a &lt;code>onclick&lt;/code> attribute.
    *
    * @param {String} buttonType The type of button being clicked.
    * @param {String} [subType=subType] Additional information provided with the button click.
@@ -1038,7 +1066,7 @@ class CypherPokerUI {
             var bigBlindAmount = createGameElement.querySelector("#bigBlindAmount").value;
             var smallBlindAmount = createGameElement.querySelector("#smallBlindAmount").value;
             var inactivityTimeout = Math.round(createGameElement.querySelector("#inactivityTimeoutAmount").value);
-            if (inactivityTimeout < 1) {
+            if (inactivityTimeout &lt; 1) {
                this.showDialog("Inactivity timeout must be at least 1 second.");
                this.hideDialog(4000);
                this.show(createGameElement);
@@ -1077,7 +1105,7 @@ class CypherPokerUI {
 
    /**
    * Event listener invoked when a help button is clicked. The event
-   * is raised by the DOM via something like a <code>onclick</code> attribute.
+   * is raised by the DOM via something like a &lt;code>onclick&lt;/code> attribute.
    *
    * @param {String} buttonType The type of button being clicked.
    *
@@ -1087,7 +1115,7 @@ class CypherPokerUI {
    async onHelpButtonClick(buttonType) {
       var element = this.getTemplateByName("help").elements[0];
       //hide all children first
-      for (var count=0; count < element.children.length; count++) {
+      for (var count=0; count &lt; element.children.length; count++) {
          this.hide(element.children[count]);
       }
       switch (buttonType) {
@@ -1215,7 +1243,7 @@ class CypherPokerUI {
    *
    * @param {String} data The data to copy to the clipboard.
    * @param {CypherPokerUI} [context=null] The context in which to execute
-   * the function. If <code>null</code>, the default <code>this</code>
+   * the function. If &lt;code>null&lt;/code>, the default &lt;code>this&lt;/code>
    * reference is assumed.
    *
    * @private
@@ -1323,7 +1351,7 @@ class CypherPokerUI {
       }
       game.DOMElement.querySelector(ui.gameUISelectors.potAmount).innerHTML = game.pot.toString(10) + " satoshis";
       ui.updateTotalBet.call(ui, game);
-      if (game.bettingDone && ui.autoDeal && (game.gameDone == false)) {
+      if (game.bettingDone &amp;&amp; ui.autoDeal &amp;&amp; (game.gameDone == false)) {
          //try to automatically deal cards
          game.dealCards().catch(err => {
             //not our time to deal
@@ -1348,7 +1376,7 @@ class CypherPokerUI {
       try {
          game.placeBet(-1);
       } catch (err) {}
-      if (game.bettingDone && ui.autoDeal && (game.gameDone == false)) {
+      if (game.bettingDone &amp;&amp; ui.autoDeal &amp;&amp; (game.gameDone == false)) {
          //try to automatically deal cards
          game.dealCards().catch(err => {
             //not our time to deal
@@ -1431,12 +1459,12 @@ class CypherPokerUI {
    * @private
    */
    onContractTimeout(event) {
-      var timeoutNotification = "The following player(s) have timed out:<br/><br/>";
-      for (var count = 0; count < event.penalized.length; count++) {
+      var timeoutNotification = "The following player(s) have timed out:&lt;br/>&lt;br/>";
+      for (var count = 0; count &lt; event.penalized.length; count++) {
          var timedOutPlayer = event.contract.getPlayer(event.penalized[count].privateID);
-         event.contract.game.debug ("Player has timed out: "+timedOutPlayer.account.address+"<br/>", "err");
-         timeoutNotification += timedOutPlayer.info.alias + " ("+timedOutPlayer.account.address+")<br/>";
-         timeoutNotification += " Private ID: "+event.penalized[count].privateID+"<br/>";
+         event.contract.game.debug ("Player has timed out: "+timedOutPlayer.account.address+"&lt;br/>", "err");
+         timeoutNotification += timedOutPlayer.info.alias + " ("+timedOutPlayer.account.address+")&lt;br/>";
+         timeoutNotification += " Private ID: "+event.penalized[count].privateID+"&lt;br/>";
       }
       this.showDialog(timeoutNotification);
       this.hideDialog(10000);
@@ -1534,7 +1562,7 @@ class CypherPokerUI {
       if (event.private == false) {
          targetElement = game.DOMElement.querySelector(ui.gameUISelectors.publicCards);
       }
-      for (var count=0; count < event.cards.length; count++) {
+      for (var count=0; count &lt; event.cards.length; count++) {
          event.cards[count].addToDOM(targetElement);
       }
       //pot may have changed if we've auto-posted blinds
@@ -1567,7 +1595,7 @@ class CypherPokerUI {
          this.enable(game.DOMElement.querySelector(this.gameUISelectors.betButton));
          this.enable(game.DOMElement.querySelector(this.gameUISelectors.foldButton));
       }
-      if (game.bettingDone && this.autoDeal && (game.gameDone == false)) {
+      if (game.bettingDone &amp;&amp; this.autoDeal &amp;&amp; (game.gameDone == false)) {
          //try to automatically deal cards
          game.dealCards().catch(err => {
             //not our time to deal; no problem
@@ -1619,16 +1647,16 @@ class CypherPokerUI {
          var winningHands = analysis.winningHands;
          var winningPlayers = analysis.winningPlayers;
          var templateInfo = this.getTemplateByName("handHistoryItem");
-         for (var count = 0; count < winningHands.length; count++) {
+         for (var count = 0; count &lt; winningHands.length; count++) {
             var winningHand = winningHands[count];
             var winningPlayer = winningPlayers[count];
             var hand = winningHand.hand;
             var targetElement = event.game.DOMElement.querySelector("#handHistory");
             var metaTags = new Object();
             if (winningHands.length > 1) {
-               metaTags.header = "Best Hands:&nbsp;";
+               metaTags.header = "Best Hands:&amp;nbsp;";
             } else {
-               metaTags.header = "Best Hand:&nbsp;";
+               metaTags.header = "Best Hand:&amp;nbsp;";
             }
             metaTags.handName = winningHand.name;
             if (winningPlayer.privateID == event.game.ownPID) {
@@ -1638,7 +1666,7 @@ class CypherPokerUI {
             }
             var newHistoryElement = this.buildHTMLTemplate(templateInfo, targetElement, false, metaTags);
             var cardContainerElement = newHistoryElement.querySelector("#handHistoryItemCards")
-            for (var count2 = 0; count2 < hand.length; count2++) {
+            for (var count2 = 0; count2 &lt; hand.length; count2++) {
                var card = hand[count2];
                card.addToDOM(cardContainerElement, "historyCard");
             }
@@ -1679,11 +1707,11 @@ class CypherPokerUI {
    * Resets the game UI for a new game (hand) with an optional delay.
    *
    * @param {CypherPokerGame} gameRef A reference to the game containing the
-   * <code>DOMElement</code> to clear.
+   * &lt;code>DOMElement&lt;/code> to clear.
    * @param {Number} [delay=0] A pause, in milliseconds, to wait before
    * resetting the game UI.
    * @param {CypherPokerUI} [context=null] The UI context in which to execute the
-   * delayed function. If <code>null</code>, the context resolves to <code>this</code>
+   * delayed function. If &lt;code>null&lt;/code>, the context resolves to &lt;code>this&lt;/code>
    *
    * @private
    */
@@ -1741,7 +1769,7 @@ class CypherPokerUI {
          var manageElement = context.getTemplateByName("accountManage").elements[0];
          var accountsList = loginElement.querySelector("#currentAccounts");
          var minerFeeInput = manageElement.querySelector("#minerFee");
-         for (var count=0; count < context.cypherpoker.accounts.length; count++) {
+         for (var count=0; count &lt; context.cypherpoker.accounts.length; count++) {
             var currentAccount = context.cypherpoker.accounts[count];
             var newOptionElement = document.createElement("option");
             var optionValue = currentAccount.address + ":" + currentAccount.type + "/" + currentAccount.network;
@@ -1782,7 +1810,7 @@ class CypherPokerUI {
    * @param {String} toDenom The target denomination. Valid values include:
    * "satoshi", "bitcoin"
    *
-   * @return {String} The <code>amount</code> converted to from the source
+   * @return {String} The &lt;code>amount&lt;/code> converted to from the source
    * denomination to the target denomination.
    */
    convertDenom(amount, fromDenom, toDenom) {
@@ -1835,7 +1863,7 @@ class CypherPokerUI {
    }
 
    /**
-   * Disables a specific HTML element by adding a <code>disabled="true"</code>
+   * Disables a specific HTML element by adding a &lt;code>disabled="true"&lt;/code>
    * attribute to it.
    *
    * @param {HTMLElement} elementRef A reference to the object to disable.
@@ -1845,7 +1873,7 @@ class CypherPokerUI {
    }
 
    /**
-   * Enables a specific HTML element by removing the <code>disabled</code>
+   * Enables a specific HTML element by removing the &lt;code>disabled&lt;/code>
    * attribute from it.
    *
    * @param {HTMLElement} elementRef A reference to the object to enable.
@@ -1855,7 +1883,7 @@ class CypherPokerUI {
    }
 
    /**
-   * Hides a specific HTML element by adding a <code>hidden="true"</code>
+   * Hides a specific HTML element by adding a &lt;code>hidden="true"&lt;/code>
    * attribute to it.
    *
    * @param {HTMLElement} elementRef A reference to the object to hide.
@@ -1865,7 +1893,7 @@ class CypherPokerUI {
    }
 
    /**
-   * Shows a specific HTML element by removing the <code>hidden</code>
+   * Shows a specific HTML element by removing the &lt;code>hidden&lt;/code>
    * attribute from it.
    *
    * @param {HTMLElement} elementRef A reference to the object to show.
@@ -1891,13 +1919,13 @@ class CypherPokerUI {
    }
 
    /**
-   * Hides the main dialog, as defined in {@link CypherPokerUI#UISelectors}<code>.dialog</code>,
+   * Hides the main dialog, as defined in {@link CypherPokerUI#UISelectors}&lt;code>.dialog&lt;/code>,
    * with an optional delay.
    *
    * @param {Number} [delay=0] The number of milliseconds to delay before closing the
    * dialog.
    * @param {CypherPokerUI} [context=null] A reference to this instance, used in
-   * conjunction with the hide delay. If <code>null</code>, <code>this</code> is
+   * conjunction with the hide delay. If &lt;code>null&lt;/code>, &lt;code>this&lt;/code> is
    * used as the default context.
    */
    hideDialog(delay=0, context=null) {
@@ -1929,13 +1957,13 @@ class CypherPokerUI {
    }
 
    /**
-   * Creates a <code>console</code>-based log or error message.
+   * Creates a &lt;code>console&lt;/code>-based log or error message.
    *
    * @param {*} msg The message to send to the console output.
-   * @param {String} [type="log"] The type of output that the <code>msg</code> should
-   * be sent to. Valid values are "log" - send to the standard <code>log</code> output,
-   * "err" or "error" - send to the <code>error</code> output, and "dir"-send to the
-   * <code>dir</code> (object inspection) output.
+   * @param {String} [type="log"] The type of output that the &lt;code>msg&lt;/code> should
+   * be sent to. Valid values are "log" - send to the standard &lt;code>log&lt;/code> output,
+   * "err" or "error" - send to the &lt;code>error&lt;/code> output, and "dir"-send to the
+   * &lt;code>dir&lt;/code> (object inspection) output.
    * @private
    */
    debug (msg, type="log") {
@@ -1955,3 +1983,26 @@ class CypherPokerUI {
       return ("[object CypherPokerUI]");
    }
 }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 09 2019 00:48:29 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
