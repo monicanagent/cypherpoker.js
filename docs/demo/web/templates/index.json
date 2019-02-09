@@ -1,5 +1,12 @@
 [
    {
+      "url":"./templates/mainMenu.html",
+      "name":"mainMenu",
+      "target":"#mainMenu",
+      "append":true,
+      "hidden":false
+   },
+   {
       "url":"./templates/firstRun.html",
       "name":"firstRun",
       "target":"#mainDialog",
@@ -38,6 +45,20 @@
       "url":"./templates/lobby.html",
       "name":"lobby",
       "target":"#lobby",
+      "append":true,
+      "hidden":true
+   },
+   {
+      "url":"./templates/lobbyConfirm.html",
+      "name":"lobbyConfirm",
+      "target":"#mainDialog",
+      "append":true,
+      "hidden":true
+   },
+   {
+      "url":"./templates/logOutConfirm.html",
+      "name":"logOutConfirm",
+      "target":"#mainDialog",
       "append":true,
       "hidden":true
    },

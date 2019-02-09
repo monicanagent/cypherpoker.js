@@ -1,7 +1,7 @@
 /**
 * @file Contains information and functionality associated with a single managed account.
 *
-* @version 0.2.3
+* @version 0.3.2
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -108,7 +108,19 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
-   * @property {String} balance=null The password associated with the account.
+   * @property {Object} fees Any fees (e.g. miner) associated with the account,
+   * usually--but not always--returned with the most recent the API call.
+   * Some fees may be mandatory while others are simply suggested/default.
+   */
+   get fees() {
+      if (this._fees == undefined) {
+         this._fees = new Object();
+      }
+      return (this._fees);
+   }
+
+   /**
+   * @property {String} password=null The password associated with the account.
    */
    set password(pwSet) {
       this._password = pwSet;
@@ -167,6 +179,7 @@ class CypherPokerAccount extends EventDispatcher {
          console.error (JSONObj.error);
          return (false);
       }
+      this._fees = JSONObj.result.fees;
       this._address = JSONObj.result.address;
       return (true);
    }
@@ -193,6 +206,7 @@ class CypherPokerAccount extends EventDispatcher {
          this.balance = 0;
          throw(new Error(JSONObj.error.message));
       }
+      this._fees = JSONObj.result.fees;
       //balance confirmed = JSONObj.result.confirmed
       this.balance = JSONObj.result.balance;
       return (true);
@@ -254,7 +268,7 @@ class CypherPokerAccount extends EventDispatcher {
    * Partially or fully transfers the account balance to another account.
    *
    * @param {String|Number|BigInteger} amount The full amount to transfer to
-   * <code>toAddress</code>. This value is in the smallest denominition of the
+   * <code>toAccount</code>. This value is in the smallest denominition of the
    * associated cryptocurrency (e.g. satoshis if <code>type="bitcoin</code>").
    * @param {String} toAccount The target or receiving account. This account
    * must be of the same cryptocurrency <code>type</code> and on the same

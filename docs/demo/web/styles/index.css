@@ -83,6 +83,64 @@ button {
    padding: 5px 5px 5px 5px;
 }
 
+.dropdownMenuButton {
+  background-color: #ffff00;
+  color: #000000;
+  border-width: 2px;
+  border-color: #000000;
+  border-radius: 0px 0px 0px 0px;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.dropdownMenuButton:hover, .dropdownMenuButton:focus {
+   background-color: #000000;
+   color: #ffff00;
+   border-width: 2px;
+   border-color: #ffff00;
+}
+
+.dropdownMenuContainer {
+  position: relative;
+  display: inline-block;
+  z-index: 10000;
+}
+
+.dropdownMenuContent {
+  display: none;
+  position: absolute;
+  border-width: 2px;
+  border-color: #ffff00;
+  background-color: #000000;
+  color: #ffff00;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-style: inset;
+}
+
+.dropdownMenuContent a {
+  color: #000000;
+  background-color: #ffff00;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  border-width: 2px;
+  border-color: #ffff00;
+}
+
+.dropdownMenuContent a:hover {
+   color: #ffff00;
+   background-color: #000000;
+   border-width: 2px;
+   border-color: #ffff00;
+}
+
+.showDropdownMenu {
+   display:block;
+}
+
 .helpContent {
    text-align: center;
 }
@@ -104,6 +162,10 @@ button {
    font-size: 24px;
 }
 
+.dialogContent > #okButton {
+   color: #00FF00;
+}
+
 .dialogContent > #yesButton {
    color: #00FF00;
 }
@@ -113,13 +175,31 @@ button {
 }
 
 .accountsContainer {
-   top: 80px;
+   top: 15px;
    position: relative;
 }
 
+.manageFormContainer {
+   padding-top: 10px;
+   padding-bottom: 10px;
+}
+
 .lobbyContainer {
-   top: 80px;
+   top: 15px;
    position: relative;
+}
+
+.joinTableButton {
+   font-size: 16px;
+   width: 450px;
+}
+
+.joinTableButton > .tableName{
+   font-weight: bolder;
+}
+
+.joinTableButton > .tableOwner {
+   font-size: 10px;
 }
 
 .gamesContainer {
@@ -169,7 +249,7 @@ button {
 }
 
 #mainDialog {
-   z-index: 999999;
+   z-index: 1000;
    background-color: #000000;
    color: #FFFFFF;
    font-family: 'Exo 2', sans-serif;
@@ -289,7 +369,7 @@ button {
 }
 
 .handHistoryContainer {
-   z-index: 900000;
+   z-index: 2000;
    overflow-x: scroll;
    overflow-y: scroll;
    width: 400px;

@@ -36,10 +36,10 @@ var ui = null;
 * @private
 */
 const _require = [
+   {"url":"./scripts/libs/Polyfills.js"},
    {"url":"./scripts/libs/EventDispatcher.js"},
    {"url":"./scripts/libs/EventPromise.js"},
-   {"url":"./scripts/libs/RPC.js"},
-   {"url":"./scripts/libs/TextEncoder.js"},
+   {"url":"./scripts/libs/RPC.js"},   
    {"url":"./scripts/libs/WSS.js"},
    {"url":"./scripts/libs/WorkerHost.js"},
    {"url":"./scripts/libs/SRACrypto.js"},

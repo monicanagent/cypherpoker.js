@@ -1,7 +1,7 @@
 {
    "p2p":{
       "create":"return (new WSS())",
-      "connectURL":"wss://cpserver-aylocufcqa.now.sh"
+      "connectURL":"wss://cpserver-midizkdmgz.now.sh/"
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",
@@ -19,6 +19,9 @@
          {"address":"mpeC1sTb7titSPgraQu6YATfz4LanUPfFv"},
          {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
       ]
+   },
+   "lobbyDefaults": {
+      "announceTimeout": 20
    },
    "cards":[
          {"name":"Ace of Spades","shortname":"A♠","suit":"spades","colour":"black","value":1,"highvalue":14,"imageURI":"./assets/cards/AS.svg"},

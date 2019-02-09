@@ -2244,6 +2244,28 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
+   * Prepares the instance to be removed from memory by clearing
+   * all references, event listeners, etc.
+   */
+   destroy() {
+      try {
+         this.cypherpoker.p2p.removeEventListener("message", this.handleP2PMessage);
+      } catch (err) {}
+      try {
+         this.analyzer.removeEventListener("scored", this.onGameAnalyzed);
+         this.analyzer.removeGameListeners();
+         this._analyzer = null;
+      } catch (err) {}
+      try {
+         this.contract.stopContractTimeout();
+         this.contract.removeNetworkEventListeners();
+         this.contract.removeGameEventListeners();
+         this._contract = null;
+      } catch (err) {}
+      this.DOMElement.remove();
+   }
+
+   /**
    * @private
    */
    toString() {
