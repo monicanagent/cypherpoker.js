@@ -104,6 +104,7 @@ button {
 .dropdownMenuContainer {
   position: relative;
   display: inline-block;
+  z-index: 10000;
 }
 
 .dropdownMenuContent {
@@ -174,12 +175,17 @@ button {
 }
 
 .accountsContainer {
-   top: 80px;
+   top: 15px;
    position: relative;
 }
 
+.manageFormContainer {
+   padding-top: 10px;
+   padding-bottom: 10px;
+}
+
 .lobbyContainer {
-   top: 80px;
+   top: 15px;
    position: relative;
 }
 
@@ -243,7 +249,7 @@ button {
 }
 
 #mainDialog {
-   z-index: 999999;
+   z-index: 1000;
    background-color: #000000;
    color: #FFFFFF;
    font-family: 'Exo 2', sans-serif;
@@ -363,7 +369,7 @@ button {
 }
 
 .handHistoryContainer {
-   z-index: 900000;
+   z-index: 2000;
    overflow-x: scroll;
    overflow-y: scroll;
    width: 400px;

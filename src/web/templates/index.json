@@ -56,6 +56,13 @@
       "hidden":true
    },
    {
+      "url":"./templates/logOutConfirm.html",
+      "name":"logOutConfirm",
+      "target":"#mainDialog",
+      "append":true,
+      "hidden":true
+   },
+   {
       "url":"./templates/tableButton.html",
       "name":"tableButton",
       "target":"#lobby #joinGame > #tableList",

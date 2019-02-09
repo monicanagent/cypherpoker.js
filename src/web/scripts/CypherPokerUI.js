@@ -106,11 +106,9 @@ class CypherPokerUI {
 
    set lobbyActive(activeSet) {
       if ((activeSet == true) && (this._lobbyActive == false)) {
-         console.log ("Starting lobby cull timer.");
          this.startLobbyCull();
       }
       if ((activeSet == false) && (this._lobbyActive == true)) {
-         console.log ("Stopping lobby cull timer.");
          this.stopLobbyCull();
       }
       this._lobbyActive = activeSet;
@@ -149,8 +147,10 @@ class CypherPokerUI {
          var tableDate = new Date(tableInfo.announcedAt);
          var delta = nowDate.valueOf() - tableDate.valueOf();
          if (delta >= announceTimeout) {
-            tableInfo.buttonElement.remove();
-            ui.cypherpoker.announcedTables.splice(count, 1);
+            try {
+               tableInfo.buttonElement.remove();
+            } catch (err) {}
+            ui.cypherpoker.removeTable(currentTable, true);
          }
       }
    }
@@ -580,24 +580,98 @@ class CypherPokerUI {
    onMainMenuClick(selection) {
       switch (selection) {
          case "manageAccount":
-            this.show(this.getTemplateByName("accountManage").elements[0]);
+            if (this.selectedAccount == null) {
+               this.showDialog ("You must login to the account (\"USE ACCOUNT\") you want to manage.");
+               this.hideDialog(5000);
+               return;
+            }
+            var manageElement = this.getTemplateByName("accountManage").elements[0];
+            var loginElement = this.getTemplateByName("accountLogin").elements[0];
+            var minerFeeInput = manageElement.querySelector("#minerFee");
+            if (this.isHidden(manageElement) == true) {
+               this.show(manageElement);
+            } else {
+               this.hide(manageElement);
+            }
+            manageElement.querySelector("#accountBalance").innerHTML =  "updating...";
+            loginElement.querySelector("#accountBalance").innerHTML =  "updating...";
+            this.selectedAccount.update().then(done => {
+               var satoshiAmount = this.selectedAccount.balance.toString(10);
+               var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
+               manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               minerFeeInput.value = this.selectedAccount.fees.cashout;
+            }).catch(error => {
+               manageElement.querySelector("#accountBalance").innerHTML = "unavailable";
+               loginElement.querySelector("#accountBalance").innerHTML = "unavailable";
+               console.error(error);
+               this.showDialog(error.message);
+               this.hideDialog(4000);
+            });
             break;
          case "gameLobby":
             if (this.lobbyActive) {
-               console.log ("Lobby is currently active.");
+               var confirmElement = this.getTemplateByName("lobbyConfirm").elements[0];
+               this.hide(confirmElement.querySelector("#gameActive"));
+               this.show(confirmElement.querySelector("#lobbyActive"));
+               this.show(confirmElement);
+               this.showDialog();
+               return;
+            } else {
+               for (var count=0; count < this.cypherpoker.games.length; count++) {
+                  var currentGame = this.cypherpoker.games[count];
+                  if ((currentGame.gameStarted == true) || (currentGame.gameEnding == true)) {
+                     confirmElement = this.getTemplateByName("lobbyConfirm").elements[0];
+                     this.hide(confirmElement.querySelector("#lobbyActive"));
+                     this.show(confirmElement.querySelector("#gameActive"));
+                     this.show(confirmElement);
+                     this.showDialog();
+                     return;
+                  }
+               }
             }
-            for (var count=0; count < this.cypherpoker.games.length; count++) {
-               var currentGame = this.cypherpoker.games[count];
-               if (currentGame.gameStarted == true) {
-                  console.log ("Game is currently active.");
-               }
-               if (currentGame.gameEnding == true) {
-                  console.log ("Game is currently ending.");
-               }
+            if (this.selectedAccount == null) {
+               this.showDialog("You must login to an account (\"USE ACCOUNT\") with a balance in order to access the lobby.");
+               this.hideDialog(5000);
+            } else {
+               //lobby is not active or game has ended
+               this.cypherpoker.removeAllGames(true); //remove any completed games
+               var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+               this.show(lobbyContainer);
+               this.resetLobbyUI(true);
+               this.lobbyActive = true;
+               this.cypherpoker.captureNewTables = true;
+               this.startLobbyCull();
             }
             break;
-         case "reportBug":
-            alert("Report a bug");
+         case "logOut":
+            var confirmElement = this.getTemplateByName("logOutConfirm").elements[0];
+            if (this.lobbyActive) {
+               this.hide(confirmElement.querySelector("#gameActive"));
+               this.hide(confirmElement.querySelector("#standard"));
+               this.show(confirmElement.querySelector("#lobbyActive"));
+               this.show(confirmElement);
+               this.showDialog();
+               return;
+            } else {
+               for (var count=0; count < this.cypherpoker.games.length; count++) {
+                  var currentGame = this.cypherpoker.games[count];
+                  if ((currentGame.gameStarted == true) || (currentGame.gameEnding == true)) {
+                     this.show(confirmElement.querySelector("#gameActive"));
+                     this.hide(confirmElement.querySelector("#standard"));
+                     this.hide(confirmElement.querySelector("#lobbyActive"));
+                     this.show(confirmElement);
+                     this.showDialog();
+                     return;
+                  }
+               }
+            }
+            //neither lobby or game are currently active
+            this.hide(confirmElement.querySelector("#gameActive"));
+            this.show(confirmElement.querySelector("#standard"));
+            this.hide(confirmElement.querySelector("#lobbyActive"));
+            this.show(confirmElement);
+            this.showDialog();
             break;
          default:
             break;
@@ -614,14 +688,88 @@ class CypherPokerUI {
    * @async
    */
    async onOpenLobbyButtonClick(confirm) {
-      if (confirm == false) {
-         //hide sub-elements first ...
-         this.hide(this.getTemplateByName("accountManage").elements[0].querySelector("#lobbyActive"));
-         this.hide(this.getTemplateByName("accountManage").elements[0].querySelector("#gameActive"));
-         //... then parent element
-         this.hide(this.getTemplateByName("accountManage").elements[0]);
-         this.hideDialog();
+      var confirmElement = this.getTemplateByName("lobbyConfirm").elements[0];
+      this.hide(confirmElement.querySelector("#lobbyActive"));
+      this.hide(confirmElement.querySelector("#gameActive"));
+      this.hide(confirmElement);
+      this.hideDialog();
+      if (confirm == true) {
+         //player has confirmed that they want to return to lobby
+         if (this.lobbyActive) {
+            //lobby is active
+         } else {
+            //game(s) is active
+            this.cypherpoker.removeAllGames(true);
+         }
+         var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+         this.show(lobbyContainer);
+         this.resetLobbyUI(true);
+         this.lobbyActive = true;
+         this.cypherpoker.captureNewTables = true;
+         this.startLobbyCull();
+      } else {
+         //nothing to do
       }
+   }
+
+   /**
+   * Invoked by the confirmation dialog opened by the main menu's "Log Out" option.
+   *
+   * @param {Boolean} confirm If true, the user has confirmed that they wish to take the desired
+   * action (log out), and accept the consequences. If false, the currently opened dialog is closed.
+   * @private
+   * @async
+   */
+   async onLogOutButtonClick(confirm) {
+      var confirmElement = this.getTemplateByName("logOutConfirm").elements[0];
+      this.hide(confirmElement.querySelector("#lobbyActive"));
+      this.hide(confirmElement.querySelector("#gameActive"));
+      this.hide(confirmElement.querySelector("#standard"));
+      this.hide(confirmElement);
+      this.hideDialog();
+      if (confirm == true) {
+         //prevent refresh notification since we've already asked for confirmation
+         window.removeEventListener("beforeunload", this.onWindowClose);
+         location.reload();
+      }
+   }
+
+   /**
+   * Resets all of the user interface elements of the lobby to their initial
+   * state, including input fields, announced tables list, etc.
+   *
+   * @param {Boolean} [showOnReset=true] If true, the interface is displayed
+   * after being reset otherwise the elements must be shown manually.
+   */
+   resetLobbyUI (showOnReset=true) {
+      var lobbyElement = this.getTemplateByName("lobby").elements[0];
+      var createGameElement = lobbyElement.querySelector("#createGame");
+      var joinGameElement = lobbyElement.querySelector("#joinGame");
+      var ownGamesElement = lobbyElement.querySelector("#ownGames");
+      ownGamesElement.innerHTML = ""; //clear out any existing message
+      //reset table creation fields...
+      createGameElement.querySelector("#playerAliasCreate").value = "";
+      createGameElement.querySelector("#tableName").value = "";
+      createGameElement.querySelector("#numPlayers").value = "";
+      createGameElement.querySelector("#buyInAmount").value = "";
+      createGameElement.querySelector("#bigBlindAmount").value = "";
+      createGameElement.querySelector("#smallBlindAmount").value = "";
+      createGameElement.querySelector("#inactivityTimeoutAmount").value = "60";
+      //reset table join field(s)...
+      joinGameElement.querySelector("#playerAliasJoin").value = "";
+      //clear out any tables remaining in UI...
+      for (var count=0; count < this.cypherpoker.announcedTables.length; count++) {
+         var currentTable = this.cypherpoker.announcedTables[count];
+         var tableInfo = currentTable.tableInfo;
+         try {
+            tableInfo.buttonElement.remove();
+         } catch (err) {}
+      }
+      this.cypherpoker.removeAllTables(true, true);
+      this.show(createGameElement);
+      this.show(joinGameElement);
+      this.show(ownGamesElement);
+      this.show(lobbyElement);
    }
 
    /**
@@ -690,7 +838,8 @@ class CypherPokerUI {
             });
             break;
          case "use_account":
-            this.hide(this.getTemplateByName("accountManage").elements[0]);
+            var manageElement = this.getTemplateByName("accountManage").elements[0];
+            this.hide(manageElement);
             var element = this.getTemplateByName("accountLogin").elements[0];
             var password = element.querySelector("#accountPassword").value;
             var accountsList = element.querySelector("#currentAccounts");
@@ -712,6 +861,10 @@ class CypherPokerUI {
                return;
             }
             this.selectedAccount = useAccount;
+            var metaTags = {
+               "account_address": this.selectedAccount.address
+            };
+            this.parseHTMLTemplateTags(manageElement, metaTags);
             this.hide(element);
             element = this.getTemplateByName("lobby").elements[0];
             this.lobbyActive = true;
@@ -720,18 +873,23 @@ class CypherPokerUI {
          case "select_account":
             var element = this.getTemplateByName("accountLogin").elements[0];
             var selectElement = element.querySelector("#currentAccounts");
+            var loginElement = this.getTemplateByName("accountLogin").elements[0];
             var manageElement = this.getTemplateByName("accountManage").elements[0];
             var minerFeeInput = manageElement.querySelector("#minerFee");
             var selectedOption = selectElement.options[selectElement.selectedIndex];
-            var selectedAccount = selectedOption.account;
-            element.querySelector("#accountPassword").value = selectedAccount.password;
-            selectedAccount.update().then(done => {
-               var satoshiAmount = selectedAccount.balance.toString(10);
+            manageElement.querySelector("#accountBalance").innerHTML =  "updating...";
+            loginElement.querySelector("#accountBalance").innerHTML =  "updating...";
+            var account = selectedOption.account;
+            element.querySelector("#accountPassword").value = account.password;
+            account.update().then(done => {
+               var satoshiAmount = account.balance.toString(10);
                var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
                manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
-               minerFeeInput.value = selectedAccount.fees.cashout;
+               loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               minerFeeInput.value = account.fees.cashout;
             }).catch(error => {
-               manageElement.querySelector("#accountBalance").innerHTML =  "unavailable";
+               manageElement.querySelector("#accountBalance").innerHTML = "unavailable";
+               loginElement.querySelector("#accountBalance").innerHTML = "unavailable";
                console.error(error);
                this.showDialog(error.message);
                this.hideDialog(4000);
@@ -753,13 +911,13 @@ class CypherPokerUI {
             break
          case "cashout_account":
             var manageElement = this.getTemplateByName("accountManage").elements[0];
+            var loginElement = this.getTemplateByName("accountLogin").elements[0];
             element = this.getTemplateByName("accountLogin").elements[0];
             var minerFeeElement = manageElement.querySelector("#minerFee");
             var cashoutAddress = manageElement.querySelector("#cashoutAddress").value;
             var cashoutAmount = manageElement.querySelector("#cashoutAmount").value;
             var selectElement = element.querySelector("#currentAccounts");
             var selectedOption = selectElement.options[selectElement.selectedIndex];
-            var selectedAccount = selectedOption.account;
             if (cashoutAmount.split(" ").join("") == "") {
                this.showDialog("Enter an amount to cash out.");
                this.hideDialog(3000);
@@ -790,10 +948,11 @@ class CypherPokerUI {
                return (false);
             }
             minerFee = minerFee.toString(10);
-            selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFee).then(done => {
-               var satoshiAmount = selectedAccount.balance.toString(10);
+            this.selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFee).then(done => {
+               var satoshiAmount = this.selectedAccount.balance.toString(10);
                var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
                manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
             }).catch(error => {
                this.showDialog(error);
                this.hideDialog(3000);
@@ -802,12 +961,12 @@ class CypherPokerUI {
             break;
          case "transfer_account":
             var manageElement = this.getTemplateByName("accountManage").elements[0];
+            var loginElement = this.getTemplateByName("accountLogin").elements[0];
             element = this.getTemplateByName("accountLogin").elements[0];
             var transferAccount = manageElement.querySelector("#transferAccount").value;
             var transferAmount = manageElement.querySelector("#transferAmount").value;
             var selectElement = element.querySelector("#currentAccounts");
             var selectedOption = selectElement.options[selectElement.selectedIndex];
-            var selectedAccount = selectedOption.account;
             if (transferAmount.split(" ").join("") == "") {
                ui.showDialog("Enter an amount to transfer.");
                ui.hideDialog(3000);
@@ -831,10 +990,11 @@ class CypherPokerUI {
                this.hideDialog(3000);
                return;
             }
-            selectedAccount.transfer(transferAmount, transferAccount).then(done => {
-               var satoshiAmount = selectedAccount.balance.toString(10);
+            this.selectedAccount.transfer(transferAmount, transferAccount).then(done => {
+               var satoshiAmount = this.selectedAccount.balance.toString(10);
                var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
                manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
             }).catch(error => {
                console.error(error);
                this.showDialog(error);
@@ -894,6 +1054,8 @@ class CypherPokerUI {
             this.cypherpoker.createTable(tableName, numPlayers, tableInfo);
             this.cypherpoker.onEventPromise("tableready").then(event => {
                this.stopLobbyCull();
+               this.cypherpoker.captureNewTables = false;
+               this._lobbyActive = false;
                var playerInfo = new Object();
                playerInfo.alias = alias;
                var game = this.cypherpoker.createGame(event.table, this.selectedAccount, playerInfo).start();
@@ -956,6 +1118,11 @@ class CypherPokerUI {
             break;
          case "use_create_account":
             var helpElement = element.querySelector("#use_create_account");
+            this.show(helpElement);
+            this.showDialog();
+            break;
+         case "manage_copy_account":
+            var helpElement = element.querySelector("#manage_copy_account");
             this.show(helpElement);
             this.showDialog();
             break;
@@ -1072,14 +1239,17 @@ class CypherPokerUI {
    * @private
    */
    onJoinTableButtonClick(event) {
-      console.log ("onJoinTableButtonClick");
       //this event may have been triggered by a child node of the button (is there way better way to deal with this?):
       var target = event.target;
       while (target.ui == undefined) {
          target = target.parentNode;
       }
       var ui = target.ui;
+      ui.debug ("CypherPokerUI.onJoinTableButtonClick("+event+")");
       var table = target.table;
+      ui.debug ("   Table ID: "+table.tableID);
+      ui.debug ("   Owner PID: "+table.ownerPID);
+      ui.debug (table, "dir");
       var element = ui.getTemplateByName("lobby").elements[0];
       var joinGameElement = element.querySelector("#joinGame");
       var createGameElement = element.querySelector("#createGame");
@@ -1090,6 +1260,7 @@ class CypherPokerUI {
          ui.hideDialog(4000);
          return;
       }
+      target.remove(); //remove the button here since the reference is not carried through with the joined table
       var tableName = table.tableName;
       ownGamesElement.innerHTML = "Joining game \""+tableName+"\". Awaiting other player(s)...";
       ui.hide(createGameElement);
@@ -1100,6 +1271,8 @@ class CypherPokerUI {
       ui.cypherpoker.onEventPromise("tableready").then(event => {
          //use updated event.table instead of table reference created above
          ui.stopLobbyCull();
+         ui.cypherpoker.captureNewTables = false;
+         ui._lobbyActive = false;
          var playerInfo = new Object();
          playerInfo.alias = alias;
          var game = ui.cypherpoker.createGame(event.table, ui.selectedAccount, playerInfo).start();
@@ -1579,20 +1752,23 @@ class CypherPokerUI {
          }
          var selectElement = loginElement.querySelector("#currentAccounts");
          var selectedOption = selectElement.options[0];
-         var selectedAccount = selectedOption.account;
-         loginElement.querySelector("#accountPassword").value = selectedAccount.password;
-         selectedAccount.update().then(done => {
-            var satoshiAmount = selectedAccount.balance.toString(10);
+         var account = selectedOption.account;
+         manageElement.querySelector("#accountBalance").innerHTML =  "updating...";
+         loginElement.querySelector("#accountBalance").innerHTML =  "updating...";
+         loginElement.querySelector("#accountPassword").value = account.password;
+         account.update().then(done => {
+            var satoshiAmount = account.balance.toString(10);
             var btcAmount = context.convertDenom(satoshiAmount, "satoshi", "bitcoin");
             manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
-            loginElement.querySelector("#accountPassword").value = selectedAccount.password;
-            minerFeeInput.value = selectedAccount.fees.cashout;
+            loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+            loginElement.querySelector("#accountPassword").value = account.password;
+            minerFeeInput.value = account.fees.cashout;
          }).catch(error => {
-            manageElement.querySelector("#accountBalance").innerHTML =  "unavailable";
+            manageElement.querySelector("#accountBalance").innerHTML = "unavailable";
+            loginElement.querySelector("#accountBalance").innerHTML = "unavailable";
             console.error(error.stack);
          });
          context.show(loginElement);
-         context.show(manageElement);
       }
    }
 
@@ -1696,6 +1872,22 @@ class CypherPokerUI {
    */
    show(elementRef) {
       elementRef.removeAttribute("hidden");
+   }
+
+   /**
+   * Checks if a specified element is hidden.
+   *
+   * @param {HTMLElement} elementRef A reference to the element to check.
+   *
+   * @return {Boolean} True if the element is hidden, false if it's visible
+   */
+   isHidden(elementRef) {
+      var attr = elementRef.getAttribute("hidden");
+      if ((attr == null) || ((attr == ""))) {
+         return (false);
+      } else {
+         return (true);
+      }
    }
 
    /**

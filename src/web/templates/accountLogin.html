@@ -1,8 +1,11 @@
 <!-- Template content must be enclosed ina a tag (div, span, etc.) -->
 <div id="loginForm" class="loginFormContainer">
    <select id="currentAccounts" class="currentAccountsList" onchange="ui.onAccountButtonClick('select_account')"></select>
-   <button id="copyToClipboardButton" class="copyToClipboardButton" onclick="ui.onAccountButtonClick('copy_account_to_clipboard')">📋</button>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('select_copy_account')">?</button><br/>   
+   <button id="copyToClipboardButton" class="copyToClipboardButton" onclick="ui.onAccountButtonClick('copy_account_to_clipboard')">📋</button>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('select_copy_account')">?</button><br/>
    Password: <input type="password" id="accountPassword" name="accountPassword" placeholder="Account password" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('account_password')">?</button><br/>
+   <br/>
+   Balance: <span id="accountBalance" class="accountBalanceContainer"></span>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('account_balance')">?</button><br/>
+   <br/>
    <button id="useAccountButton" class="useAccountButton" onclick="ui.onAccountButtonClick('use_account')">USE ACCOUNT</button>&nbsp;&nbsp;
    <button id="createAccountButton" class="createAccountButton" onclick="ui.onAccountButtonClick('create_account', 'login')">CREATE NEW ACCOUNT</button>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('use_create_account')">?</button><br/>
 </div>
