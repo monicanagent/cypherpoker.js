@@ -87,7 +87,7 @@ async function CP_Account (sessionObj) {
             accountObj.balance = bigInt("0");
             var feesObj = resultObj.fees; //save reference to previously created fees object
             resultObj = accountObj;
-            resultObj.fees = feesObj; //copy previously created fees object            
+            resultObj.fees = feesObj; //copy previously created fees object
             var saved = await namespace.cp.saveAccount(fullAccountObj);
             if (saved == false) {
                sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Couldn't save account information.", sessionObj);
@@ -242,6 +242,10 @@ async function CP_Account (sessionObj) {
             }
             if (typeof(requestParams.toAddress) != "string") {
                sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Receiving address not specified.", sessionObj);
+               return (false);
+            }
+            if (requestParams.toAddress == requestParams.address) {
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Sending and receiving addresses can't be the same.", sessionObj);
                return (false);
             }
             if (typeof(requestParams.feeAmount) != "string") {

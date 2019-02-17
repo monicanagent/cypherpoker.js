@@ -236,7 +236,10 @@ class CypherPokerAccount extends EventDispatcher {
    */
    async cashout(amount, toAddress, fees=null) {
       if ((this.password == "") || (this.password == null)) {
-         throw(new Error("Account password not set"));
+         throw(new Error("Account password not set."));
+      }
+      if (toAddress == this.address) {
+         throw(new Error("Sending and receiving addresses can't be the same."));
       }
       var params = new Object();
       params.address = this.address;
