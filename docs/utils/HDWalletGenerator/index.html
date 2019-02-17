@@ -1,0 +1,30 @@
+<html>
+   <head>
+      <title>Bitcoin HD Wallet Generator for CypherPoker.JS</title>
+      <script src="bundle.js" type="text/javascript" language="javascript"></script>
+   </head>
+   <body>
+      <div id="walletInfoContainer" style="padding:20px;">
+         <b>Mainnet Bitcoin HD Wallet:</b>
+         <div id="mainnetWallet" style="padding-top:10px;"></div>
+      </div>
+      <div id="walletInfoContainer" style="padding:20px;">
+         <b>Testnet Bitcoin HD Wallet:</b>
+         <div id="testnetWallet" style="padding-top:10px;"></div>
+      </div>
+      <div id="footer" style="padding-top:30px; padding-left:20px;">
+         <button onclick="makeNewWallets()" style="width:300px;height:50px;">GENERATE NEW WALLETS</button>
+      </div>
+      <script>
+         function makeNewWallets() {
+            var mainnetWalletInfo = document.generateWalletInfo(false);
+            document.querySelector("#mainnetWallet").innerHTML = mainnetWalletInfo;
+            var testnetWalletInfo = document.generateWalletInfo(true);
+            document.querySelector("#testnetWallet").innerHTML = testnetWalletInfo;
+         }
+         window.onload = function() {
+            makeNewWallets();
+         }
+      </script>
+   </body>
+</html>
