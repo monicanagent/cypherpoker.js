@@ -616,7 +616,7 @@ async function getAccount(searchObj) {
             //no matching account, return empty result set
             return (new Array());
          } else {
-            console.error("Remote database error:");
+            console.error("Database error:");
             console.dir(result);
             throw (new Error(result.error));
          }
@@ -686,8 +686,8 @@ async function saveAccount(accountObj) {
 }
 
 /**
-* Updates an existing account. Currently, only the "updated" property is updated
-* in the database (any other changes should use {@link saveAccount}).
+* Updates the "updated" (date/time) property of an  existing account. Any other changes to
+* account information should use {@link saveAccount} in order to maintain the account's history.
 *
 * @param {AccountObject} accountObj Contains the account information to update. This object
 * must contain the <code>primary_key</code> value of the row to update.
@@ -718,54 +718,90 @@ async function updateAccount(accountObj) {
 }
 
 /**
-* Calls the JSON-RPC 2.0 account database interface with a method, message, and HMAC
+* Calls the an account database interface with a method, message, and optional HMAC
 * signature.
 *
-* @param {String} method The remote RPC method to invoke.
-* @param {Object} message The accompanying data to stringify, sign with
-* <code>config.CP.API.database.accessKey</code>, and include with the RPC call.
+* @param {String} method The adapter or remote (RPC) method to invoke.
+* @param {Object} message The accompanying data to stringify, (if applicable) sign with
+* <code>config.CP.API.database.accessKey</code>, and include with
+* the remote (RPC) or local request.
 *
-* @return {Promise} Resolves with the response object returned from the server
-* or rejects with an error.
+* @return {Promise} Resolves with the response object returned from the server or
+* database adapter, or rejects with an error.
 */
 function callAccountDatabase(method, message) {
    var promise = new Promise(function(resolve, reject) {
       if (config.CP.API.database.enabled) {
          var url = config.CP.API.database.url;
-         var host = config.CP.API.database.host;
-         var accessKey = config.CP.API.database.accessKey;
-         var txObject = new Object();
-         txObject.jsonrpc = "2.0";
-         txObject.id = String(Math.random()).split(".")[1];
-         txObject.method = method;
-         txObject.params = new Object();
-         //create HMAC using access key:
-         var hmac = crypto.createHmac('SHA256', accessKey);
-         //update with stringified message:
-         hmac.update(JSON.stringify(message));
-         //create signature:
-         var signature = hmac.digest('hex');
-         txObject.params.signature = signature;
-         txObject.params.message = message;
-         var headersObj = new Object();
-         headersObj = {
-            "Content-Type":"application/json-rpc",
-            "accept":"application/json-rpc",
-            "Host":host
+         var transport = url.split("://")[0];
+         if (transport == "https") {
+            transport = "http";
          }
-         request({
-            url: url,
-            method: "POST",
-            body: txObject,
-            headers: headersObj,
-            json: true
-         }, (error, response, body) => {
-            if (error) {
-               reject(error);
-            } else {
-               resolve(body);
-            }
-         });
+         switch (transport) {
+            case "sqlite3":
+               //use SQLite 3 adapter
+               if (hostEnv.embedded == false) {
+                  //not supported in current host
+                  reject (new Error("Host environment doesn't support SQLite 3 database functionality."));
+               } else {
+                  var requestObj = new Object();
+                  requestObj.jsonrpc = "2.0";
+                  requestObj.id = String(Math.random()).split(".")[1];
+                  requestObj.method = method;
+                  requestObj.params = new Object();
+                  requestObj.params.message = message;
+                  hostEnv.database.sqlite3.adapter.invoke(requestObj).then(result => {
+                     if ((result["error"] != undefined) && (result["error"] != null)) {
+                        reject(result);
+                     } else {
+                        resolve(result);
+                     }
+                  }).catch (err => {
+                     reject(err);
+                  });
+               }
+               break;
+            case "http":
+               //standard remote database call:
+               var host = config.CP.API.database.host;
+               var accessKey = config.CP.API.database.accessKey;
+               var txObject = new Object();
+               txObject.jsonrpc = "2.0";
+               txObject.id = String(Math.random()).split(".")[1];
+               txObject.method = method;
+               txObject.params = new Object();
+               //create HMAC using access key:
+               var hmac = crypto.createHmac('SHA256', accessKey);
+               //update with stringified message:
+               hmac.update(JSON.stringify(message));
+               //create signature:
+               var signature = hmac.digest('hex');
+               txObject.params.signature = signature;
+               txObject.params.message = message;
+               var headersObj = new Object();
+               headersObj = {
+                  "Content-Type":"application/json-rpc",
+                  "accept":"application/json-rpc",
+                  "Host":host
+               };
+               request({
+                  url: url,
+                  method: "POST",
+                  body: txObject,
+                  headers: headersObj,
+                  json: true
+               }, (error, response, body) => {
+                  if (error) {
+                     reject(error);
+                  } else {
+                     resolve(body);
+                  }
+               });
+               break;
+            default:
+               reject (new Error("Unrecognized database transport type \""+transport+"\"."));
+               break;
+         }
       } else {
          reject(new Error("Database interactions are disabled."));
       }

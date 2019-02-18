@@ -1,6 +1,6 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.3.2
+* @version 0.4.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -16,27 +16,28 @@
 * Server objects exposed to API modules.
 * @typedef {Object} Exposed_Server_Objects
 * @default {
-*  namespace:namespace,
-*  config:config,
-*  require:require,
-*  Buffer:Buffer,
-*  request:request,
-*  console:console,
-*  module:module,
-*  setInterval:setInterval,
-*  clearInterval:clearInterval,
-*  setTimeout:setTimeout,
-*  clearTimeout:clearTimeout,
-*  crypto:crypto,
-*  bigInt:bigInt,
-*  bitcoin:bitcoin,
-*  secp256k1:secp256k1,
-*  sendResult:sendResult,
-*  sendError:sendError,
-*  buildJSONRPC:buildJSONRPC,
-*  paramExists:paramExists,
-*  JSONRPC_ERRORS:JSONRPC_ERRORS
-
+*  namespace:namespace,<br/>
+*  config:{@link config},<br/>
+*  require:require,<br/>
+*  Buffer:Buffer,<br/>
+*  request:request,<br/>
+*  console:console,<br/>
+*  module:module,<br/>
+*  hostEnv:{@link hostEnv},<br/>
+*  setInterval:setInterval,<br/>
+*  clearInterval:clearInterval,<br/>
+*  setTimeout:setTimeout,<br/>
+*  clearTimeout:clearTimeout,<br/>
+*  crypto:crypto,<br/>
+*  bigInt:bigInt,<br/>
+*  bitcoin:bitcoin,<br/>
+*  secp256k1:secp256k1,<br/>
+*  sendResult:sendResult,<br/>
+*  sendError:sendError,<br/>
+*  buildJSONRPC:{@link buildJSONRPC},<br/>
+*  paramExists:{@link paramExists},<br/>
+*  JSONRPC_ERRORS:{@link JSONRPC_ERRORS}
+* }
 */
 /**
 * @typedef {ws} wsserv A WebSocket endpoint ("ws" module).
@@ -63,6 +64,17 @@ const namespace = new Object(); //shared API namespace (instead of global data)
 * {@link config} object. May be either a filesystem path or a URL.
 */
 const configFile = "./config.json";
+/**
+* @property {Object} hostEnv An object containing data and references supplied by the host
+* environment if the server is running as an embedded component in a
+* desktop (Electron) environment. Refer to the embedding (parent) script for details
+* on supplied properties and types.
+* @property {Boolean} hostEnv.embedded=false True if the server is running as an
+* embedded component in a desktop (Electron) environment.
+*/
+var hostEnv = {
+   embedded:false
+};
 /**
 * @property {Object} config Dynamic configuration options loaded at runtime.
 */
@@ -150,6 +162,7 @@ var rpc_options = {
     request:request,
     console:console,
     module:module,
+    hostEnv:hostEnv,
     setInterval:setInterval,
     clearInterval:clearInterval,
     setTimeout:setTimeout,
@@ -272,6 +285,10 @@ function loadConfig(filePath=configFile, RPCOptions=null) {
             });
          }
       } else {
+         if (hostEnv.embedded == true) {
+            filePath = hostEnv.dir.server + filePath;
+            filePath = filePath.split("/./").join("/"); //remove extraneous same-folder path
+         }
          console.log ("Loading external configuration from filesystem: "+filePath);
          try {
             var JSONData = fs.readFileSync(filePath);
@@ -291,6 +308,10 @@ function loadConfig(filePath=configFile, RPCOptions=null) {
 * @param {...Function} [postLoadFunctions] Any function(s) to invoke once the API functions have been loaded and verified.
 */
 function loadAPIFunctions(...postLoadFunctions) {
+   if (hostEnv.embedded == true) {
+      rpc_options.api_dir = hostEnv.dir.server + rpc_options.api_dir;
+      rpc_options.api_dir = rpc_options.api_dir.split("/./").join("/"); //remove extraneous same-folder path
+   }
   if (fs.existsSync(rpc_options.api_dir) == false) {
     throw (new Error(`API directory "${rpc_options.api_dir}" is not accessible.`));
   }
@@ -321,6 +342,7 @@ function registerAPIFunction(fileName) {
     //only process files ending in ".js" or ".javascript"
     var script = fs.readFileSync(fullPath, {encoding:"UTF-8"});
     var vmContext = new Object();
+    rpc_options.exposed_objects.hostEnv = hostEnv; //overwrite default reference
     vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
     var context = vm.createContext(vmContext);
     try {
@@ -879,7 +901,18 @@ function adjustEnvironment() {
    }
 }
 
-async function createAccountSystem() {
+/**
+* Creates and initializes the account system using either environmental settings,
+* command line parameters, or configuration options (in that order).
+*
+* @param {Function} [onCreateCB=null] An optional callback function to invoke when the
+* account system has been successfully created. This callback will not be invoked
+* if an error occurs during creation.
+*
+* @async
+* @private
+*/
+async function createAccountSystem(onCreateCB=null) {
    if (typeof(process.env["BLOCKCYPHER_TOKEN"]) == "string") {
       config.CP.API.tokens.blockcypher = process.env["BLOCKCYPHER_TOKEN"];
    }
@@ -956,8 +989,17 @@ async function createAccountSystem() {
    }
    var wallets = config.CP.API.wallets;
    if (config.CP.API.database.enabled == true) {
+      console.log ("Database functionality is ENABLED.");
       //the second parameter is there to provide a value for the HMAC
-      var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
+      try {
+         var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
+      } catch (err) {
+         console.error ("Could not get current wallet status.");
+         console.error (err);
+         console.error ("Trying again in 5 seconds...");
+         setTimeout(5000, createAccountSystem, onCreateCB);
+         return (false);
+      }
       var resultObj = walletStatusObj.result;
       //force-convert values in case the database returned them as strings
       var btcStartChain = Number(String(resultObj.bitcoin.main.startChain));
@@ -976,17 +1018,81 @@ async function createAccountSystem() {
       if (test3StartIndex > wallets.test3.startIndex) {
          wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
       }
+   } else {
+      console.log ("Database functionality is DISABLED.");
    }
    console.log ("Initial Bitcoin account derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
    console.log ("Initial Bitcoin testnet account derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
    if (config.CP.API.database.enabled == true) {
-      console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
-      console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
+      if (hostEnv.embedded == true) {
+         console.log ("Local database size: "+resultObj.db.sizeMB+" megabytes");
+         console.log ("Local database limit: "+resultObj.db.maxMB+" megabytes");
+      } else {
+         console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
+         console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
+      }
       console.log ("Database last updated "+resultObj.db.elapsedUpdateSeconds+" seconds ago");
    } else {
-      console.log ("Remote database disabled; using in-memory storage.");
+      console.log ("Using in-memory storage instead of database.");
+   }
+   onCreateCB();
+   return (true);
+}
+
+/**
+* Invokes the "onInit" function in the host desktop (Electron) environment when
+* all initialization routines have completed. If the server is not running as
+* an embedded component this function does nothing.
+*
+* @private
+*/
+function invokeHostOnInit() {
+   if (hostEnv.embedded == true) {
+      try {
+         hostEnv.server.onInit();
+      } catch (err) {
+         console.error("Couldn't invoke host environment \"onInit\" function: "+err.stack);
+      }
+   }
+}
+
+/**
+* Function invoked after the main configuration data is loaded and parsed.
+*
+* @async
+* @private
+*/
+async function postLoadConfig() {
+   if (hostEnv.embedded == true) {
+      var dbAdapter = "sqlite3"; //this should be dynamic
+      var dbFileURL = config.CP.API.database.url;
+      var dbFilePath = dbFileURL.split(dbAdapter+"://").join("");
+      try {
+         var opened = await hostEnv.database.sqlite3.adapter.openDBFile(dbFilePath);
+      } catch (err) {
+         //couldn't open database
+         return(false);
+      }
+   }
+   loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
+   try {
+      var result = createAccountSystem(invokeHostOnInit);
+   } catch(error) {
+      return (false);
    }
    return (true);
+}
+
+//Application entry point:
+
+if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {
+   hostEnv = this.electronEnv;
+   hostEnv.embedded = true;
+   console.log ("Launching in desktop embedded (Electron) mode.");
+   console.log ("Server path prefix: "+hostEnv.dir.server);
+   console.log ("Client path prefix: "+hostEnv.dir.client);
+} else {
+   console.log ("Launching in standalone mode.");
 }
 
 //load external configuration data from default location
@@ -994,14 +1100,11 @@ loadConfig().then (configObj => {
    console.log ("Configuration data successfully loaded and parsed.");
    rpc_options.exposed_objects.config = config;
    adjustEnvironment(); //adjust for local runtime environment
-   loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
-   createAccountSystem().then(result => {
-      console.log ("Account system fully initialized.");
-      //we can now unlock any account-related UI
-   }).catch(error => {
-      console.error ("Couldn't initialize account system:");
-      console.error (error);
-   });
+   if (postLoadConfig() == true) {
+      //account system successfully created immediately
+   } else {
+      //account system not yet successfully created
+   }
 }).catch (err => {
    console.error ("Couldn't load or parse configuration data.");
    console.error (err);
