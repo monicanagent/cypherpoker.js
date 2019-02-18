@@ -185,9 +185,9 @@ async function createClient() {
       nodeIntegration:true
    });
    electronEnv.client.host.loadFile(electronEnv.dir.client+"index.html");
-   electronEnv.client.host.setTitle(appTitle); //override the default window title   
-   // If we want to open the DevTools:
-   electronEnv.client.host.webContents.openDevTools()
+   electronEnv.client.host.setTitle(appTitle); //override the default window title
+   //If we want to open the DevTools:
+   //electronEnv.client.host.webContents.openDevTools()
    electronEnv.client.host.on('closed', onClientHostClosed);
    return (true);
 }
