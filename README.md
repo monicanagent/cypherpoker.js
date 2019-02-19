@@ -12,7 +12,8 @@ The [CypherPoker.JS wiki](https://github.com/monicanagent/cypherpoker.js/wiki) i
 
 When you're ready to customize the software further, the latest code documentation can be found here:
 
-Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.3.2/](https://monicanagent.github.io/cypherpoker.js/web/0.3.2/)<br/>
-Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.3.2/](https://monicanagent.github.io/cypherpoker.js/server/0.3.2/)
+Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.4.0/](https://monicanagent.github.io/cypherpoker.js/web/0.4.0/)<br/>
+Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.4.0/](https://monicanagent.github.io/cypherpoker.js/server/0.4.0/)<br/>
+Desktop (Electron): [https://monicanagent.github.io/cypherpoker.js/desktop/0.4.0/](https://monicanagent.github.io/cypherpoker.js/desktop/0.4.0/)
 ***
 CypherPoker.JS uses [semantic versioning](https://semver.org/).
