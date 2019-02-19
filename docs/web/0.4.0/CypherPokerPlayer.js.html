@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: CypherPokerPlayer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: CypherPokerPlayer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Information management for an individual CypherPoker.JS player.
+*
+* @version 0.2.3
+* @author Patrick Bay
+* @copyright MIT License
+*/
+
+
+/**
+* @class Stores and manages information for a player associated with a
+* {@link CypherPokerGame} instance.
+*
+* @extends EventDispatcher
+*/
+class CypherPokerPlayer extends EventDispatcher {
+
+   /**
+   * Creates a new instance to track an individual player's
+   * information.
+   *
+   * @param {String} PID The private ID of the player to associate
+   * with this instance.
+   * @param {Object} [playerInfo=null] Extended information for the player
+   * to associate with this instance.
+   */
+   constructor (PID, playerInfo=null) {
+      super();
+      this._privateID = PID;
+      this._info = playerInfo;
+      this._ready = false;
+      this._isDealer = false;
+   }
+
+   /**
+   * @property {String} privateID The private ID of the player associated
+   * with this instance, as set at instantiation.
+   */
+   get privateID() {
+      return (this._privateID);
+   }
+
+   /**
+   * @property {Boolean} ready=false Set to true when the associated player has
+   * signalled that they're ready (their game instance has fully loaded and initialized).
+   */
+   get ready() {
+      return (this._ready);
+   }
+
+   set ready(readySet) {
+      this._ready = readySet;
+   }
+
+   /**
+   * @property {CypherPokerAccount} account=null The {@link CypherPokerAccount} instance
+   * associated with this player instance.
+   */
+   get account() {
+      if (this._account == undefined) {
+         this._account = null;
+      }
+      return (this._account);
+   }
+
+   set account(accountSet) {
+      this._account = accountSet;
+   }
+
+   /**
+   * @property {Boolean} isDealer=false Set to true when the associated player
+   * becomes the dealer for the associated game.
+   */
+   get isDealer() {
+      return (this._isDealer);
+   }
+
+   set isDealer(dealerSet) {
+      this._isDealer = dealerSet;
+   }
+
+   /**
+   * @property {Boolean} isBigBlind=false Set to true when the associated player
+   * becomes the big blind for the associated game.
+   */
+   get isBigBlind() {
+      if (this._isBigBlind == undefined) {
+         this._isBigBlind = false;
+      }
+      return (this._isBigBlind);
+   }
+
+   set isBigBlind(bbSet) {
+      this._isBigBlind = bbSet;
+   }
+
+   /**
+   * @property {Boolean} isSmallBlind=false Set to true when the associated player
+   * becomes the small blind for the associated game.
+   */
+   get isSmallBlind() {
+      if (this._isSmallBlind == undefined) {
+         this._isSmallBlind = false;
+      }
+      return (this._isSmallBlind);
+   }
+
+   set isSmallBlind(sbSet) {
+      this._isSmallBlind = sbSet;
+   }
+
+   /**
+   * @property {Object} info=null Additional information for the player as
+   * supplied during instantiation.
+   */
+   get info() {
+      if (this._info == undefined) {
+         this._info = null;
+      }
+      return (this._info);
+   }
+
+   set info(infoObj) {
+      this._info = infoObj;
+   }
+
+   /**
+   * @property {Array} selectedCards Indexed array of strings representing
+   * encrypted private cards dealt to (selected by), the player.
+   */
+   get selectedCards() {
+      if (this._selectedCards == undefined) {
+         this._selectedCards = new Array();
+      }
+      return (this._selectedCards);
+   }
+
+   set selectedCards(cardsArr) {
+      this._selectedCards = cardsArr;
+   }
+
+   /**
+   * @property {Array} dealtCards Indexed array of unencrypted or plaintext
+   * private {@link CypherPokerCard} instances that have been dealt to (selected by),
+   * the player.
+   */
+   get dealtCards() {
+      if (this._dealtCards == undefined) {
+         this._dealtCards = new Array();
+      }
+      return (this._dealtCards);
+   }
+
+   set dealtCards(cardsArr) {
+      this._dealtCards = cardsArr;
+   }
+
+   /**
+   * @property {BigInteger} totalBet The total bet amount placed by the player in the current game (hand)
+   * in the smallest denomination of the target currency (e.g. Satoshis if using Bitcoin, pennies
+   * is using dollars, etc.) When setting this value, a &lt;code>Number&lt;/code> or &lt;code>String&lt;/code>
+   * may be used which will be cast to a &lt;code>BigInteger&lt;/code> object.
+   */
+   get totalBet() {
+      if (this._totalBet == undefined) {
+         this._totalBet = bigInt(0);
+      }
+      return (this._totalBet);
+   }
+
+   set totalBet(betAmount) {
+      this._totalBet = new bigInt(betAmount);
+   }
+
+   /**
+   * @property {BigInteger} balance="0" The current in-game balance. Note that
+   * this is different than the {@link CypherPokerAccount#balance} property
+   * which reflects the total balance for the account.
+   */
+   set balance(balanceSet) {
+      this._balance = bigInt(balanceSet);
+   }
+
+   get balance() {
+      if (this._balance == undefined) {
+         this._balance = bigInt(0);
+      }
+      return (this._balance);
+   }
+
+   /**
+   * @property {numActions} numActions=0 The number of betting actions (bet or fold),
+   * comitted by the player.
+   */
+   get numActions() {
+      if (this._numActions == undefined) {
+         this._numActions = 0;
+      }
+      return (this._numActions);
+   }
+
+   set numActions(actionSet) {
+      this._numActions = actionSet;
+   }
+
+
+   /**
+   * @property {Boolean} hasBet=false True if the player has placed a bet or
+   * checked/called during the current round of betting, false if the player has
+   * not yet bet or if another player has raised.
+   */
+   get hasBet() {
+      if (this._hasBet == undefined) {
+         this._hasBet = false;
+      }
+      return (this._hasBet);
+   }
+
+   set hasBet(betSet) {
+      this._hasBet = betSet;
+   }
+
+   /**
+   * @property {Boolean} hasFolded=false True if the player has folded in this
+   * game (hand).
+   */
+   get hasFolded() {
+      if (this._hasFolded == undefined) {
+         this._hasFolded = false;
+      }
+      return (this._hasFolded);
+   }
+
+   set hasFolded(foldSet) {
+      this._hasFolded = foldSet;
+   }
+
+   /**
+   * @property {Array} keychain Indexed array of {@link keypair}
+   * objects used by the player. These are stored in ascending order with index 0
+   * being the newest keypair. For other players in a game, this array will
+   * typically remain empty until the end of the game (verification). After a game
+   * ends this array should be archived if needed as it is usually reset at the
+   * start of a new game (hand).
+   * @readonly
+   */
+   get keychain() {
+      if (this._keychain == undefined) {
+         this._keychain = new Array();
+      }
+      return (this._keychain);
+   }
+
+   /**
+   * Returns a condensed data object containing the properties of this instance.
+   * Use the returned object to &lt;code>JSON.stringify&lt;/code> instead of the instance
+   * directly as it contains circular references.
+   *
+   * @param {Boolean} [includeKeychain=false] If true, the keychain will be included
+   * with the returned data, otherwise if will be omitted.
+   * @param {Boolean} [includeAccountPassword=false] If true, the password stored in
+   * the {@link CypherPokerPlayer#account} reference will be included in the
+   * returned data, if available.
+   *
+   * @return {Object} The condensed data object containing copies of this instance's
+   * properties.
+   */
+   toObject(includeKeychain=false, includeAccountPassword=false) {
+      var returnObj = new Object();
+      returnObj.privateID = this.privateID;
+      returnObj.info = this.info;
+      if (this.account != null) {
+         returnObj.account = this.account.toObject(includeAccountPassword);
+      } else {
+         returnObj.account = null;
+      }
+      returnObj.dealtCards = Array.from(this.dealtCards);
+      returnObj.selectedCards = Array.from(this.selectedCards);
+      returnObj.hasBet = this.hasBet;
+      returnObj.hasFolded = this.hasFolded;
+      returnObj.isDealer = this.isDealer;
+      returnObj.isSmallBlind = this.isSmallBlind;
+      returnObj.isBigBlind = this.isBigBlind;
+      returnObj.totalBet = this.totalBet.toString(10);
+      returnObj.balance = this.balance.toString(10);
+      returnObj.ready = this.ready;
+      if (includeKeychain) {
+         returnObj.keychain = Array.from(this.keychain);
+      }
+      delete returnObj.onEventPromise;
+      return (returnObj);
+   }
+
+   /**
+   * Creates a copy of this instance and returns that copy.
+   *
+   * @return {CypherPokerPlayer} A new player instance with the properties
+   */
+   copy() {
+      var returnPlayer = new CypherPokerPlayer(this.privateID, this.info);
+      returnPlayer._account = this.account;
+      returnPlayer._dealtCards = Array.from(this.dealtCards);
+      returnPlayer._selectedCards = Array.from(this.selectedCards);
+      returnPlayer._hasBet = this.hasBet;
+      returnPlayer._hasFolded = this.hasFolded;
+      returnPlayer._isDealer = this.isDealer;
+      returnPlayer._isSmallBlind = this.isSmallBlind;
+      returnPlayer._isBigBlind = this.isBigBlind;
+      returnPlayer._totalBet = this.totalBet.toString(10);
+      returnPlayer._balance = this.balance.toString(10);
+      returnPlayer._ready = this.ready;
+      returnPlayer._keychain = Array.from(this.keychain);
+      return (returnPlayer);
+   }
+
+   /**
+   * Irrevocably resets the {@link CypherPokerPlayer#keychain} array (to an
+   * empty array).
+   */
+   resetKeychain() {
+      this._keychain = new Array();
+   }
+
+   /**
+   * @private
+   */
+   toString() {
+      return ("[object CypherPokerPlayer \""+this.privateID+"\"]");
+   }
+
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Feb 19 2019 01:44:38 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
