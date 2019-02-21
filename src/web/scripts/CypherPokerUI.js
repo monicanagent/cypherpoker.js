@@ -697,6 +697,7 @@ class CypherPokerUI {
          //player has confirmed that they want to return to lobby
          if (this.lobbyActive) {
             //lobby is active
+            this.cypherpoker.removeAllTables(true, true);
          } else {
             //game(s) is active
             this.cypherpoker.removeAllGames(true);

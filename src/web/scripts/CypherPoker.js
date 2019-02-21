@@ -537,18 +537,25 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Removes all tables from the {@link CypherPoker#joinedTables} and
-   * {@link CypherPoker#announcedTables} arrays.
+   * {@link CypherPoker#announcedTables} arrays. Any table announcements or join
+   * requests currently in progress are cancelled.
    *
    * @param {Boolean} [joined=true] If true, all tables in the {@link CypherPoker#joinedTables}
-   * array are removed.
+   * array should be removed.
    * @param {Boolean} [announced=true] If true, all tables in the {@link CypherPoker#announcedTables}
-   * array are removed.
+   * array should be removed.
    */
    removeAllTables(joined=true, announced=true) {
       if (joined) {
+         while (this._joinedTables.length > 0) {
+            this.removeTable (this._joinedTables[0], false);
+         }
          this._joinedTables = new Array();
       }
       if (announced) {
+         while (this._announcedTables.length > 0) {
+            this.removeTable (this._announcedTables[0], true);
+         }
          this._announcedTables = new Array();
       }
    }
@@ -565,6 +572,8 @@ class CypherPoker extends EventDispatcher {
    * <code>this</code> context is assumed.
    */
    announceTable(tableObj, context=null) {
+      console.log("announceTable:");
+      console.dir(tableObj);
       if (context == null) {
          context = this;
       }
@@ -917,6 +926,27 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
+   * Dispatches a "tableready" event when the associated table is considered
+   * ready (see: {@link CypherPoker#isTableReady}).
+   *
+   * @param {CypherPoker#TableObject} tableObj The table to evaluate and include with the
+   * the event if ready.
+   *
+   * @return {Boolean} True if the table is ready and the event was dispatched.
+   * @fires CypherPoker#tableready
+   * @private
+   */
+   dispatchTableReadyEvent(tableObj) {
+      if (this.isTableReady(tableObj)) {
+         var event = new Event("tableready");
+         event.table = tableObj;
+         this.dispatchEvent(event);
+         return (true);
+      }
+      return (false);
+   }
+
+   /**
    * Attempts to create a new {@link CypherPokerGame} instance from a table object.
    * All required private IDs must already have joined the table prior to calling
    * this function.
@@ -947,24 +977,39 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * Dispatches a "tableready" event when the associated table is considered
-   * ready (see: {@link CypherPoker#isTableReady}).
+   * Removes and optionally destroys a game instance from the internal
+   * {@link CypherPoker#games} array.
    *
-   * @param {CypherPoker#TableObject} tableObj The table to evaluate and include with the
-   * the event if ready.
-   *
-   * @return {Boolean} True if the table is ready and the event was dispatched.
-   * @fires CypherPoker#tableready
-   * @private
+   * @param {CypherPokerGame} gameRef A reference the tracked game instance to remove.
+   * @param {Boolean} [destroy=true] If true, the instance's {@link CypherPokerGame#destroy} function
+   * is invoked prior to removal.
    */
-   dispatchTableReadyEvent(tableObj) {
-      if (this.isTableReady(tableObj)) {
-         var event = new Event("tableready");
-         event.table = tableObj;
-         this.dispatchEvent(event);
-         return (true);
+   removeGame (gameRef, destroy=true) {
+      for (var count=0; count<this._games.length; count++) {
+         if (this._games[count]==gameRef) {
+            if (destroy) {
+               this._games[count].destroy();
+            }
+            this._games[count].splice(count,1);
+            return;
+         }
       }
-      return (false);
+   }
+
+   /**
+   * Removes and optionally destroys all game instances in the internal
+   * {@link CypherPoker#games} array.
+   *
+   * @param {Boolean} [destroy=true] If true, each instance's {@link CypherPokerGame#destroy} function
+   * is invoked prior to removal.
+   */
+   removeAllGames (destroy=true) {
+      if (destroy) {
+         for (var count=0; count<this._games.length; count++) {
+            this._games[count].destroy();
+         }
+      }
+      this._games = new Array();
    }
 
    /**
@@ -1216,42 +1261,6 @@ class CypherPoker extends EventDispatcher {
       } catch (err) {
          return (false);
       }
-   }
-
-   /**
-   * Removes and optionally destroys a game instance from the internal
-   * {@link CypherPoker#games} array.
-   *
-   * @param {CypherPokerGame} gameRef A reference the tracked game instance to remove.
-   * @param {Boolean} [destroy=true] If true, the instance's {@link CypherPokerGame#destroy} function
-   * is invoked prior to removal.
-   */
-   removeGame (gameRef, destroy=true) {
-      for (var count=0; count<this._games.length; count++) {
-         if (this._games[count]==gameRef) {
-            if (destroy) {
-               this._games[count].destroy();
-            }
-            this._games[count].splice(count,1);
-            return;
-         }
-      }
-   }
-
-   /**
-   * Removes and optionally destroys all game instances in the internal
-   * {@link CypherPoker#games} array.
-   *
-   * @param {Boolean} [destroy=true] If true, each instance's {@link CypherPokerGame#destroy} function
-   * is invoked prior to removal.
-   */
-   removeAllGames (destroy=true) {
-      if (destroy) {
-         for (var count=0; count<this._games.length; count++) {
-            this._games[count].destroy();
-         }
-      }
-      this._games = new Array();
    }
 
    /**
