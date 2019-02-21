@@ -1039,8 +1039,9 @@ class CypherPokerUI {
             var bigBlindAmount = createGameElement.querySelector("#bigBlindAmount").value;
             var smallBlindAmount = createGameElement.querySelector("#smallBlindAmount").value;
             var inactivityTimeout = Math.round(createGameElement.querySelector("#inactivityTimeoutAmount").value);
-            if (inactivityTimeout < 1) {
-               this.showDialog("Inactivity timeout must be at least 1 second.");
+            var validationError = this.validateTableCreateForm(createGameElement);
+            if (validationError != null) {
+               this.showDialog(validationError);
                this.hideDialog(4000);
                this.show(createGameElement);
                this.show(joinGameElement);
@@ -1074,6 +1075,68 @@ class CypherPokerUI {
             break;
       }
       return (false);
+   }
+
+   /**
+   * Validates the data of the table creation form.
+   *
+   * @param {HTMLElement} createGameElement The HTML element containing the table creation form.
+   *
+   * @return {String} A validation error if a form element failed validation, or <code>null</code>
+   * if all form elements appear to contain valid data.
+   * @private
+   */
+   validateTableCreateForm(createGameElement) {
+      var alias = createGameElement.querySelector("#playerAliasCreate").value;
+      var tableName = createGameElement.querySelector("#tableName").value;
+      var numPlayers = Number(createGameElement.querySelector("#numPlayers").value);
+      var buyInAmount = createGameElement.querySelector("#buyInAmount").value;
+      var bigBlindAmount = createGameElement.querySelector("#bigBlindAmount").value;
+      var smallBlindAmount = createGameElement.querySelector("#smallBlindAmount").value;
+      var inactivityTimeout = createGameElement.querySelector("#inactivityTimeoutAmount").value;
+      if (String(alias).trim() == "") {
+         return ("Your player alias can't be blank.");
+      }
+      if (String(alias).trim() == "") {
+         return ("Your player alias can't be blank.");
+      }
+      if (String(tableName).trim() == "") {
+         return ("The table name can't be blank.");
+      }
+      if (Number(numPlayers) != Math.round(Number(numPlayers))) {
+         return ("The number of players must be a whole number.");
+      }
+      if (Number(numPlayers) < 2) {
+         return ("More than one player required.");
+      }
+      if (String(buyInAmount).trim() == "") {
+         return ("The buy-in amount can't be blank.");
+      }
+      if (String(bigBlindAmount).trim() == "") {
+         return("Big blind amount can't be blank.");
+      }
+      if (Number(bigBlindAmount) != Math.round(Number(bigBlindAmount))) {
+         return ("Big blind amount must be a whole number.");
+      }
+      if (String(smallBlindAmount).trim() == "") {
+         return("Small blind amount can't be blank.");
+      }
+      if (Number(smallBlindAmount) != Math.round(Number(smallBlindAmount))) {
+         return ("Small blind amount must be a whole number.");
+      }
+      if (bigInt(bigBlindAmount).lesserOrEquals(bigInt(smallBlindAmount))) {
+         return("Big blind amount must be larger than small blind amount.");
+      }
+      if (String(inactivityTimeout).trim() == "") {
+         return("Inactivity timeout can't be blank.");
+      }
+      if (Number(inactivityTimeout) != Math.round(Number(inactivityTimeout))) {
+         return ("Inactivity timeout must be a whole number.");
+      }
+      if (Number(inactivityTimeout) < 1) {
+         return("Inactivity timeout must be at least 1 second.");
+      }
+      return (null);
    }
 
    /**
