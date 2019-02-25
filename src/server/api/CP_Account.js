@@ -2,7 +2,7 @@
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
 *
-* @version 0.3.2
+* @version 0.4.0
 */
 async function CP_Account (sessionObj) {
    if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
@@ -160,8 +160,6 @@ async function CP_Account (sessionObj) {
                         var fromAddressPath = "m/" + String(accountResults[0].chain) + "/" + String(accountResults[0].addressIndex);
                         var fromWallet = wallet.derivePath(fromAddressPath);
                         var transferAmount = bigInt(balanceResult.balance);
-                        //this is the current minimum fee for testnet3:
-                        //var fees = bigInt(20000); //todo: move transfer fee to config
                         var fees = bigInt(config.CP.API[requestParams.type].default[requestParams.network].minerFee);
                         transferAmount = transferAmount.minus(fees);
                         try {
@@ -188,6 +186,7 @@ async function CP_Account (sessionObj) {
                         }
                         //store updated account information
                         resultObj.confirmed = true;
+                        resultObj.balance = transferAmount.toString(10); //update returned balance to include transfer fee!
                         accountResults[0].balance = transferAmount.toString(10);
                         accountResults[0].updated = MySQLDateTime(new Date());
                         var saved = await namespace.cp.saveAccount(accountResults[0]);
@@ -826,6 +825,7 @@ function callAccountDatabase(method, message) {
 * contain the error object.
 */
 function getBlockchainBalance(address, APIType="bitcoin", network=null) {
+
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API[APIType];
       var url = API.url.balance;
@@ -838,6 +838,8 @@ function getBlockchainBalance(address, APIType="bitcoin", network=null) {
    		method: "GET",
    		json: true
    	}, (error, response, body) => {
+         console.log ("Blockchain balance response:");
+         console.log (JSON.stringify(body));
          if (error) {
             reject(error);
          } else {
