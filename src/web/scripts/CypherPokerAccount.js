@@ -1,7 +1,7 @@
 /**
 * @file Contains information and functionality associated with a single managed account.
 *
-* @version 0.3.2
+* @version 0.4.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -120,6 +120,17 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
+   * @property {Boolean} cashoutPending=false True if a cashout operation is
+   * currently pending (incomplete), false otherwise.
+   */
+   get cashoutPending() {
+      if (this._cashoutPending == undefined) {
+         this._cashoutPending = false;
+      }
+      return (this._cashoutPending);
+   }
+
+   /**
    * @property {String} password=null The password associated with the account.
    */
    set password(pwSet) {
@@ -229,9 +240,8 @@ class CypherPokerAccount extends EventDispatcher {
    * will be received by <code>toAddress</code> will be the sending <code>amount</code>
    * minus this value.
    *
-   * @return {Promise} The promise resolves with a <code>true</code> value
-   * if the cashout was successfully completed. An <code>Error</code> object is
-   * included with a rejection.
+   * @return {Promise} The promise resolves with a an object containing information
+   * about the transaction or rejects with a standard <code>Error</code> object.
    * @async
    */
    async cashout(amount, toAddress, fees=null) {
@@ -241,6 +251,10 @@ class CypherPokerAccount extends EventDispatcher {
       if (toAddress == this.address) {
          throw(new Error("Sending and receiving addresses can't be the same."));
       }
+      if (this.cashoutPending) {
+         throw(new Error("A cashout request is currently pending. Only one request can be active at a time."));
+      }
+      this._cashoutPending = true;
       var params = new Object();
       params.address = this.address;
       params.password = this.password;
@@ -260,11 +274,12 @@ class CypherPokerAccount extends EventDispatcher {
          }
       }
       var JSONObj = await this.callAccountAPI("cashout", params);
+      this._cashoutPending = false;
       if (JSONObj.error != undefined) {
          throw (new Error(JSONObj.error.message));
       }
       this.balance = JSONObj.result.balance;
-      return (true);
+      return (JSONObj.result);
    }
 
    /**

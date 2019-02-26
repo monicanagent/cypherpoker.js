@@ -42,6 +42,13 @@
       "hidden":true
    },
    {
+      "url":"./templates/postCashout.html",
+      "name":"postCashout",
+      "target":"#mainDialog",
+      "append":true,
+      "hidden":true
+   },
+   {
       "url":"./templates/lobby.html",
       "name":"lobby",
       "target":"#lobby",

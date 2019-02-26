@@ -276,6 +276,42 @@ class CypherPokerUI {
    }
 
    /**
+   * Clones an HTML element, appends it to the DOM after the source element, and
+   * sets an internal reference to the clone in the source. Use this function
+   * to create copies of a dynamic template element that may change multiple times.
+   *
+   * @param {HTMLElement} sourceElement The HTML element to clone. This element
+   * will have an internal <code>_clone</code> reference to the cloned element.
+   *
+   * @return {HTMLElement} The cloned HTML element.
+   */
+   cloneElement(sourceElement) {
+      var clone = sourceElement.cloneNode(true);
+      sourceElement._clone = clone;
+      sourceElement.parentNode.appendChild(clone);
+      return (clone);
+   }
+
+   /**
+   * Removes a cloned HTML element created by {@link cloneElement}.
+   *
+   * @param {HTMLElement} sourceElement The soucre HTML element from which the
+   * clone was created. This element must have an internal <code>_clone</code>
+   * property.
+   *
+   * @return {Boolean} True if the cloned element could be properly removed.
+   */
+   removeClone(sourceElement) {
+      if ((sourceElement["_clone"] == undefined) || (sourceElement["_clone"] == null)) {
+         return (false);
+      }
+      sourceElement.parentNode.removeChild(sourceElement._clone);
+      sourceElement._clone = null;
+      delete sourceElement._clone;
+      return (true);
+   }
+
+   /**
    * Loads and parses HTML templates for the application, then adds them to their
    * specified targets within the main page HTML. Every successfully loaded template
    * can be accessed via the {@link CypherPokerUI#templates} array or the
@@ -755,6 +791,18 @@ class CypherPokerUI {
    }
 
    /**
+   * Invoked by the post-cashout dialog when the "Okay" button is clicked.
+   *
+   * @private
+   * @async
+   */
+   async onPostCashoutOkayClick() {
+      var postCashoutElement = this.getTemplateByName("postCashout").elements[0];
+      this.removeClone(postCashoutElement);
+      this.hideDialog();
+   }
+
+   /**
    * Invoked by the confirmation dialog opened by the main menu's "Log Out" option.
    *
    * @param {Boolean} confirm If true, the user has confirmed that they wish to take the desired
@@ -990,12 +1038,33 @@ class CypherPokerUI {
                return (false);
             }
             minerFee = minerFee.toString(10);
-            this.selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFee).then(done => {
+            this.selectedAccount.cashout(cashoutAmount, cashoutAddress, minerFee).then(cashoutResult => {
                var satoshiAmount = this.selectedAccount.balance.toString(10);
                var btcAmount = this.convertDenom(satoshiAmount, "satoshi", "bitcoin");
                manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
                loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
+               this.copyToClipboard(cashoutResult.txHash, this);
+               var postCashoutElement = this.getTemplateByName("postCashout").elements[0];
+               this.removeClone(postCashoutElement); //remove clone if it exists
+               var clone = this.cloneElement(postCashoutElement);
+               var btcElement = clone.querySelector("#cashout_btc");
+               var test3Element = clone.querySelector("#cashout_test3");
+               if (this.selectedAccount.network == "test3") {
+                  //testnet
+                  test3Element.innerHTML = test3Element.innerHTML.split("%txHash%").join(cashoutResult.txHash);
+                  this.hide(btcElement);
+                  this.show(test3Element);
+               } else {
+                  //mainnet
+                  btcElement.innerHTML = btcElement.innerHTML.split("%txHash%").join(cashoutResult.txHash);
+                  this.hide(test3Element);
+                  this.show(btcElement);
+               }
+               this.show(clone);
+               this.showDialog();
             }).catch(error => {
+               var postCashoutElement = this.getTemplateByName("postCashout").elements[0];
+               this.removeClone(postCashoutElement); //remove clone if it exists
                this.showDialog(error);
                this.hideDialog(3000);
                console.error(error);

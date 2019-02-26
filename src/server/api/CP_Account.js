@@ -247,6 +247,10 @@ async function CP_Account (sessionObj) {
                sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Sending and receiving addresses can't be the same.", sessionObj);
                return (false);
             }
+            if (cashoutIsPending(requestParams.address, requestParams.type, requestParams.network) == true) {
+               sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "A cashout request is currently pending. Only one request may be pending at a time.", sessionObj);
+               return (false);
+            }
             if (typeof(requestParams.feeAmount) != "string") {
                if (typeof(requestParams.feeAmount) == "number") {
                   requestParams.feeAmount = String(requestParams.feeAmount);
@@ -274,16 +278,18 @@ async function CP_Account (sessionObj) {
                sendError(JSONRPC_ERRORS.AUTH_FAILED, "Authentication failed.", sessionObj);
                return (false);
             }
-            var totalCashoutAmount = bigInt(requestParams.amount); //includes fees
+            var fees = bigInt(requestParams.feeAmount);
+            var cashoutAmount = bigInt(requestParams.amount);
+            var totalCashoutAmount = cashoutAmount.plus(fees);
             var availableAmount = bigInt(accountResults[0].balance);
-            var fees = bigInt (requestParams.feeAmount);
             if (totalCashoutAmount.greater(availableAmount)) {
                sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Insufficient balance.", sessionObj);
                return (false);
             }
             var newBalance = availableAmount.minus(totalCashoutAmount);
-            var cashoutAmount = totalCashoutAmount.minus(fees);
+            addPendingCashout(requestParams.address, requestParams.toAddress, requestParams.type, requestParams.network, cashoutAmount.toString(10), fees.toString(10));
             var txResult = await cashoutToAddress(requestParams.toAddress, cashoutAmount.toString(10), fees.toString(10), requestParams.type, requestParams.network);
+            removePendingCashout(requestParams.address, requestParams.type, requestParams.network);
             if (txResult != null) {
                if ((txResult.tx != undefined) && (txResult.tx != null)) {
                   if ((txResult.tx.hash != undefined) && (txResult.tx.hash != null) && (txResult.tx.hash != "")) {
@@ -298,6 +304,7 @@ async function CP_Account (sessionObj) {
                      resultObj.toAddress = requestParams.toAddress;
                      resultObj.amount = cashoutAmount.toString(10);
                      resultObj.fees = fees.toString(10);
+                     resultObj.balance = newBalance.toString(10);
                   }
                }
             } else {
@@ -869,7 +876,7 @@ async function cashoutToAddress(toAddress, amount, fees=null, APIType="bitcoin",
    if (network == null) {
       network = API.default.network;
    }
-   if (fees = null) {
+   if (fees == null) {
       fees = API.default[network].minerFee;
    }
    var result = null;
@@ -1105,6 +1112,95 @@ function sendBTCTx(txObject, network=null) {
 }
 
 /**
+* Adds a pending cashout transaction to the internal <code>_pendingCashouts</code>
+* array.
+*
+* @param {String} fromAccount The account address that is cashing out.
+* @param {String} toAddress The address to which the funds are being sent.
+* @param {String} type The cryptocurrency type associated with the transaction (e.g. "bitcoin").
+* @param {String} network The cryptocurrency sub-network associated with the transaction (e.g. "main" or "test3").
+* @param {String} amount The amount of the transaction in the smallest denomination for the associated
+* cryptocurrency.
+* @param {String} fees Any miner fee(s) for the transaction in the smallest denomination for the associated
+* cryptocurrency.
+*/
+function addPendingCashout(fromAccount, toAddress, type, network, amount, fees) {
+   if ((this["_pendingCashouts"] == undefined) || (this["_pendingCashouts"] == null)) {
+      this._pendingCashouts = new Array();
+   }
+   var cashoutObject = new Object();
+   cashoutObject.from = fromAccount;
+   cashoutObject.to = toAddress;
+   cashoutObject.type = type;
+   cashoutObject.network = network;
+   cashoutObject.amount = amount;
+   cashoutObject.fees = fees;
+   var now = new Date();
+   cashoutObject.timestamp = now.toISOString();
+   this._pendingCashouts.push(cashoutObject);
+   //should array be saved in case server quits?
+}
+
+/**
+* Checks if a cashout transaction for a specific account is pending (appears in the
+* internal <code>_pendingCashouts</code> array). Only one pending cashout transaction
+* per account, cryptocurrency type, and network, is assumed to exist.
+*
+* @param {String} fromAccount The account address to check.
+* @param {String} type The cryptocurrency type associated with the pending transaction (e.g. "bitcoin").
+* @param {String} network The cryptocurrency sub-network associated with the pending transaction (e.g. "main" or "test3").
+*
+* @return {Boolean} True if the specified account has a transaction pending, false otherwise.
+*/
+function cashoutIsPending(fromAccount, type, network) {
+   if ((this["_pendingCashouts"] == undefined) || (this["_pendingCashouts"] == null)) {
+      this._pendingCashouts = new Array();
+      return (false);
+   }
+   if (this._pendingCashouts.length == 0) {
+      return (false);
+   }
+   for (var count=0; count < this._pendingCashouts.length; count++) {
+      var currentPendingCashout = this._pendingCashouts[count];
+      if ((currentPendingCashout.from == fromAccount) &&
+         (currentPendingCashout.type == type) &&
+         (currentPendingCashout.network == network)) {
+            return (true);
+         }
+   }
+   return (false);
+}
+
+/**
+* Removes a pending cashout transaction from the internal <code>_pendingCashouts</code>
+* array.
+*
+* @param {String} fromAccount The account address that is cashing out.
+* @param {String} type The cryptocurrency type associated with the transaction (e.g. "bitcoin").
+* @param {String} network The cryptocurrency sub-network associated with the transaction (e.g. "main" or "test3").
+*
+* @return {Object} The pending cashout transaction removed from the internal <code>_pendingCashouts</code> array,
+* of <code>null</code> if no matching transaction exists.
+*/
+function removePendingCashout(fromAccount, type, network) {
+   if ((this["_pendingCashouts"] == undefined) || (this["_pendingCashouts"] == null)) {
+      this._pendingCashouts = new Array();
+      return (null);
+   }
+   for (var count=0; count < this._pendingCashouts.length; count++) {
+      var currentPendingCashout = this._pendingCashouts[count];
+      if ((currentPendingCashout.from == fromAccount) &&
+         (currentPendingCashout.type == type) &&
+         (currentPendingCashout.network == network)) {
+            var txObj = this._pendingCashouts.splice(count, 1);
+            return (txObj);
+         }
+   }
+   return (null);
+}
+
+
+/**
 * Returns an estimated miner fee for a transaction. The fee estimation may either be based on an
 * external service or an internal calculation.
 *
@@ -1250,7 +1346,9 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
          }
       } else {
          updateTxFees(APIType, network).then(result => {
+            //updated
          }).catch(err => {
+            //failed
          });
          if (btcAPI.default[network].feeUpdateSeconds < 30) {
             console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
@@ -1258,7 +1356,9 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
          var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
          btcAPI.default[network].timeout = setInterval((APIType, network) => {
             updateTxFees(APIType, network, true).then(result => {
+               //updated
             }).catch(err => {
+               //failed
             })
          }, updateInterval, APIType, network);
       }
@@ -1293,6 +1393,7 @@ namespace.cp.getAddress = getAddress;
 namespace.cp.getNewAddress = getNewAddress;
 namespace.cp.getBlockchainBalance = getBlockchainBalance;
 namespace.cp.cashoutToAddress = cashoutToAddress;
+namespace.cp.cashoutIsPending = cashoutIsPending;
 namespace.cp.newBTCTx = newBTCTx;
 namespace.cp.signBTCTx = signBTCTx;
 namespace.cp.sendBTCTx = sendBTCTx;
