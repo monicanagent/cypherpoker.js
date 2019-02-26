@@ -579,6 +579,23 @@ class CypherPokerUI {
    */
    onMainMenuClick(selection) {
       switch (selection) {
+         case "newWindow":
+            if (isDesktop()) {
+               alert ("launching new desktop window...");
+               var requestData = new Object();
+
+               IPCSend("new-window", requestData)
+            } else {
+               try {
+                  var windowName = "CypherPoker.JS-"+String(Math.random()).split("0.")[1];
+                  var windowURL = document.location; //use current full URL
+                  var windowFeatures = ""; //use default window features
+                  var window = document.open(windowURL, windowName, windowFeatures);
+               } catch (err) {
+                  alert (err.stack);
+               }
+            }
+            break;
          case "manageAccount":
             if (this.selectedAccount == null) {
                this.showDialog ("You must login to the account (\"USE ACCOUNT\") you want to manage.");
@@ -673,6 +690,20 @@ class CypherPokerUI {
             this.show(confirmElement);
             this.showDialog();
             break;
+         case "about":
+            if (isDesktop()) {
+               var runtime = "Electron";
+            } else {
+               runtime = "web";
+            }
+            var element = this.getTemplateByName("help").elements[0];
+            var helpElement = element.querySelector("#about");
+            helpElement.innerHTML = helpElement.innerHTML.split("%appTitle%").join(appTitle);
+            helpElement.innerHTML = helpElement.innerHTML.split("%runtime%").join(runtime);
+            helpElement.innerHTML = helpElement.innerHTML.split("%runtimeDetails%").join(platform.description);
+            this.show(helpElement);
+            this.showDialog();
+            break
          default:
             break;
       }
