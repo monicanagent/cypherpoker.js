@@ -13,6 +13,19 @@
          ]
       },
       "API": {
+         "RPC":{
+            "wss": {
+               "enabled":true,
+               "port":8090
+            },
+            "http": {
+               "enabled":true,
+               "port":8080
+            },
+            "webrtc": {
+               "enabled": true;
+            }
+         },
          "database":{
             "enabled":false,
             "url":"http://localhost/rdb.php",

@@ -583,8 +583,7 @@ class CypherPokerUI {
             if (isDesktop()) {
                alert ("launching new desktop window...");
                var requestData = new Object();
-
-               IPCSend("new-window", requestData)
+               var result = IPCSend("new-window", requestData)
             } else {
                try {
                   var windowName = "CypherPoker.JS-"+String(Math.random()).split("0.")[1];
@@ -692,15 +691,26 @@ class CypherPokerUI {
             break;
          case "about":
             if (isDesktop()) {
-               var runtime = "Electron";
+               var runtime = "desktop";
+               var dbInfoObj = IPCSend("database-info");
+               var databaseInfo = "";
+               for (var db in dbInfoObj) {
+                  var currentDBInfo = dbInfoObj[db];
+                  //info object may also contain a function reference
+                  if (typeof(currentDBInfo) == "object") {
+                     databaseInfo += currentDBInfo.version + " ("+currentDBInfo.dbSizeMB+" MB of "+currentDBInfo.dbMaxMB+" MB)<br/>";
+                  }
+               }
             } else {
                runtime = "web";
+               databaseInfo = "";
             }
             var element = this.getTemplateByName("help").elements[0];
             var helpElement = element.querySelector("#about");
             helpElement.innerHTML = helpElement.innerHTML.split("%appTitle%").join(appTitle);
             helpElement.innerHTML = helpElement.innerHTML.split("%runtime%").join(runtime);
             helpElement.innerHTML = helpElement.innerHTML.split("%runtimeDetails%").join(platform.description);
+            helpElement.innerHTML = helpElement.innerHTML.split("%databaseInfo%").join(databaseInfo);
             this.show(helpElement);
             this.showDialog();
             break

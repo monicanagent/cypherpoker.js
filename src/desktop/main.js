@@ -24,9 +24,9 @@
 * }
 */
 
-const {app, BrowserWindow, Menu} = require('electron');
-const vm = require('vm');
-const fs = require('fs');
+const {app, BrowserWindow, ipcMain,Menu} = require("electron");
+const vm = require("vm");
+const fs = require("fs");
 
 /**
 * @property {String} appVersion The version of the application. This information
@@ -34,11 +34,16 @@ const fs = require('fs');
 */
 const appVersion = "0.4.0";
 /**
+* @property {String} appName The name of the application. This information
+* is prepended to the {@link appTitle} and may be used in other places in the application.
+*/
+const appName = "CypherPoker.JS";
+/**
 * @property {String} appTitle The title of the application as it should appear in
 * the main app window. This title may pre-pend additional information in any
 * launched child windows.
 */
-const appTitle = "CypherPoker.JS v"+appVersion;
+const appTitle = appName+" v"+appVersion;
 /**
 * Electron application environment settings and references. Note that the values
 * defined here may be overwritten at any time during runtime from their
@@ -53,10 +58,8 @@ const appTitle = "CypherPoker.JS v"+appVersion;
 * @property {String} electronEnv.dir.bin="./bin/" Directory containing additional
 * platform-specific binaries used by CypherPoker.JS desktop.
 * @property {Object} electronEnv.client Contains references and information
-* about the web/browser client portion of the application.
-* @property {BrowserWindow} electronEnv.client.host=null A reference to the main
-* Electron {@link BrowserWindow} object created by {@link createClient} at
-* startup.
+* about the web/browser client portion of the application. This information is made
+* available to any child windows created by the main process.
 * @property {Number} electronEnv.client.width=1024 The initial width of the main
 * Electron {@link BrowserWindow} object.
 * @property {Number} electronEnv.client.height=768 The initial height of the main
@@ -66,7 +69,8 @@ const appTitle = "CypherPoker.JS v"+appVersion;
 * @property {Exposed_Application_Objects} electronEnv.server.exposed_objects Objects exposed to
 * (made available to), the execution context of the server.
 * @property {Function} electronEnv.server.onInit=createClient The callback function to be
-* invoked by the loaded server when it has fully initialized.
+* invoked by the loaded server when it has fully initialized. This function typically opens
+* the first/main user interface window.
 * @property {Object} electronEnv.database Contains settings for the database adapters that
 * can be started using the {@link startDatabase} function. Each adapter's settings vary
 * but each has at least a <code>script</code> path that specifies the adapter's script and
@@ -81,8 +85,10 @@ var electronEnv = {
       client:"../web/"
    },
    client: {
-      host:null,
-      width: 1024,
+      version:appVersion,
+      name:appName,
+      title:appTitle,
+      width:1024,
       height:768
    },
    server: {
@@ -111,11 +117,17 @@ var electronEnv = {
 }
 
 /**
+* @property {Array} windows Indexed array of objects, each containing a
+* <code>win</code> BrowserWindow reference and an <code>ipcID</code> identifier
+* string for IPC communications.
+*/
+var windows = new Array();
+/**
 * Handles any uncaught promise rejections (Node.js will terminate on
 * uncaught rejections in future versions).
 */
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Promise Rejection:', reason);
+process.on("unhandledRejection", (reason, p) => {
+  console.log("Unhandled Promise Rejection: "+reason);
   //application specific logging, throwing an error, or other logic here
 });
 
@@ -123,7 +135,7 @@ process.on('unhandledRejection', (reason, p) => {
 * Starts a database adapter and makes it available to the application.
 *
 * @param {String} dbAdapter The database adapter to start. The name must match one of those defined
-* in the {@link electronEnv.database} objects.
+* in the {@link electronEnv}.database objects.
 */
 async function startDatabase(dbAdapter) {
    var adapterData = electronEnv.database[dbAdapter];
@@ -157,7 +169,7 @@ async function startDatabase(dbAdapter) {
 */
 async function createServer() {
    electronEnv.server.exposed_objects.electronEnv = electronEnv; //add internal self-reference(!)
-   var scriptPath = electronEnv.dir.server+"server.js";
+   var scriptPath = electronEnv.dir.server + "server.js";
    var serverScript = fs.readFileSync(scriptPath, {encoding:"UTF-8"});
    var vmContext = new Object();
    vmContext = Object.assign(electronEnv.server.exposed_objects, vmContext);
@@ -170,26 +182,99 @@ async function createServer() {
 }
 
 /**
-* Creates and initializes the main window process that contains all of
-* the client-bound (web browser) functionality.
+* Creates and initializes a main window process that contains the client-bound
+* (web browser) functionality. The new window will open with the properties
+* defined in the {@link electronEnv}<code>.client</code> object.
+*
+* @param {String} [script="index.html"] The script file within the <i>web</i>
+* ({@link electronEnv}<code>.dir.client</code>) folder to open.
+* @param {String} [windowName=appTitle] The name to use in the new windowss title
+* bar.
+* @param {Boolean} [openDevTools=false] If true the new window will open with
+* the Chrome DevTools panel open.
 *
 * @return {Promise} The returned promise resolves with <code>true</code> if the
 * client process was successfully started and initialized, otherwise an
 * exception is thrown with a standard <code>Error</code> object.
 * @async
 */
-async function createClient() {
-   electronEnv.client.host = new BrowserWindow({
+async function createClient(script="index.html", windowName=appTitle, openDevTools=false) {
+   var windowObj = new Object();
+   windowObj.win = new BrowserWindow({
       width:electronEnv.client.width,
       height:electronEnv.client.height,
       nodeIntegration:true
    });
-   electronEnv.client.host.loadFile(electronEnv.dir.client+"index.html");
-   electronEnv.client.host.setTitle(appTitle); //override the default window title
-   //If we want to open the DevTools:
-   //electronEnv.client.host.webContents.openDevTools()
-   electronEnv.client.host.on('closed', onClientHostClosed);
+   windowObj.win.loadFile(electronEnv.dir.client + script);
+   windowObj.win.setTitle(appTitle);
+   if (openDevTools) {
+      windowObj.win.webContents.openDevTools();
+   }
+   windowObj.win.on("closed", onClientHostClosed);
+   windows.push(windowObj);
    return (true);
+}
+
+/**
+* Invoked when an interprocess message is asynchronously received
+* from a child process on the "ipc-main" channel. The synchronous IPC response
+* will be an object with at least response <code>type</code> string and some
+* <code>data</code>.
+*
+* @param {Event} event The event being dispatched.
+* @param {Object} request The request object. It must contain at least
+* a <code>command</string> to process by the handler.
+*
+* @private
+*/
+function onIPCMessage (event, request) {
+   var response = new Object();
+   //be sure not to include any circular references in the response
+   //since it will be stringified before being returned...
+   switch (request.command) {
+      case "init":
+         response.type = "init";
+         response.data = electronEnv.client;
+         var winFound = false;
+         for (var count=0; count<windows.length; count++) {
+            var currentWindow = windows[count].win;
+            var windowWC = currentWindow.webContents;
+            if (event.sender === windowWC) {
+               windows[count].ipcID = request.data.ipcID;
+               winFound = true;
+               break;
+            }
+         }
+         if (winFound == false) {
+            response.type = "error";
+            response.data = new Object();
+            response.data.code = -2;
+            response.data.message = "Couldn't find matching window.webContents reference for ipcID \""+request.data.ipcID+"\".";
+         }
+         break;
+      case "new-window":
+         createClient();
+         break;
+      case "database-info":
+         for (var db in electronEnv.database) {
+            response[db] = new Object();
+            response[db].version = electronEnv.database[db].adapter.binVersion;
+            var dbFilePath = electronEnv.database[db].adapter.initData.dbFilePath;
+            response[db].dbFilePath = dbFilePath;
+            response[db].dbMaxMB = electronEnv.database[db].adapter.dbMaxMB;
+            response[db].dbSizeMB = electronEnv.database[db].adapter.getFileSize(dbFilePath, "MB");
+         }
+         break;
+      default:
+         response.type = "error";
+         response.data = new Object();
+         response.data.code = -1;
+         response.data.message = "Unrecognized IPC request command \""+request.command+"\"";
+         break;
+   }
+   event.returnValue = response; //respond immediately
+   //...or respond asynchronously:
+   //event.sender.send(request.ipcID, response);
 }
 
 /**
@@ -247,7 +332,7 @@ function onAppActivate() {
 function onAppAllWindowsClosed() {
    // On macOS it is common for applications and their menu bar
    // to stay active until the user quits explicitly with Cmd + Q
-   if (process.platform !== 'darwin') {
+   if (process.platform !== "darwin") {
      app.quit()
    }
 }
@@ -258,9 +343,10 @@ function onAppAllWindowsClosed() {
 */
 function start() {
    app.setName(appTitle); //override the default app name
-   app.on('ready', onAppReady);
-   app.on('window-all-closed', onAppAllWindowsClosed);
-   app.on('activate', onAppActivate);
+   app.on("ready", onAppReady);
+   app.on("window-all-closed", onAppAllWindowsClosed);
+   app.on("activate", onAppActivate);
+   ipcMain.on("ipc-main", onIPCMessage); //set IPC message handler
 }
 
 //start the application:

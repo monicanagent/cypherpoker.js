@@ -45,7 +45,7 @@
 /**
 * @typedef {http} httpserv A HTTP endpoint ("http" module).
 */
-//Required modules:
+//Required installed modules:
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
@@ -55,10 +55,13 @@ const websocket = require("ws");
 const request = require("request");
 const crypto = require("crypto");
 const bigInt = require("big-integer");
-const bitcoin = require('bitcoinjs-lib');
-const secp256k1 = require ("secp256k1"); //required for Bitcoin transaction signing
-const namespace = new Object(); //shared API namespace (instead of global data)
+const bitcoin = require("bitcoinjs-lib");
+const secp256k1 = require("secp256k1"); //required for Bitcoin transaction signing
 
+/**
+* @property {Object} namespace A global object containing references and data shared by API scripts.
+*/
+const namespace = new Object();
 /**
 * @property {String} configFile="./config.json" Location of JSON data file to load and parse into the
 * {@link config} object. May be either a filesystem path or a URL.
@@ -132,8 +135,8 @@ const JSONRPC_ERRORS = {
 *
 * @property {String} api_dir="./api" A directory containing all available API methods that may be invoked. Each API method must match
 * a filename and the entry function in that file must also have the same name.
-* @property {Number} http_port=8080 The listening port for the HTTP server.
-* @property {Number} ws_port=8090 The listening port for the WebSocket server.
+* @property {Number} http_port=8080 The default listening port for the HTTP server. This value may be overriden by a {@link config} setting.
+* @property {Number} ws_port=8090 The listening port for the WebSocket server. This value may be overriden by a {@link config} setting.
 * @property {Number} max_batch_requests=5 The maximum allowable number of batched RPC calls in a single request. If more than this number
 * of calls are encountered in a request batch a JSONRPC_INTERNAL_ERROR error is thrown.
 * @property {HTTP_Headers_Array} http_headers Default headers to include in HTTP / HTTPS responses. Each array element is an object
@@ -1085,7 +1088,7 @@ async function postLoadConfig() {
 
 //Application entry point:
 
-if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {
+if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {   
    hostEnv = this.electronEnv;
    hostEnv.embedded = true;
    console.log ("Launching in desktop embedded (Electron) mode.");
@@ -1099,6 +1102,16 @@ if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {
 loadConfig().then (configObj => {
    console.log ("Configuration data successfully loaded and parsed.");
    rpc_options.exposed_objects.config = config;
+   if (config.CP.API.RPC.http.enabled == true) {
+      rpc_options.http_port = config.CP.API.RPC.http.port;
+   } else {
+      rpc_options.http_port = -1;
+   }
+   if (config.CP.API.RPC.wss.enabled == true) {
+      rpc_options.ws_port = config.CP.API.RPC.wss.port;
+   } else {
+      rpc_options.ws_port = -1;
+   }
    adjustEnvironment(); //adjust for local runtime environment
    if (postLoadConfig() == true) {
       //account system successfully created immediately
