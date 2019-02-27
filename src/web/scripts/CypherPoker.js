@@ -547,12 +547,18 @@ class CypherPoker extends EventDispatcher {
    */
    removeAllTables(joined=true, announced=true) {
       if (joined) {
+         if (this._joinedTables == undefined) {
+            this._joinedTables = new Array();
+         }
          while (this._joinedTables.length > 0) {
             this.removeTable (this._joinedTables[0], false);
          }
          this._joinedTables = new Array();
       }
       if (announced) {
+         if (this._announcedTables == undefined) {
+            this._announcedTables = new Array();
+         }
          while (this._announcedTables.length > 0) {
             this.removeTable (this._announcedTables[0], true);
          }
