@@ -232,6 +232,19 @@ class CypherPokerGame extends EventDispatcher {
    * @property {CypherPokerGame} game The game instance about to restart.
    * @property {CypherPoker#TableObject} table The table associated with the game instance.
    */
+   /**
+   * The game (hand) has encountered an unexpected fatal error and can't continue. No
+   * further game actions will take place and the game instance will no longer listen
+   * for external messages or events.
+   *
+   * @event CypherPokerGame#gamekill
+   * @type {Event}
+   * @property {CypherPokerGame} game The game instance reporting as ready.
+   * @property {CypherPoker#TableObject} table The table associated with the game instance.
+   * * @property {CypherPokerContract} contract The contract instance associated with the game instance.
+   * @property {String} reason A human-readable explanation of the cause of the fatal game
+   * end.
+   */
 
    /**
    * Creates a new game instance.
@@ -247,7 +260,7 @@ class CypherPokerGame extends EventDispatcher {
    * If <code>null</code>, no contract interface is used.
    */
    constructor(cypherpokerRef, tableObj, playerInfo=null, ContractClass="CypherPokerContract") {
-      super();
+      super();      
       try {
          //attempt to create dummy instance to ensure that class is available
          var temp = new CypherPokerPlayer("");
@@ -940,6 +953,7 @@ class CypherPokerGame extends EventDispatcher {
       returnTable.tableName = this.table.tableName;
       returnTable.requiredPID = Array.from(this.table.requiredPID);
       returnTable.joinedPID = Array.from(this.table.joinedPID);
+      returnTable.restorePID = Array.from(this.table.restorePID);
       returnTable.tableInfo = new Object();
       for (var item in this.table.tableInfo) {
          returnTable.tableInfo[item] = this.table.tableInfo[item];
@@ -1132,7 +1146,7 @@ class CypherPokerGame extends EventDispatcher {
       event.game = this;
       event.table = this.table;
       //dispatch the event on a brief delay to allow caller to add event listener(s)
-      setTimeout((context, event)=>context.dispatchEvent(event), 50, this, event);
+      setTimeout((context, event)=>context.dispatchEvent(event), 100, this, event);
       var playerObj = this.getPlayer(this.ownPID);
       playerObj.ready = true;
       this.sendToPlayers("gameready", playerObj.info);
@@ -1732,6 +1746,32 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
+   * Kills the current game (hand), and stops any further actions. Usually this
+   * function is called on a fatal error such as when an associated contract
+   * can't be agreed to (e.g. insufficient funds).<br/>
+   * After killing a game the instance should be destroyed and removed from memory.
+   *
+   * @param {String} reason A human-readable explanation of why the game is
+   * being killed.
+   *
+   * @return {Promise} Resolves with a result of <code>true</code> when all game
+   * functionality has been successfully stopped and all data cleared.
+   * @fires CypherPokerGame#gamekill
+   * @async
+   */
+   async killGame(reason) {
+      this._gameEnding = false;
+      this._gameStarted = false;
+      var event = new Event("gamekill");
+      event.table = this.table;
+      event.game = this;
+      event.contract = this.contract;
+      event.reason = reason;
+      this.dispatchEvent(event);
+      this.destroy();
+   }
+
+   /**
    * Attempts to restart the game by resetting all cards and player selections,
    * shifting player roles, and finally starting the game (if we're the current dealer).
    * If the game is awaiting analysis, the restart is held until complete.
@@ -1811,7 +1851,6 @@ class CypherPokerGame extends EventDispatcher {
             //anyone but the current dealer will throw an error in sendGameParams
          }
       }
-      //context._gameStarted = true;
       context._gameEnding = false;
       var result = await context.processMessageQueue();
       return (true);
