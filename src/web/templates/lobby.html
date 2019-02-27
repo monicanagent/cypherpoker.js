@@ -14,13 +14,13 @@
          <button id="createGameButton" class="lobbyButton" onclick="ui.onLobbyButtonClick('create_game')">CREATE TABLE</button>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('create_table_button')">?</button><br/>
       </div>
    </div>
-   <div id="ownGames" hidden="true"></div>
+   <div id="joinedTables" hidden="true"><!-- the joinedTableStatus.html template is dynamically generated here --></div>
    <br/>
    <div id="joinGame">
       Join Table:&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('join_table_list')">?</button><br/><br/>
       <input type="text" id="playerAliasJoin" name="playerAliasJoin" placeholder="Player alias to join table" />&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('join_table_player_alias')">?</button><br/><br/>
       <div id="tableList" class="tableListContainer">
-         <!-- new table buttons are created here by the CypherPokerUI.onNewTableAnnouncement function -->
+         <!-- new table buttons (tableButton.html) are created here by the CypherPokerUI.onNewTableAnnouncement function -->
       </div>
    </div>
 </div>

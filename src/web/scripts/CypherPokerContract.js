@@ -2,7 +2,7 @@
 * @file A virtual smart contract implementation using a WebSocket Session
 * service as a TTP host.
 *
-* @version 0.2.3
+* @version 0.4.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -84,7 +84,7 @@ class CypherPokerContract extends EventDispatcher {
    }
 
    /**
-   * @property {TableObject} A copy of the table associated with the {@link CypherPokerContract#game}
+   * @property {TableObject} table A copy of the table associated with the {@link CypherPokerContract#game}
    * instance.
    */
    get table() {
@@ -95,7 +95,7 @@ class CypherPokerContract extends EventDispatcher {
    }
 
    /**
-   * @property {Array} Indexed list of {CypherPokerPlayer} instances copied
+   * @property {Array} players Indexed list of {CypherPokerPlayer} instances copied
    * from the associated {@link CypherPokerContract#game} instance.
    */
    get players() {
@@ -710,11 +710,8 @@ class CypherPokerContract extends EventDispatcher {
          this.callContractAPI("new", paramsObj).then(JSONResult => {
             if ((JSONResult["error"] != undefined) && (JSONResult["error"] != null)) {
                this.game.killGame(JSONResult.error.message);
-            //   var errorObj = new Error(JSONResult.error.message);
-            //   throw (errorObj);
                  return;
             }
-            console.dir(JSONResult);
             if (this.contractID != JSONResult.result.contract.contractID) {
                this.removeGameEventListeners();
                this.stopContractTimeout();
@@ -1124,8 +1121,7 @@ class CypherPokerContract extends EventDispatcher {
       paramsObj.contractID = contract.contractID;
       var JSONResult = await this.callContractAPI("agree", paramsObj);
       if ((JSONResult["error"] != undefined) && (JSONResult["error"] != null)) {
-         this.game.killGame(JSONResult.error.message);
-         //throw (new Error(JSONResult.error.message));
+         this.game.killGame(JSONResult.error.message);         
          return (null);
       } else {
          this.updateBalances(JSONResult.result.contract);

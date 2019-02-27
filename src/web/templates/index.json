@@ -77,6 +77,13 @@
       "hidden":false
    },
    {
+      "url":"./templates/joinedTableStatus.html",
+      "name":"joinedTableStatus",
+      "target":"#lobby #joinedTables",
+      "append":false,
+      "hidden":true
+   },
+   {
       "url":"./templates/game.html",
       "name":"game",
       "target":"#games",

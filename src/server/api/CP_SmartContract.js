@@ -1,7 +1,7 @@
 /**
 * @file Manages proxy CypherPoker smart contracts and defines a number of related utility functions.
 *
-* @version 0.2.3
+* @version 0.4.0
 */
 
 /**
@@ -27,6 +27,8 @@
 * considered full or ready.
 * @property {Array} joinedPID Indexed array of private IDs that have been accepted by the owner. When a contract
 * is first created, this array should only have one element: the owner's PID.
+* @property {Array} restorePID Copy of the original private IDs in the <code>requiredPID</code> array
+* used to restore it if members of the <code>joinePID</code> array leave the table.
 * @property {Object} tableInfo Additional information to be included with the table.
 */
 /**
@@ -84,7 +86,6 @@ async function CP_SmartContract (sessionObj) {
             return(false);
          }
          if (validContractObject(requestParams.contract, privateID, requestParams.account) == false) {
-            console.error("Invalid contract creation");
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Invalid contract.", sessionObj);
             return(false);
          }
@@ -2293,6 +2294,15 @@ function validTableObject(tableObj) {
       return (false);
    }
    if (tableObj.joinedPID.length < 2) {
+      return (false);
+   }
+   if (typeof(tableObj.restorePID) != "object") {
+      return (false);
+   }
+   if (typeof(tableObj.restorePID.length) != "number") {
+      return (false);
+   }
+   if (tableObj.restorePID.length != tableObj.joinedPID.length) {
       return (false);
    }
    for (var count=0; count < tableObj.requiredPID.length; count++) {

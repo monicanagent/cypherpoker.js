@@ -260,7 +260,7 @@ class CypherPokerGame extends EventDispatcher {
    * If <code>null</code>, no contract interface is used.
    */
    constructor(cypherpokerRef, tableObj, playerInfo=null, ContractClass="CypherPokerContract") {
-      super();
+      super();      
       try {
          //attempt to create dummy instance to ensure that class is available
          var temp = new CypherPokerPlayer("");
@@ -953,6 +953,7 @@ class CypherPokerGame extends EventDispatcher {
       returnTable.tableName = this.table.tableName;
       returnTable.requiredPID = Array.from(this.table.requiredPID);
       returnTable.joinedPID = Array.from(this.table.joinedPID);
+      returnTable.restorePID = Array.from(this.table.restorePID);
       returnTable.tableInfo = new Object();
       for (var item in this.table.tableInfo) {
          returnTable.tableInfo[item] = this.table.tableInfo[item];

@@ -148,6 +148,7 @@ class CypherPokerUI {
          var delta = nowDate.valueOf() - tableDate.valueOf();
          if (delta >= announceTimeout) {
             try {
+               tableInfo.buttonElement.removeEventListener("click", ui.onJoinTableButtonClick);
                tableInfo.buttonElement.remove();
             } catch (err) {}
             ui.cypherpoker.removeTable(currentTable, true);
@@ -282,18 +283,24 @@ class CypherPokerUI {
    *
    * @param {HTMLElement} sourceElement The HTML element to clone. This element
    * will have an internal <code>_clone</code> reference to the cloned element.
+   * @param {Boolean} [internalReference=true] If true, the <code>sourceElement</code>
+   * will store a refence to the new clonet within itself as a <code>_clone</code>
+   * property so that it can be removed using {@link removeClone}.
    *
    * @return {HTMLElement} The cloned HTML element.
    */
-   cloneElement(sourceElement) {
+   cloneElement(sourceElement, internalReference=true) {
       var clone = sourceElement.cloneNode(true);
-      sourceElement._clone = clone;
+      if (internalReference == true) {
+         sourceElement._clone = clone;
+      }
       sourceElement.parentNode.appendChild(clone);
       return (clone);
    }
 
    /**
-   * Removes a cloned HTML element created by {@link cloneElement}.
+   * Removes a cloned HTML element created by {@link cloneElement} with
+   * <code>internalReference=true</code>.
    *
    * @param {HTMLElement} sourceElement The soucre HTML element from which the
    * clone was created. This element must have an internal <code>_clone</code>
@@ -336,29 +343,30 @@ class CypherPokerUI {
          this.templates.push(templateInfo);
          if (templateInfo.append == true) {
             var target = document.querySelector(templateInfo.target);
-            this.buildHTMLTemplate(templateInfo, target, templateInfo.hidden);
+            this.cloneHTMLTemplate(templateInfo, target, templateInfo.hidden);
          }
       }
       return (true);
    }
 
    /**
-   * Builds a template by generating the elements specified and processing any included parameters.
-   * The built template is then attached to the target DOM element.
+   * Clones a specified HTML template, processes any meta tags, and appends it to a
+   * specified target. A reference to the clone is appended to the template information
+   * objects's internal <code>elements</code> array.
    *
    * @param {Object} templateInfo An object containing information about the template to generate.
    * @param {HTMLElement} target The target element to append the generated template to as a child.
-   * @param {Boolean} hidden=false If true, the generated element is initially hidden.
-   * @param {Object} metaData Name-value pairs containing the data to replace in the
+   * @param {Boolean} [hidden=false] If true, the generated element is initially hidden.
+   * @param {Object} [metaData=null] Name-value pairs containing the data to replace in the
    * document body. Each name is automatically surrounded by "%"; for example,
    * <code>metaData["version"]="0.3.0"</code> replaces any <code>%version%</code> metatag
    * in the document with <code>0.3.0</code>.
    *
-   * @reutrn {HTMLElement} The newly built and appended element.
+   * @return {HTMLElement} The cloned, processed, and appended HTML template element.
    *
    * @private
    */
-   buildHTMLTemplate(templateInfo, target, hidden=false, metaData=null) {
+   cloneHTMLTemplate(templateInfo, target, hidden=false, metaData=null) {
       //assume document only has <head> (firstChild) and <body> (lastChild) tags within a <html> (documentElement) tag
       var bodyNode = templateInfo.document.documentElement.lastChild;
       if (templateInfo.elements == undefined) {
@@ -374,6 +382,37 @@ class CypherPokerUI {
          this.hide(templateInfo.elements[templateInfo.elements.length-1]);
       }
       return (templateInfo.elements[templateInfo.elements.length-1]);
+   }
+
+   /**
+   * Builds a HTML template using a supplied template information object.
+   * Like {@link cloneHTMLTemplate} the template is cloned and any contained metatags
+   * are parsed but unlike {@link cloneHTMLTemplate} the template is destructively
+   * appended to the container specified in the template info (i.e. any children in
+   * the container are removed), and no reference is added to a internal <code>elements</code>
+   * array of the template information object.
+   *
+   * @param {Object} templateInfo An object containing information about the template to build.
+   * @param {Object} [metaData=null] Name-value pairs containing the data to replace in the
+   * document body. Each name is automatically surrounded by "%"; for example,
+   * <code>metaData["version"]="0.3.0"</code> replaces any <code>%version%</code> metatag
+   * in the document with <code>0.3.0</code>.
+   *
+   * @return {HTMLElement} The cloned, parsed, and appended HTML element.
+   *
+   * @private
+   */
+   buildHTMLTemplate(templateInfo, metaData=null) {
+      //assume document only has <head> (firstChild) and <body> (lastChild) tags within a <html> (documentElement) tag
+      var bodyNode = templateInfo.document.documentElement.lastChild;
+      var target = document.querySelector(templateInfo.target);
+      var nodeCopy = document.importNode(bodyNode.firstChild, true);
+      if (metaData != null) {
+         this.parseHTMLTemplateTags(nodeCopy, metaData);
+      }
+      target.innerHTML = ""; //remove all children
+      var newChild = target.appendChild(nodeCopy);
+      return (newChild);
    }
 
    /**
@@ -825,44 +864,6 @@ class CypherPokerUI {
    }
 
    /**
-   * Resets all of the user interface elements of the lobby to their initial
-   * state, including input fields, announced tables list, etc.
-   *
-   * @param {Boolean} [showOnReset=true] If true, the interface is displayed
-   * after being reset otherwise the elements must be shown manually.
-   */
-   resetLobbyUI (showOnReset=true) {
-      var lobbyElement = this.getTemplateByName("lobby").elements[0];
-      var createGameElement = lobbyElement.querySelector("#createGame");
-      var joinGameElement = lobbyElement.querySelector("#joinGame");
-      var ownGamesElement = lobbyElement.querySelector("#ownGames");
-      ownGamesElement.innerHTML = ""; //clear out any existing message
-      //reset table creation fields...
-      createGameElement.querySelector("#playerAliasCreate").value = "";
-      createGameElement.querySelector("#tableName").value = "";
-      createGameElement.querySelector("#numPlayers").value = "";
-      createGameElement.querySelector("#buyInAmount").value = "";
-      createGameElement.querySelector("#bigBlindAmount").value = "";
-      createGameElement.querySelector("#smallBlindAmount").value = "";
-      createGameElement.querySelector("#inactivityTimeoutAmount").value = "60";
-      //reset table join field(s)...
-      joinGameElement.querySelector("#playerAliasJoin").value = "";
-      //clear out any tables remaining in UI...
-      for (var count=0; count < this.cypherpoker.announcedTables.length; count++) {
-         var currentTable = this.cypherpoker.announcedTables[count];
-         var tableInfo = currentTable.tableInfo;
-         try {
-            tableInfo.buttonElement.remove();
-         } catch (err) {}
-      }
-      this.cypherpoker.removeAllTables(true, true);
-      this.show(createGameElement);
-      this.show(joinGameElement);
-      this.show(ownGamesElement);
-      this.show(lobbyElement);
-   }
-
-   /**
    * Event listener invoked when an account-related button is clicked. The event
    * is raised by the DOM via something like a <code>onclick</code> attribute.
    *
@@ -1046,7 +1047,7 @@ class CypherPokerUI {
                this.copyToClipboard(cashoutResult.txHash, this);
                var postCashoutElement = this.getTemplateByName("postCashout").elements[0];
                this.removeClone(postCashoutElement); //remove clone if it exists
-               var clone = this.cloneElement(postCashoutElement);
+               var clone = this.cloneElement(postCashoutElement, true);
                var btcElement = clone.querySelector("#cashout_btc");
                var test3Element = clone.querySelector("#cashout_test3");
                if (this.selectedAccount.network == "test3") {
@@ -1135,10 +1136,6 @@ class CypherPokerUI {
             var element = this.getTemplateByName("lobby").elements[0];
             var createGameElement = element.querySelector("#createGame");
             var joinGameElement = element.querySelector("#joinGame");
-            var ownGamesElement = element.querySelector("#ownGames");
-            this.hide(createGameElement);
-            this.hide(joinGameElement);
-            this.show(ownGamesElement);
             var tableInfo = new Object();
             var lobbyElement = document.querySelector(ui.UISelectors.lobby);
             var alias = createGameElement.querySelector("#playerAliasCreate").value;
@@ -1153,34 +1150,50 @@ class CypherPokerUI {
             if (validationError != null) {
                this.showDialog(validationError);
                this.hideDialog(4000);
-               this.show(createGameElement);
-               this.show(joinGameElement);
-               this.hide(ownGamesElement);
                return (false);
             }
             tableInfo.buyIn = buyInAmount;
             tableInfo.bigBlind = bigBlindAmount;
             tableInfo.smallBlind = smallBlindAmount;
             tableInfo.timeout = inactivityTimeout;
-            ownGamesElement.innerHTML = "Game \""+alias+"\" created. Awaiting other player(s)...";
-            this.cypherpoker.createTable(tableName, numPlayers, tableInfo);
-            this.cypherpoker.onEventPromise("tableready").then(event => {
-               this.stopLobbyCull();
-               this.cypherpoker.captureNewTables = false;
-               this._lobbyActive = false;
-               var playerInfo = new Object();
-               playerInfo.alias = alias;
-               var game = this.cypherpoker.createGame(event.table, this.selectedAccount, playerInfo).start();
-               try {
-                  game.addEventListener("gamerestart", this.onRestartGame, this);
-                  game.addEventListener("gamekill", this.onKillGame, this);
-                  game.contract.addEventListener("timeoutstart", this.onStartContractTimeout, this);
-                  game.contract.addEventListener("timeout", this.onContractTimeout, this);
-                  game.contract.addEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
-               } catch (err) {
-                  this.showDialog(err);
-               }
-            })
+            this.cypherpoker.addEventListener("tablejoinrequest", this.onPlayerJoinTable, this);
+            this.cypherpoker.addEventListener("tablejoin", this.onPlayerJoinTable, this);
+            this.cypherpoker.addEventListener("tableleave", this.onPlayerLeaveTable, this);
+            this.cypherpoker.removeEventListener("tableready", this.onTableReady);
+            this.cypherpoker.addEventListener("tableready", this.onTableReady, this);
+            var newTable = this.cypherpoker.createTable(tableName, numPlayers, tableInfo);
+            this.cypherpoker.localTableStorage(newTable).alias = alias;
+            var announcedAt = new Date();
+            var metaTags = {
+               "tableName": tableName,
+               "tableID": newTable.tableID,
+               "joinedPlayers": 1,
+               "totalPlayers": (numPlayers+1),
+               "needPlayers": numPlayers,
+               "ownerPID": newTable.ownerPID,
+               "announcedAt": announcedAt.toString(),
+               "cancelButtonPrompt": "Cancel Table"
+            }
+            this.updateJoinedTableStatus(metaTags, true);
+            this.hide(createGameElement);
+            this.hide(joinGameElement);
+            break;
+         case "cancel_game":
+            this.removeAllJoinTableButtons(); //do this first before we clear out the associated table arrays!
+            var joinedTable = this.cypherpoker.joinedTables[0]; //currently just one joined table per application instance
+            this.cypherpoker.leaveJoinedTable(joinedTable); //send table leave notification
+            this.cypherpoker.removeAllTables(true, true); //stop announcing
+            //clear out current game
+            element = this.getTemplateByName("lobby").elements[0];
+            this.updateJoinedTableStatus(null, true);
+            var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+            this.cypherpoker.removeAllTables(true, true);
+            //restart lobby
+            this.show(lobbyContainer);
+            this.resetLobbyUI(true);
+            this.lobbyActive = true;
+            this.cypherpoker.captureNewTables = true;
+            this.startLobbyCull();
             break;
          default:
             break;
@@ -1220,8 +1233,14 @@ class CypherPokerUI {
       if (Number(numPlayers) < 2) {
          return ("More than one player required.");
       }
+      if (Number(buyInAmount) != Math.round(Number(buyInAmount))) {
+         return ("Buy-in amount must be a whole number.");
+      }
       if (bigInt(buyInAmount).greater(this.selectedAccount.balance)) {
          return ("Insufficient account balance for buy-in.");
+      }
+      if (bigInt(buyInAmount).lesserOrEquals(0)) {
+         return ("Buy-in must be greater than 0.");
       }
       if (String(buyInAmount).trim() == "") {
          return ("The buy-in amount can't be blank.");
@@ -1231,6 +1250,9 @@ class CypherPokerUI {
       }
       if (Number(bigBlindAmount) != Math.round(Number(bigBlindAmount))) {
          return ("Big blind amount must be a whole number.");
+      }
+      if (bigInt(buyInAmount).lesser(bigInt(bigBlindAmount))) {
+         return ("Buy-in must be larger than or equal to the big blind amount.");
       }
       if (String(smallBlindAmount).trim() == "") {
          return("Small blind amount can't be blank.");
@@ -1251,6 +1273,134 @@ class CypherPokerUI {
          return("Inactivity timeout must be at least 1 second.");
       }
       return (null);
+   }
+
+   /**
+   * Event handler invoked when another player has joined a table that we've
+   * joined.
+   *
+   * @param {CypherPoker#event:tablejoinrequest|CypherPoker#event:tablejoin} event a CypherPoker
+   * table join related event.
+   *
+   * @listens CypherPoker#event:tablejoinrequest
+   * @listens CypherPoker#event:tablejoin
+   */
+   onPlayerJoinTable(event) {
+      try {
+         var tableData = event.table;
+         var joinedPlayers = tableData.joinedPID.length;
+         var needPlayers = tableData.requiredPID.length;
+         var totalPlayers = joinedPlayers + needPlayers;
+         var tableName = tableData.tableName;
+         var tableID = tableData.tableID;
+         var ownerPID = tableData.ownerPID;
+         var announcedAt = new Date(tableData.tableInfo.announcedAt);
+         var joinedTables = this.cypherpoker.getJoinedTables(tableName, tableID, ownerPID);
+         if (ownerPID == this.cypherpoker.p2p.privateID) {
+            var cancelButtonPrompt = "Cancel Table";
+         } else {
+            cancelButtonPrompt = "Cancel Join";
+         }
+         //since we're currently only able to join one table, assume this is a match...
+         if (joinedTables.length > 0) {
+            var metaTags = {
+               "tableName": tableName,
+               "tableID": tableID,
+               "joinedPlayers": joinedPlayers,
+               "totalPlayers": totalPlayers,
+               "needPlayers": needPlayers,
+               "ownerPID": ownerPID,
+               "announcedAt": announcedAt.toString(),
+               "cancelButtonPrompt": cancelButtonPrompt
+            }
+            this.updateJoinedTableStatus(metaTags, true);
+         }
+      } catch (err) {
+         this.cypherpoker.debug(err, "err");
+      }
+   }
+
+   /**
+   * Event handler invoked when another player has left a table that we've
+   * joined.
+   *
+   * @param {CypherPoker#event:tablejoinrequest|CypherPoker#event:tablejoin} event a CypherPoker
+   * table join related event.
+   *
+   * @listens CypherPoker#event:tablejoinrequest
+   * @listens CypherPoker#event:tablejoin
+   */
+   onPlayerLeaveTable(event) {
+      try {
+         var tableData = event.table;
+         if (tableData != null) {
+            //joined player has left the table
+            var joinedPlayers = tableData.joinedPID.length;
+            var needPlayers = tableData.requiredPID.length;
+            var totalPlayers = joinedPlayers + needPlayers;
+            var tableName = tableData.tableName;
+            var tableID = tableData.tableID;
+            var ownerPID = tableData.ownerPID;
+            var announcedAt = new Date(tableData.tableInfo.announcedAt);
+            var joinedTables = this.cypherpoker.getJoinedTables(tableName, tableID, ownerPID);
+            if (ownerPID == this.cypherpoker.p2p.privateID) {
+               var cancelButtonPrompt = "Cancel Table";
+            } else {
+               cancelButtonPrompt = "Cancel Join";
+            }
+            //since we're currently only able to join one table, assume this is a match...
+            if (joinedTables.length > 0) {
+               var metaTags = {
+                  "tableName": tableName,
+                  "tableID": tableID,
+                  "joinedPlayers": joinedPlayers,
+                  "totalPlayers": totalPlayers,
+                  "needPlayers": needPlayers,
+                  "ownerPID": ownerPID,
+                  "announcedAt": announcedAt.toString(),
+                  "cancelButtonPrompt": cancelButtonPrompt
+               }
+               this.updateJoinedTableStatus(metaTags, true);
+               this.showDialog("A player has left the table.");
+               this.hideDialog(5000);
+            } else {
+               //owner/creator has left the table
+               this.updateJoinedTableStatus(null, false);
+               var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+               this.show(lobbyContainer);
+               this.resetLobbyUI(true);
+               this.lobbyActive = true;
+               this.cypherpoker.captureNewTables = true;
+               this.startLobbyCull();
+               this.showDialog("Table owner has cancelled the table.");
+               this.hideDialog(5000);
+            }
+         }
+      } catch (err) {
+         this.cypherpoker.debug(err, "err");
+      }
+   }
+
+   /**
+   * Updates the "joinedTableStatus" HTML template's metatags and visibility.
+   *
+   * @param {Object} metaData The template's metatags to parse.
+   * @param {Boolean} [showStatus=true] If true, any existing template clone is removed, the
+   * original template is cloned, metatags parsed, and the clone appended to
+   * the target location specified for the source HTML template. If false,
+   * any existing template clone is simply removed.
+   */
+   updateJoinedTableStatus(metaData, showStatus=true) {
+      var templateInfo = this.getTemplateByName("joinedTableStatus");
+      var containerElement = document.querySelector(templateInfo.target);
+      if (showStatus == true) {
+         var clone = this.buildHTMLTemplate(templateInfo, metaData);
+         this.show(clone);
+         this.show(containerElement);
+      } else {
+         containerElement.innerHTML = "";
+         this.hide(containerElement);
+      }
    }
 
    /**
@@ -1423,15 +1573,11 @@ class CypherPokerUI {
          target = target.parentNode;
       }
       var ui = target.ui;
-      ui.debug ("CypherPokerUI.onJoinTableButtonClick("+event+")");
+      target.removeEventListener("click", ui.onJoinTableButtonClick);
       var table = target.table;
-      ui.debug ("   Table ID: "+table.tableID);
-      ui.debug ("   Owner PID: "+table.ownerPID);
-      ui.debug (table, "dir");
       var element = ui.getTemplateByName("lobby").elements[0];
       var joinGameElement = element.querySelector("#joinGame");
       var createGameElement = element.querySelector("#createGame");
-      var ownGamesElement = element.querySelector("#ownGames");
       var alias = joinGameElement.querySelector("#playerAliasJoin").value;
       if (alias.trim() == "") {
          ui.showDialog ("You must enter a player alias (name) before attempting to join a table.");
@@ -1440,40 +1586,65 @@ class CypherPokerUI {
       }
       var buyInAmount = table.tableInfo.buyIn;
       if (bigInt(buyInAmount).greater(ui.selectedAccount.balance)) {
-         console.log ("Can't join!");
-         ui.showDialog ("Insufficient account balance for buy-in.<br/>Minimum balance "+buyInAmount+" required.");
+         ui.showDialog ("Insufficient account balance for buy-in.<br/>Minimum account balance "+buyInAmount+" required.");
          ui.hideDialog(4000);
          return;
       }
       target.remove(); //remove the button here since the reference is not carried through with the joined table
+      ui.cypherpoker.localTableStorage(table).alias = alias;
       var tableName = table.tableName;
-      ownGamesElement.innerHTML = "Joining game \""+tableName+"\". Awaiting other player(s)...";
       ui.hide(createGameElement);
       ui.hide(joinGameElement);
-      ui.show(ownGamesElement);
       delete table.tableInfo.buttonElement; //prevent circular reference error when stringifying
+      ui.cypherpoker.addEventListener("tablejoinrequest", ui.onPlayerJoinTable, ui);
+      ui.cypherpoker.addEventListener("tablejoin", ui.onPlayerJoinTable, ui);
+      ui.cypherpoker.addEventListener("tableleave", ui.onPlayerLeaveTable, ui);
+      var metaTags = {
+         "tableName": table.tableName,
+         "tableID": table.tableID,
+         "joinedPlayers": table.joinedPID.length,
+         "totalPlayers": table.joinedPID.length + table.requiredPID.length,
+         "needPlayers": table.requiredPID.length,
+         "ownerPID": table.ownerPID,
+         "announcedAt": table.tableInfo.announcedAt.toString(),
+         "cancelButtonPrompt": "Cancel Join"
+      }
+      ui.updateJoinedTableStatus(metaTags, true);
+      ui.cypherpoker.removeEventListener("tableready", ui.onTableReady);
+      ui.cypherpoker.addEventListener("tableready", ui.onTableReady, ui);
       ui.cypherpoker.joinTable(table);
-      ui.cypherpoker.onEventPromise("tableready").then(event => {
-         //use updated event.table instead of table reference created above
-         ui.stopLobbyCull();
-         ui.cypherpoker.captureNewTables = false;
-         ui._lobbyActive = false;
-         var playerInfo = new Object();
-         playerInfo.alias = alias;
-         var game = ui.cypherpoker.createGame(event.table, ui.selectedAccount, playerInfo).start();
-         try {
-            game.addEventListener("gamekill", ui.onKillGame, ui);
-            game.addEventListener("gamerestart", ui.onRestartGame, ui);
-            game.contract.addEventListener("timeoutstart", ui.onStartContractTimeout, ui);
-            game.contract.addEventListener("timeout", ui.onContractTimeout, ui);
-            game.contract.addEventListener("timeoutinvalid", ui.onContractTimeoutInvalid, ui);
-         } catch (err) {
-            //game may not have contract
-         }
-      }).catch(error => {
-         ui.showDialog(error);
-         ui.hideDialog(4000);
-      });
+   }
+
+   /**
+   * Event listener invoked when a {@link CypherPoker#events:tableready} event
+   * is dispatched.
+   *
+   * @param {Event} event A {@link CypherPoker#events:tableready} event object.
+   *
+   * @listens CypherPoker#events:tableready
+   * @private
+   */
+   onTableReady(event) {
+      this.cypherpoker.removeEventListener("tablejoinrequest", this.onPlayerJoinTable);
+      this.cypherpoker.removeEventListener("tablejoin", this.onPlayerJoinTable);
+      this.cypherpoker.removeEventListener("tableleave", this.onPlayerLeaveTable);
+      this.updateJoinedTableStatus(null, false);
+      this.stopLobbyCull();
+      this.cypherpoker.captureNewTables = false;
+      this._lobbyActive = false;
+      var playerInfo = new Object();
+      playerInfo.alias = this.cypherpoker.localTableStorage(event.table).alias;
+      this.cypherpoker.localTableStorage(event.table, true); //no longer needed
+      var game = this.cypherpoker.createGame(event.table, this.selectedAccount, playerInfo).start();
+      try {
+         game.addEventListener("gamerestart", this.onRestartGame, this);
+         game.addEventListener("gamekill", this.onKillGame, this);
+         game.contract.addEventListener("timeoutstart", this.onStartContractTimeout, this);
+         game.contract.addEventListener("timeout", this.onContractTimeout, this);
+         game.contract.addEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
+      } catch (err) {
+         this.showDialog(err);
+      }
    }
 
    /**
@@ -1486,8 +1657,7 @@ class CypherPokerUI {
    */
    onBetButtonClick(event) {
       var game = event.target.game;
-      var ui = event.target.ui;
-      ui.debug("onBetButtonClick("+event+")");
+      var ui = event.target.ui;      
       ui.disable(event.target);
       ui.disable(game.DOMElement.querySelector(ui.gameUISelectors.betButton));
       ui.disable(game.DOMElement.querySelector(ui.gameUISelectors.foldButton));
@@ -1697,7 +1867,7 @@ class CypherPokerUI {
       metaTags.bigBlind = tableData.tableInfo.bigBlind;
       metaTags.smallBlind = tableData.tableInfo.smallBlind;
       metaTags.timeout = tableData.tableInfo.timeout;
-      var joinTableButton = this.buildHTMLTemplate(templateInfo, containerElement, false, metaTags);
+      var joinTableButton = this.cloneHTMLTemplate(templateInfo, containerElement, false, metaTags);
       joinTableButton.table = this.cypherpoker.announcedTables[0]; //newest table reference
       joinTableButton.ui = this;
       this.cypherpoker.announcedTables[0].tableInfo.buttonElement = joinTableButton;
@@ -1717,7 +1887,7 @@ class CypherPokerUI {
       var gameTemplate = this.getTemplateByName("game");
       var target = document.querySelector(gameTemplate.target);
       var metaData = new Object();
-      var newGameElement = this.buildHTMLTemplate(gameTemplate, target, gameTemplate.hidden, metaData);
+      var newGameElement = this.cloneHTMLTemplate(gameTemplate, target, gameTemplate.hidden, metaData);
       var namePrefix = newGameElement.getAttribute("name");
       if ((namePrefix == null) || (namePrefix == "")) {
          namePrefix = newGameElement.getAttribute("id");
@@ -1852,7 +2022,7 @@ class CypherPokerUI {
             } else {
                metaTags.handOwner = "Player: "+winningPlayer.privateID;
             }
-            var newHistoryElement = this.buildHTMLTemplate(templateInfo, targetElement, false, metaTags);
+            var newHistoryElement = this.cloneHTMLTemplate(templateInfo, targetElement, false, metaTags);
             var cardContainerElement = newHistoryElement.querySelector("#handHistoryItemCards")
             for (var count2 = 0; count2 < hand.length; count2++) {
                var card = hand[count2];
@@ -1986,6 +2156,56 @@ class CypherPokerUI {
          });
          context.show(loginElement);
       }
+   }
+
+   /**
+   * Removes all the "join table" buttons and any event listeners currently in the
+   * lobby. This function does <b>not</b> update any {@link CypherPoker#joinedTables}
+   * or {@link CypherPoker#announcedTables}.
+   *
+   * @private
+   */
+   removeAllJoinTableButtons() {
+      for (var count=0; count < this.cypherpoker.announcedTables.length; count++) {
+         var currentTable = this.cypherpoker.announcedTables[count];
+         var tableInfo = currentTable.tableInfo;
+         try {
+            tableInfo.buttonElement.removeEventListener("click", this.onJoinTableButtonClick);
+            tableInfo.buttonElement.remove();
+         } catch (err) {}
+      }
+   }
+
+   /**
+   * Resets all of the user interface elements of the lobby to their initial
+   * state, including input fields, announced tables list, etc.
+   *
+   * @param {Boolean} [showOnReset=true] If true, the interface is displayed
+   * after being reset otherwise the elements must be shown manually.
+   */
+   resetLobbyUI (showOnReset=true) {
+      var lobbyElement = this.getTemplateByName("lobby").elements[0];
+      var createGameElement = lobbyElement.querySelector("#createGame");
+      var joinGameElement = lobbyElement.querySelector("#joinGame");
+      var ownGamesElement = lobbyElement.querySelector("#joinedTables");
+      ownGamesElement.innerHTML = ""; //clear out any existing message
+      //reset table creation fields...
+      createGameElement.querySelector("#playerAliasCreate").value = "";
+      createGameElement.querySelector("#tableName").value = "";
+      createGameElement.querySelector("#numPlayers").value = "";
+      createGameElement.querySelector("#buyInAmount").value = "";
+      createGameElement.querySelector("#bigBlindAmount").value = "";
+      createGameElement.querySelector("#smallBlindAmount").value = "";
+      createGameElement.querySelector("#inactivityTimeoutAmount").value = "60";
+      //reset table join field(s)...
+      joinGameElement.querySelector("#playerAliasJoin").value = "";
+      //clear out any tables remaining in UI...
+      this.removeAllJoinTableButtons();
+      this.cypherpoker.removeAllTables(true, true);
+      this.show(createGameElement);
+      this.show(joinGameElement);
+      this.show(ownGamesElement);
+      this.show(lobbyElement);
    }
 
    /**

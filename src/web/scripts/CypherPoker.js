@@ -43,6 +43,8 @@ class CypherPoker extends EventDispatcher {
    * @property {Array} joinedPID Indexed array of private IDs that have been accepted by the owner, usually in a
    * <code>tablejoin</code> CypherPoker peer-to-peer message. This array should ONLY contain valid
    * private IDs (no wildcards).
+   * @property {Array} restorePID Copy of the original private IDs in the <code>requiredPID</code> array
+   * used to restore it if members of the <code>joinePID</code> array leave the table.
    * @property {Object} tableInfo Additional information to be included with the table. Use this object rather than
    * a {@link CypherPoker#TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
    */
@@ -74,6 +76,8 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the request sender.
     * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} table The table object being tracked by us, updated after
+    * the request has been processed.
     */
     /**
     * A notification that a new peer (possibly us), is joining another
@@ -85,6 +89,8 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the notification sender.
     * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} table The table object being tracked by us, updated after
+    * the request has been processed.
     */
     /**
     * The associated table's required private IDs have all joined and the table
@@ -114,6 +120,9 @@ class CypherPoker extends EventDispatcher {
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the notification sender.
     * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
+    * @property {CypherPoker#TableObject} table The table object being tracked by us, updated after
+    * the request has been processed. If the leaving peer was the owner, the table is destroyed
+    * and this reference is <code>null</code>.
     */
     /**
     * A join request to another owner's table has timed out without a response.
@@ -424,8 +433,8 @@ class CypherPoker extends EventDispatcher {
       var created = await account.create();
       if (created) {
          this.accounts.push(account);
-         console.log ("Created new account:");
-         console.dir(account);
+         this.debug("New account created:");
+         this.debug(account, dir);
          this.saveAccounts();
          return (account);
       } else {
@@ -478,12 +487,16 @@ class CypherPoker extends EventDispatcher {
       newTableObj.requiredPID = new Array();
       newTableObj.joinedPID = new Array();
       newTableObj.joinedPID.push (this.p2p.privateID);
+      newTableObj.restorePID = new Array();
+      newTableObj.restorePID.push (this.p2p.privateID);
       if (typeof(players) == "number") {
          for (var count=0; count < players; count++) {
             newTableObj.requiredPID.push("*");
+            newTableObj.restorePID.push("*");
          }
       } else {
          newTableObj.requiredPID = Array.from(players);
+         newTableObj.restorePID = Array.from(players);
       }
       if (tableInfo == null) {
          tableInfo = new Object();
@@ -514,7 +527,7 @@ class CypherPoker extends EventDispatcher {
    * @return {Boolean} True if the table was successfully removed, false if no such table
    * could be found.
    */
-   removeTable (tableObj, announced=false) {
+   removeTable(tableObj, announced=false) {
       try {
          clearInterval(tableObj.beaconID);
       } catch (err) {}
@@ -551,7 +564,7 @@ class CypherPoker extends EventDispatcher {
             this._joinedTables = new Array();
          }
          while (this._joinedTables.length > 0) {
-            this.removeTable (this._joinedTables[0], false);
+            this.removeTable(this._joinedTables[0], false);
          }
          this._joinedTables = new Array();
       }
@@ -560,7 +573,7 @@ class CypherPoker extends EventDispatcher {
             this._announcedTables = new Array();
          }
          while (this._announcedTables.length > 0) {
-            this.removeTable (this._announcedTables[0], true);
+            this.removeTable(this._announcedTables[0], true);
          }
          this._announcedTables = new Array();
       }
@@ -578,8 +591,6 @@ class CypherPoker extends EventDispatcher {
    * <code>this</code> context is assumed.
    */
    announceTable(tableObj, context=null) {
-      console.log("announceTable:");
-      console.dir(tableObj);
       if (context == null) {
          context = this;
       }
@@ -590,7 +601,7 @@ class CypherPoker extends EventDispatcher {
          } finally {
             return;
          }
-      }
+      }      
       context.debug("CypherPoker.announceTable("+tableObj+")")
       var announceObj = context.buildCPMessage("tablenew");
       context.copyTable(tableObj, announceObj);
@@ -630,6 +641,12 @@ class CypherPoker extends EventDispatcher {
          return (false);
       }
       if (typeof(tableObj.joinedPID.length) != "number") {
+         return (false);
+      }
+      if ((tableObj["restorePID"] == undefined) || (tableObj["restorePID"] == null)) {
+         return (false);
+      }
+      if (typeof(tableObj.restorePID.length) != "number") {
          return (false);
       }
       if ((tableObj["tableInfo"] == undefined) || (tableObj["tableInfo"] == null) || (tableObj["tableInfo"] == "")) {
@@ -816,6 +833,7 @@ class CypherPoker extends EventDispatcher {
       }
       if (this["_joinedTables"] == undefined) {
          this._joinedTables = new Array();
+         return (false);
       }
       var joined = false;
       for (var count=0; count < this._joinedTables.length; count++) {
@@ -823,7 +841,7 @@ class CypherPoker extends EventDispatcher {
          if ((currentTable.tableID == tableObj.tableID) &&
             (currentTable.tableName == tableObj.tableName) &&
             (currentTable.ownerPID == tableObj.ownerPID)) {
-               this._joinedTables.splice(count, 1);
+               this.removeTable(tableObj, false);
                joined = true;
                break;
             }
@@ -877,7 +895,7 @@ class CypherPoker extends EventDispatcher {
                hits-=10;
             }
          }
-         if (ownerID != null) {
+         if (ownerPID != null) {
             if (this._joinedTables[count].ownerPID) {
                hits++;
             } else {
@@ -907,6 +925,7 @@ class CypherPoker extends EventDispatcher {
       targetObject.ownerPID = sourceTable.ownerPID;
       targetObject.requiredPID = sourceTable.requiredPID;
       targetObject.joinedPID = sourceTable.joinedPID;
+      targetObject.restorePID = sourceTable.restorePID;
       targetObject.tableInfo = sourceTable.tableInfo;
       targetObject.toString = function() {
          return ("[object CypherPoker#TableObject]");
@@ -932,6 +951,57 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
+   * Restores a private ID to a table's {@link TableObject#requiredPID} array for
+   * a player that has left. This function does <b>not</b> update either the
+   * {@link TableObject#joinedPID} or {@link TableObject#restorePID} arrays of the
+   * table object.
+   *
+   * @param {String} privateID The private ID of the player that has left the table.
+   * @param {TableObject} tableObj The table from which the player has left.
+   *
+   * @private
+   */
+   restoredRequiredPID(privateID, tableObj) {
+      var restoredPID = null;
+      var restoreIndex = -1;
+      var wildcardExists = false;
+      for (var count=0; count < tableObj.restorePID.length; count++) {
+         if (tableObj.restorePID[count] == "*") {
+            wildcardExists = true; //at least one wildcard is present
+         }
+         if (tableObj.restorePID[count] == privateID) {
+            restoredPID = privateID;
+            restoreIndex = count;
+            break;
+         }
+      }
+      if ((restoredPID == null) && (wildcardExists == true)) {
+         //specified PID doesn't exist so it must be a wildcard
+         restoredPID = "*";
+      }
+      if ((restoredPID == null) && (wildcardExists != true)) {
+         //trying to restore a PID that doesn't belong to this table!
+         return;
+      }
+      if (restoreIndex < 0) {
+         //no target index so just add at the end
+         tableObj.requiredPID.push(restoredPID);
+         return;
+      }
+      var requiredPID = new Array();
+      var rPIDs = Array.from(tableObj.requiredPID);
+      for (var count=0; count < rPIDs.length; count++) {
+         if (restoreIndex == count) {
+            requiredPID.push(privateID); //add restored PID at original index
+            requiredPID.push(rPIDs[count]); //current PID at this index follows
+         } else {
+            requiredPID.push(rPIDs[count]);
+         }
+      }
+      tableObj.requiredPID = Array.from(rPIDs);
+   }
+
+   /**
    * Dispatches a "tableready" event when the associated table is considered
    * ready (see: {@link CypherPoker#isTableReady}).
    *
@@ -950,6 +1020,50 @@ class CypherPoker extends EventDispatcher {
          return (true);
       }
       return (false);
+   }
+
+   /**
+   * Returns or clears an arbitrary <i>local-only</i> data storage object associated with a
+   * specific table. The returned storage object can be used to store data
+   * related to the table that shouldn't, or can't, be included in the actual
+   * table object, within peer-to-peer communications, or in API calls (unless
+   * explicitly copied).
+   *
+   * @param {TableObject} tableObj The table object for which to retrieve the
+   * data object.
+   * @param {Boolean} [useLS=false] If true, the <code>localStorage</code> object
+   * will be used to provide more permanent storage that is maintained between sessions.
+   * @param {Boolean} [clear=false] If true, the data associated with the table
+   * object is cleared.
+   *
+   * @returns {Object} A local data storage object associated with the specified table.
+   * If one doesn't exist, an empty one is created. If <code>clear=true</code>,
+   * <code>null</code> is returned.
+   */
+   localTableStorage(tableObj, clear=false) {
+      if (this._LTS == undefined) {
+         this._LTS = new Array();
+      }
+      for (var count=0; count<this._LTS.length; count++) {
+         var storageObj = this._LTS[count];
+         if ((storageObj.tableID == tableObj.tableID) &&
+            (storageObj.tableName == tableObj.tableName) &&
+            (storageObj.ownerPID == tableObj.ownerPID)) {
+               if (clear) {
+                  this._LTS.splice(count, 1);
+                  return (null);
+               } else {
+                  return (storageObj.data);
+               }
+            }
+      }
+      storageObj = new Object();
+      storageObj.tableID = tableObj.tableID;
+      storageObj.tableName = tableObj.tableName;
+      storageObj.ownerPID = tableObj.ownerPID;
+      storageObj.data = new Object();
+      this._LTS.push(storageObj);
+      return (storageObj.data);
    }
 
    /**
@@ -1069,6 +1183,7 @@ class CypherPoker extends EventDispatcher {
                            var joinResponse = this.buildCPMessage("tablejoin");
                            this.copyTable(currentTable, joinResponse);
                            this.p2p.send(joinResponse, this.createTablePIDList(currentTable.joinedPID, false));
+                           ownEvent.table = currentTable;
                            this.dispatchEvent(ownEvent);
                            this.dispatchTableReadyEvent(currentTable);
                            joined = true;
@@ -1095,6 +1210,7 @@ class CypherPoker extends EventDispatcher {
                   newTable.toString = function() {
                      return ("[object CypherPoker#TableObject]");
                   }
+                  ownEvent.table = newTable;
                   this.dispatchEvent(ownEvent);
                   this.dispatchTableReadyEvent(newTable);
                   return;
@@ -1113,6 +1229,7 @@ class CypherPoker extends EventDispatcher {
                         return ("[object CypherPoker#TableObject]");
                       }
                       this._joinedTables.push(newTable);
+                      ownEvent.table = newTable;
                       this.dispatchEvent(ownEvent);
                       requestObj._resolve(event);
                       this.dispatchTableReadyEvent(newTable);
@@ -1135,9 +1252,17 @@ class CypherPoker extends EventDispatcher {
                for (count = 0; count < this._joinedTables.length; count++) {
                   currentTable = this._joinedTables[count];
                   if ((currentTable.tableID == message.tableID) && (currentTable.tableName == message.tableName)) {
+                     if (currentTable.ownerPID == event.data.result.from) {
+                        //table owner/creator is leaving; table is no longer valid
+                        ownEvent.table = null;
+                        this._joinedTables.splice(count, 1);
+                        this.dispatchEvent(ownEvent);
+                     }
                      for (var count2=0; count2 < currentTable.joinedPID.length; count2++) {
                         if (currentTable.joinedPID[count2] == event.data.result.from) {
-                           currentTable.joinedPID.splice(count2, 1);
+                           var leavingPID = currentTable.joinedPID.splice(count2, 1);
+                           this.restoredRequiredPID(leavingPID, currentTable);
+                           ownEvent.table = currentTable;
                            this.dispatchEvent(ownEvent);
                            return;
                         }
