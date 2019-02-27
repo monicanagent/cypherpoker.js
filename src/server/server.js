@@ -494,7 +494,7 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
         sendError(JSONRPC_ERRORS.METHOD_NOT_FOUND_ERROR, "Method \""+requestMethod+"\" does not exist.", sessionObj);
      }
     return;
-  } else {
+  } else {     
     var script = _APIFunctions[requestMethod].script;
     var vmContext = new Object();
     vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
@@ -1088,7 +1088,7 @@ async function postLoadConfig() {
 
 //Application entry point:
 
-if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {   
+if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {
    hostEnv = this.electronEnv;
    hostEnv.embedded = true;
    console.log ("Launching in desktop embedded (Electron) mode.");

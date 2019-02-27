@@ -60,13 +60,15 @@
                   "cashOutAddrPath":"m/0/1",
                   "minerFee": "50000",
                   "depositFee": "10000",
-                  "feeUpdateSeconds": 900
+                  "feeUpdateSeconds": 1200,
+                  "feeUpdateEnabled": true
                },
                "test3":{
                   "cashOutAddrPath":"m/0/1",
                   "minerFee": "50000",
                   "depositFee": "10000",
-                  "feeUpdateSeconds": 900
+                  "feeUpdateSeconds": 1200,
+                  "feeUpdateEnabled": true
                }
             },
             "url": {

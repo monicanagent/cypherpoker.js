@@ -652,6 +652,7 @@ async function getAccount(searchObj) {
           currentAccount.primary_key = count;
           resultArr.push (currentAccount);
         }
+        //increase here if we want more than 2 recent records for account
         if (resultArr.length == 2) {
           break;
         }
@@ -1112,7 +1113,7 @@ function sendBTCTx(txObject, network=null) {
 }
 
 /**
-* Adds a pending cashout transaction to the internal <code>_pendingCashouts</code>
+* Adds a pending cashout transaction to the <code>namespace.cp.pendingCashouts</code>
 * array.
 *
 * @param {String} fromAccount The account address that is cashing out.
@@ -1125,8 +1126,8 @@ function sendBTCTx(txObject, network=null) {
 * cryptocurrency.
 */
 function addPendingCashout(fromAccount, toAddress, type, network, amount, fees) {
-   if ((this["_pendingCashouts"] == undefined) || (this["_pendingCashouts"] == null)) {
-      this._pendingCashouts = new Array();
+   if (namespace.cp.pendingCashouts == undefined) {
+      namespace.cp.pendingCashouts = new Array();
    }
    var cashoutObject = new Object();
    cashoutObject.from = fromAccount;
@@ -1137,13 +1138,13 @@ function addPendingCashout(fromAccount, toAddress, type, network, amount, fees) 
    cashoutObject.fees = fees;
    var now = new Date();
    cashoutObject.timestamp = now.toISOString();
-   this._pendingCashouts.push(cashoutObject);
+   namespace.cp.pendingCashouts.push(cashoutObject);
    //should array be saved in case server quits?
 }
 
 /**
 * Checks if a cashout transaction for a specific account is pending (appears in the
-* internal <code>_pendingCashouts</code> array). Only one pending cashout transaction
+* <code>namespace.cp.pendingCashouts</code> array). Only one pending cashout transaction
 * per account, cryptocurrency type, and network, is assumed to exist.
 *
 * @param {String} fromAccount The account address to check.
@@ -1153,15 +1154,15 @@ function addPendingCashout(fromAccount, toAddress, type, network, amount, fees) 
 * @return {Boolean} True if the specified account has a transaction pending, false otherwise.
 */
 function cashoutIsPending(fromAccount, type, network) {
-   if ((this["_pendingCashouts"] == undefined) || (this["_pendingCashouts"] == null)) {
-      this._pendingCashouts = new Array();
+   if (namespace.cp.pendingCashouts == undefined) {
+      namespace.cp.pendingCashouts = new Array();
       return (false);
    }
-   if (this._pendingCashouts.length == 0) {
+   if (namespace.cp.pendingCashouts.length == 0) {
       return (false);
    }
-   for (var count=0; count < this._pendingCashouts.length; count++) {
-      var currentPendingCashout = this._pendingCashouts[count];
+   for (var count=0; count < namespace.cp.pendingCashouts.length; count++) {
+      var currentPendingCashout = namespace.cp.pendingCashouts[count];
       if ((currentPendingCashout.from == fromAccount) &&
          (currentPendingCashout.type == type) &&
          (currentPendingCashout.network == network)) {
@@ -1172,27 +1173,27 @@ function cashoutIsPending(fromAccount, type, network) {
 }
 
 /**
-* Removes a pending cashout transaction from the internal <code>_pendingCashouts</code>
+* Removes a pending cashout transaction from the <code>namespace.cp.pendingCashouts</code>
 * array.
 *
 * @param {String} fromAccount The account address that is cashing out.
 * @param {String} type The cryptocurrency type associated with the transaction (e.g. "bitcoin").
 * @param {String} network The cryptocurrency sub-network associated with the transaction (e.g. "main" or "test3").
 *
-* @return {Object} The pending cashout transaction removed from the internal <code>_pendingCashouts</code> array,
-* of <code>null</code> if no matching transaction exists.
+* @return {Object} The pending cashout transaction removed from the internal <code>namespace.cp.pendingCashouts</code>
+* array, of <code>null</code> if no matching transaction exists.
 */
 function removePendingCashout(fromAccount, type, network) {
-   if ((this["_pendingCashouts"] == undefined) || (this["_pendingCashouts"] == null)) {
-      this._pendingCashouts = new Array();
+   if (namespace.cp.pendingCashouts == undefined) {
+      namespace.cp.pendingCashouts = new Array();
       return (null);
    }
-   for (var count=0; count < this._pendingCashouts.length; count++) {
-      var currentPendingCashout = this._pendingCashouts[count];
+   for (var count=0; count < namespace.cp.pendingCashouts.length; count++) {
+      var currentPendingCashout = namespace.cp.pendingCashouts[count];
       if ((currentPendingCashout.from == fromAccount) &&
          (currentPendingCashout.type == type) &&
          (currentPendingCashout.network == network)) {
-            var txObj = this._pendingCashouts.splice(count, 1);
+            var txObj = namespace.cp.pendingCashouts.splice(count, 1);
             return (txObj);
          }
    }
@@ -1233,7 +1234,7 @@ async function estimateTxFee (txData=null, priority=1, APIType="bitcoin", networ
             if (txData != null) {
                txSize = txData.length / 2; //hex-encoded binary data
             }
-
+            //TODO: complete this!
             break;
          default:
             return (null);
@@ -1266,6 +1267,10 @@ function updateTxFees(APIType="bitcoin", network=null, forceUpdate=false) {
       var API = config.CP.API[APIType];
       if ((network == null) || (network == "")) {
          network = API.default.network;
+      }
+      if (API.default[network].feeUpdateEnabled == false) {
+         reject (new Error("Fee updates for \""+APIType+"/"+network+"\" disabled."));
+         return;
       }
       var url = API.url.fees;
       var updateSeconds = API.default[network].feeUpdateSeconds;
@@ -1331,36 +1336,49 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
          try {
             var result = await updateTxFees(APIType, network);
          } catch (err) {
-            //console.error("Could not update "+APIType+"/"+network+" transaction fees.");
+            //failed or disabled
          }
          if (startAutoUpdate) {
-            if (btcAPI.default[network].feeUpdateSeconds < 30) {
-               console.warn ("*WARNING* A transaction fee(s) update interval of at least 30 seconds is advised in order to deal with possible network latency.");
+            if (btcAPI.default[network].feeUpdateEnabled == false) {
+               console.log ("Transaction fee updates for \""+APIType+"/"+network+"\" disabled.");
+            } else {
+               if (btcAPI.default[network].feeUpdateSeconds < 30) {
+                  console.warn ("*WARNING* A transaction fee updates interval of at least 30 seconds is advised in order to deal with possible network latency.");
+               }
+               var updateSeconds = btcAPI.default[network].feeUpdateSeconds;
+               console.log("Updating "+APIType+"/"+network+" transaction fees every "+updateSeconds+" seconds / "+(updateSeconds / 60)+" minutes.");
+               var updateInterval = updateSeconds * 1000;
+               btcAPI.default[network].timeout = setInterval((APIType, network) => {
+                  updateTxFees(APIType, network, true).then(result => {
+                  }).catch(err => {
+                     //failed or disabled
+                  })
+               }, updateInterval, APIType, network);
             }
-            var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
+         }
+      } else {
+         if (btcAPI.default[network].feeUpdateEnabled == false) {
+            console.log ("Transaction fee updates for \""+APIType+"/"+network+"\" disabled.");
+         } else {
+            updateTxFees(APIType, network).then(result => {
+               //updated
+            }).catch(err => {
+               //failed or disabled
+            });
+            if (btcAPI.default[network].feeUpdateSeconds < 30) {
+               console.warn ("*WARNING* A transaction fee updates interval of at least 30 seconds is advised in order to deal with possible network latency.");
+            }
+            updateSeconds = btcAPI.default[network].feeUpdateSeconds;
+            console.log("Updating "+APIType+"/"+network+" transaction fees every "+updateSeconds+" seconds / "+(updateSeconds / 60)+" minutes.");
+            var updateInterval = updateSeconds * 1000;
             btcAPI.default[network].timeout = setInterval((APIType, network) => {
                updateTxFees(APIType, network, true).then(result => {
+                  //updated
                }).catch(err => {
+                  //failed or disabled
                })
             }, updateInterval, APIType, network);
          }
-      } else {
-         updateTxFees(APIType, network).then(result => {
-            //updated
-         }).catch(err => {
-            //failed
-         });
-         if (btcAPI.default[network].feeUpdateSeconds < 30) {
-            console.log("Starting auto-update of "+APIType+"/"+network+" transaction fees at "+btcAPI.default[network].feeUpdateSeconds+" seconds.");
-         }
-         var updateInterval = btcAPI.default[network].feeUpdateSeconds * 1000;
-         btcAPI.default[network].timeout = setInterval((APIType, network) => {
-            updateTxFees(APIType, network, true).then(result => {
-               //updated
-            }).catch(err => {
-               //failed
-            })
-         }, updateInterval, APIType, network);
       }
    }
 }
@@ -1406,6 +1424,8 @@ if (namespace.cp.bitcoinWallet == undefined) {
 if (namespace.cp.bitcoinTest3Wallet == undefined) {
    namespace.cp.bitcoinTest3Wallet = null;
 }
-
-//automatically update transaction fee estimates at startup
-updateAllTxFees();
+if (namespace.cp._txFeesUpdating == undefined) {
+   namespace.cp._txFeesUpdating = true;
+   //automatically update transaction fee estimates at startup
+   updateAllTxFees();
+}

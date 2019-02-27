@@ -141,13 +141,16 @@ async function CP_SmartContract (sessionObj) {
             //save new game contract here
             sendContractMessage("contractnew", newContract, privateID);
          } catch (err) {
-            console.error(err.stack);
-            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
+            setPlayerBalance(newContract, privateID, "0"); //revert buy-in
+            var payloadObj = new Object();
+            payloadObj.error = new Object();
+            payloadObj.error.message = err.message;
+            //notify other contract players of the failure
+            sendContractMessage("contractnewfail", newContract, privateID, null, payloadObj);
+            cancelContract(newContract);
+            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, err.message, sessionObj);
             return(false);
          }
-         //console.log ("New contract created: \""+newContract.contractID+"\"");
-         //console.log ("   Owner PID: \""+privateID+"\"");
-         //console.log ("   Owner Account: \""+playerAccount[0].address+"\"");
          break;
       case "agree":
          var contractOwnerPID = requestParams.ownerPID;
@@ -193,11 +196,16 @@ async function CP_SmartContract (sessionObj) {
             resultObj.contract = gameContract;
             sendContractMessage("contractagree", gameContract, privateID);
          } catch (err) {
-            console.error(err.stack);
-            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
+            setPlayerBalance(gameContract, privateID, "0"); //revert buy-in
+            var payloadObj = new Object();
+            payloadObj.error = new Object();
+            payloadObj.error.message = err.message;
+            //notify other contract players of the failure
+            sendContractMessage("contractagreefail", gameContract, privateID, null, payloadObj);
+            cancelContract(gameContract);
+            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, err.message, sessionObj);
             return(false);
          }
-         //console.log ("Player has agreed to contract: "+privateID);
          break;
       case "store":
          if (typeof(requestParams.type) != "string") {
@@ -363,7 +371,6 @@ async function CP_SmartContract (sessionObj) {
                         keychainsFound++;
                      }
                      if (keychainsFound == gameContract.players.length) {
-                        //console.log ("Contract "+contractID+" played to end. Analyzing...");
                         try {
                            var nonFoldedPlayers = new Array();
                            for (count = 0; count < gameContract.players.length; count++) {
@@ -391,7 +398,6 @@ async function CP_SmartContract (sessionObj) {
                                  sendError(JSONRPC_ERRORS.PLAYER_ACTION_ERROR, "Contract validation failed.", sessionObj);
                                  return (false);
                               }
-                              //console.log ("Contract "+contractID+" being scored...");
                               var scoreResult = await scoreHands(gameContract);
                               //Additional information can be gathered from:
                               //   scoreResult.winningPlayers
@@ -1277,7 +1283,7 @@ async function applyPenalty (contract, playerPIDs, penaltyType) {
                penalizedPIDs.push(player.privateID);
             }
          }
-         //console.log ("Player \""+penalizedPIDs+"\" has timed out contract: "+contract.contractID);
+         //console.log ("Player(s) \""+penalizedPIDs+"\" has/have timed out contract: "+contract.contractID);
          var distributionPIDs = new Array();
          for (count = 0; count < contract.players.length; count++) {
             var currentPlayer = contract.players[count];
@@ -2333,7 +2339,7 @@ function validTableObject(tableObj) {
 }
 
 /**
-* Evaluates a provided object to determine if it's a valid table object and
+* Evaluates a provided object to determine if it's a valid account object and
 * optionally if the provided password correctly matches the one stored for the account.
 *
 * @param {AccountObject} accountObj The object to examine.
@@ -2432,6 +2438,41 @@ function setPlayerBalance(contractObj, privateID, balance) {
 }
 
 /**
+* Cancels a contract by immediately refunding the balances of all registered players
+* and then removing the contract. And pot balance of the contract is destroyed with
+* the contract.
+*
+* @param {ContractObject} contractObj The contract to cancel.
+*
+* @private
+* @async
+*/
+async function cancelContract(contractObj) {
+   for (var count = 0; count < contractObj.players.length; count++) {
+      var player = contractObj.players[count];
+      if (player.account != null) {
+         var balance = player.balance;
+         var searchObj = new Object();
+         searchObj.address = player.account.address;
+         searchObj.type = player.account.type;
+         searchObj.network = player.account.network;
+         if (bigInt(balance).greater(0)) {
+            try {
+               var accountResults = await namespace.cp.getAccount(searchObj);
+               var updateResult = await addToAccountBalance(accountResults[0], balance);
+            } catch (err) {
+               console.error("Couldn't refund cancelled contract.");
+               console.error("   Contract ID: "+contractObj.contractID);
+               console.error("   Number of players: "+contractObj.players.length);
+               console.error("   Account: "+player.account.address);
+               console.error("   Balance: "+balance);
+            }
+        }
+      }
+   }
+}
+
+/**
 * Adds to and stores a balance amount for an account row such as one retrieved via
 * {@link validAccount}. The account should already have been checked for validity
 * and proper credentials prior to calling this function.
@@ -2459,14 +2500,14 @@ async function addToAccountBalance(accountRow, balanceInc, contract=null) {
    var balanceUpdate = bigInt(balanceInc);
    currentBalance = currentBalance.plus(balanceUpdate);
    if (currentBalance.lesser(0)) {
-      throw (new Error("Update amount exceeds available balance."));
+      throw (new Error("Insufficient account balance to continue."));
    }
    //update database
    accountRow.balance = currentBalance.toString(10);
    accountRow.updated = namespace.cp.MySQLDateTime(new Date());
    var result = await namespace.cp.saveAccount(accountRow);
    if (result != true) {
-      throw (new Error("Couldn't save account."));
+      throw (new Error("Couldn't update account."));
    }
    //update contract
    if (contract != null) {
@@ -2484,8 +2525,9 @@ async function addToAccountBalance(accountRow, balanceInc, contract=null) {
             }
          }
       }
+      throw (new Error("Couldn't find account in contract."));
    }
-   throw (new Error("Couldn't find account."));
+   return (currentBalance.toString(10));
 }
 
 /**
@@ -2576,10 +2618,13 @@ function SRADecrypt (keypair, decValue) {
 * @param {Object} fromPID The sender's private ID.
 * @param {Array} [excludePIDs=null] The private IDs to exclude from the notification.
 * The <code>fromPID</code> parameter is automatically included.
+* @param {Object} [payload=null] An object containing properties to include in
+* the notification. Standard properties <code>data</code>, <code>from</code>, and
+* <code>type</code> will be ignored.
 *
 * @private
 */
-function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null) {
+function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null, payload=null) {
    var recipients = new Array();
    if (excludePIDs == null) {
       excludePIDs = new Array();
@@ -2596,6 +2641,14 @@ function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null
       recipients.push(currentPlayer.privateID);
    });
    var messageObj = namespace.cp.buildCPMessage(messageType);
+   if (payload != null) {
+      for (var item in payload) {
+         //exclude standard properties
+         if ((item != "data") && (item != "from") && (item != "type")) {
+            messageObj[item] = payload[item];
+         };
+      }
+   }
    messageObj.contract = contractObj;
    namespace.websocket.sendUpdate(recipients, messageObj, fromPID);
 }

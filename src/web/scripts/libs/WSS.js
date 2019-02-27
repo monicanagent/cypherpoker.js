@@ -204,7 +204,7 @@ class WSS extends EventDispatcher {
       }
       if ((rpc_result_obj.result["private_id"] != undefined) && (rpc_result_obj.result["private_id"] != null)) {
          this._privateID = rpc_result_obj.result.private_id;
-         //the following concatention pattern matches the server
+         //the following concatenation pattern matches the server
          //implementation:
          //var hash_source_str = this.serverToken+ ":" +this.userToken;
          //var generated_pid = await this.SHA256(hash_source_str);

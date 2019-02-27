@@ -1173,6 +1173,7 @@ class CypherPokerUI {
                var game = this.cypherpoker.createGame(event.table, this.selectedAccount, playerInfo).start();
                try {
                   game.addEventListener("gamerestart", this.onRestartGame, this);
+                  game.addEventListener("gamekill", this.onKillGame, this);
                   game.contract.addEventListener("timeoutstart", this.onStartContractTimeout, this);
                   game.contract.addEventListener("timeout", this.onContractTimeout, this);
                   game.contract.addEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
@@ -1218,6 +1219,9 @@ class CypherPokerUI {
       }
       if (Number(numPlayers) < 2) {
          return ("More than one player required.");
+      }
+      if (bigInt(buyInAmount).greater(this.selectedAccount.balance)) {
+         return ("Insufficient account balance for buy-in.");
       }
       if (String(buyInAmount).trim() == "") {
          return ("The buy-in amount can't be blank.");
@@ -1434,6 +1438,13 @@ class CypherPokerUI {
          ui.hideDialog(4000);
          return;
       }
+      var buyInAmount = table.tableInfo.buyIn;
+      if (bigInt(buyInAmount).greater(ui.selectedAccount.balance)) {
+         console.log ("Can't join!");
+         ui.showDialog ("Insufficient account balance for buy-in.<br/>Minimum balance "+buyInAmount+" required.");
+         ui.hideDialog(4000);
+         return;
+      }
       target.remove(); //remove the button here since the reference is not carried through with the joined table
       var tableName = table.tableName;
       ownGamesElement.innerHTML = "Joining game \""+tableName+"\". Awaiting other player(s)...";
@@ -1451,6 +1462,7 @@ class CypherPokerUI {
          playerInfo.alias = alias;
          var game = ui.cypherpoker.createGame(event.table, ui.selectedAccount, playerInfo).start();
          try {
+            game.addEventListener("gamekill", ui.onKillGame, ui);
             game.addEventListener("gamerestart", ui.onRestartGame, ui);
             game.contract.addEventListener("timeoutstart", ui.onStartContractTimeout, ui);
             game.contract.addEventListener("timeout", ui.onContractTimeout, ui);
@@ -1563,6 +1575,36 @@ class CypherPokerUI {
          console.error (err);
          //game may not have contract
       }
+   }
+
+   /**
+   * Event listener invoked when an associated game dispatches a "gamekill" event.
+   *
+   * @param {CypherPokerGame#event:gamekill} event A "gamekill" event object.
+   *
+   * @private
+   */
+   onKillGame(event) {
+      var timeoutElement = event.game.DOMElement.querySelector(ui.gameUISelectors.timeoutAmount);
+      this.stopTimeoutTimer(timeoutElement);
+      try {
+         event.game.removeEventListener("gamerestart", this.onRestartGame, this);
+         event.game.removeEventListener("gamekill", this.onKillGame, this);
+         event.game.contract.removeEventListener("gamerestart", this.onRestartGame, this);
+         event.game.contract.removeEventListener("timeoutstart", this.onStartContractTimeout, this);
+         event.game.contract.removeEventListener("timeout", this.onContractTimeout, this);
+         event.game.contract.removeEventListener("timeoutinvalid", this.onContractTimeoutInvalid, this);
+      } catch (err) {
+         console.error(err);
+      }
+      this.showDialog(event.reason);
+      this.hideDialog(6000);
+      var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+      this.show(lobbyContainer);
+      this.resetLobbyUI(true);
+      this.lobbyActive = true;
+      this.cypherpoker.captureNewTables = true;
+      this.startLobbyCull();
    }
 
    /**
