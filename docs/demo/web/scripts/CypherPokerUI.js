@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.3.2
+* @version 0.4.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -1657,7 +1657,7 @@ class CypherPokerUI {
    */
    onBetButtonClick(event) {
       var game = event.target.game;
-      var ui = event.target.ui;      
+      var ui = event.target.ui;
       ui.disable(event.target);
       ui.disable(game.DOMElement.querySelector(ui.gameUISelectors.betButton));
       ui.disable(game.DOMElement.querySelector(ui.gameUISelectors.foldButton));
@@ -1862,7 +1862,8 @@ class CypherPokerUI {
       var metaTags = new Object();
       metaTags.tableName = tableData.tableName;
       metaTags.tableOwnerPID = tableData.ownerPID;
-      metaTags.numPlayers = String(tableData.requiredPID.length+1);
+      //can also use just tableData.restorePID.length as of v0.4.0...
+      metaTags.numPlayers = String(tableData.requiredPID.length + tableData.joinedPID.length);
       metaTags.buyInAmount = tableData.tableInfo.buyIn;
       metaTags.bigBlind = tableData.tableInfo.bigBlind;
       metaTags.smallBlind = tableData.tableInfo.smallBlind;
