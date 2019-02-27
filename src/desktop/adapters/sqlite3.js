@@ -90,6 +90,10 @@ function initialize(initObj) {
                os += "32";
             } else if (process.arch == "x64") {
                os += "64";
+            } else if (process.arch == "ia32") {
+               os += "32";
+            } else if (process.arch == "ia64") {
+               os += "64";
             } else {
                throw (new Error ("Unrecognized hardware architecture: "+process.arch));
             }
