@@ -73,7 +73,7 @@
 /**
 * @typedef {http} httpserv A HTTP endpoint ("http" module).
 */
-//Required modules:
+//Required installed modules:
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
@@ -83,10 +83,13 @@ const websocket = require("ws");
 const request = require("request");
 const crypto = require("crypto");
 const bigInt = require("big-integer");
-const bitcoin = require('bitcoinjs-lib');
-const secp256k1 = require ("secp256k1"); //required for Bitcoin transaction signing
-const namespace = new Object(); //shared API namespace (instead of global data)
+const bitcoin = require("bitcoinjs-lib");
+const secp256k1 = require("secp256k1"); //required for Bitcoin transaction signing
 
+/**
+* @property {Object} namespace A global object containing references and data shared by API scripts.
+*/
+const namespace = new Object();
 /**
 * @property {String} configFile="./config.json" Location of JSON data file to load and parse into the
 * {@link config} object. May be either a filesystem path or a URL.
@@ -160,8 +163,8 @@ const JSONRPC_ERRORS = {
 *
 * @property {String} api_dir="./api" A directory containing all available API methods that may be invoked. Each API method must match
 * a filename and the entry function in that file must also have the same name.
-* @property {Number} http_port=8080 The listening port for the HTTP server.
-* @property {Number} ws_port=8090 The listening port for the WebSocket server.
+* @property {Number} http_port=8080 The default listening port for the HTTP server. This value may be overriden by a {@link config} setting.
+* @property {Number} ws_port=8090 The listening port for the WebSocket server. This value may be overriden by a {@link config} setting.
 * @property {Number} max_batch_requests=5 The maximum allowable number of batched RPC calls in a single request. If more than this number
 * of calls are encountered in a request batch a JSONRPC_INTERNAL_ERROR error is thrown.
 * @property {HTTP_Headers_Array} http_headers Default headers to include in HTTP / HTTPS responses. Each array element is an object
@@ -519,7 +522,7 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
         sendError(JSONRPC_ERRORS.METHOD_NOT_FOUND_ERROR, "Method \""+requestMethod+"\" does not exist.", sessionObj);
      }
     return;
-  } else {
+  } else {     
     var script = _APIFunctions[requestMethod].script;
     var vmContext = new Object();
     vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
@@ -1127,6 +1130,16 @@ if ((this["electronEnv"] != undefined) &amp;&amp; (this["electronEnv"] != null))
 loadConfig().then (configObj => {
    console.log ("Configuration data successfully loaded and parsed.");
    rpc_options.exposed_objects.config = config;
+   if (config.CP.API.RPC.http.enabled == true) {
+      rpc_options.http_port = config.CP.API.RPC.http.port;
+   } else {
+      rpc_options.http_port = -1;
+   }
+   if (config.CP.API.RPC.wss.enabled == true) {
+      rpc_options.ws_port = config.CP.API.RPC.wss.port;
+   } else {
+      rpc_options.ws_port = -1;
+   }
    adjustEnvironment(); //adjust for local runtime environment
    if (postLoadConfig() == true) {
       //account system successfully created immediately
@@ -1147,13 +1160,13 @@ loadConfig().then (configObj => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Feb 19 2019 01:44:15 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Feb 27 2019 16:50:46 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

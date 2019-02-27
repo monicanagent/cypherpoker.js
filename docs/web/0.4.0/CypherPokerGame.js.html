@@ -260,6 +260,19 @@ class CypherPokerGame extends EventDispatcher {
    * @property {CypherPokerGame} game The game instance about to restart.
    * @property {CypherPoker#TableObject} table The table associated with the game instance.
    */
+   /**
+   * The game (hand) has encountered an unexpected fatal error and can't continue. No
+   * further game actions will take place and the game instance will no longer listen
+   * for external messages or events.
+   *
+   * @event CypherPokerGame#gamekill
+   * @type {Event}
+   * @property {CypherPokerGame} game The game instance reporting as ready.
+   * @property {CypherPoker#TableObject} table The table associated with the game instance.
+   * * @property {CypherPokerContract} contract The contract instance associated with the game instance.
+   * @property {String} reason A human-readable explanation of the cause of the fatal game
+   * end.
+   */
 
    /**
    * Creates a new game instance.
@@ -275,7 +288,7 @@ class CypherPokerGame extends EventDispatcher {
    * If &lt;code>null&lt;/code>, no contract interface is used.
    */
    constructor(cypherpokerRef, tableObj, playerInfo=null, ContractClass="CypherPokerContract") {
-      super();
+      super();      
       try {
          //attempt to create dummy instance to ensure that class is available
          var temp = new CypherPokerPlayer("");
@@ -968,6 +981,7 @@ class CypherPokerGame extends EventDispatcher {
       returnTable.tableName = this.table.tableName;
       returnTable.requiredPID = Array.from(this.table.requiredPID);
       returnTable.joinedPID = Array.from(this.table.joinedPID);
+      returnTable.restorePID = Array.from(this.table.restorePID);
       returnTable.tableInfo = new Object();
       for (var item in this.table.tableInfo) {
          returnTable.tableInfo[item] = this.table.tableInfo[item];
@@ -1160,7 +1174,7 @@ class CypherPokerGame extends EventDispatcher {
       event.game = this;
       event.table = this.table;
       //dispatch the event on a brief delay to allow caller to add event listener(s)
-      setTimeout((context, event)=>context.dispatchEvent(event), 50, this, event);
+      setTimeout((context, event)=>context.dispatchEvent(event), 100, this, event);
       var playerObj = this.getPlayer(this.ownPID);
       playerObj.ready = true;
       this.sendToPlayers("gameready", playerObj.info);
@@ -1760,6 +1774,32 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
+   * Kills the current game (hand), and stops any further actions. Usually this
+   * function is called on a fatal error such as when an associated contract
+   * can't be agreed to (e.g. insufficient funds).&lt;br/>
+   * After killing a game the instance should be destroyed and removed from memory.
+   *
+   * @param {String} reason A human-readable explanation of why the game is
+   * being killed.
+   *
+   * @return {Promise} Resolves with a result of &lt;code>true&lt;/code> when all game
+   * functionality has been successfully stopped and all data cleared.
+   * @fires CypherPokerGame#gamekill
+   * @async
+   */
+   async killGame(reason) {
+      this._gameEnding = false;
+      this._gameStarted = false;
+      var event = new Event("gamekill");
+      event.table = this.table;
+      event.game = this;
+      event.contract = this.contract;
+      event.reason = reason;
+      this.dispatchEvent(event);
+      this.destroy();
+   }
+
+   /**
    * Attempts to restart the game by resetting all cards and player selections,
    * shifting player roles, and finally starting the game (if we're the current dealer).
    * If the game is awaiting analysis, the restart is held until complete.
@@ -1839,7 +1879,6 @@ class CypherPokerGame extends EventDispatcher {
             //anyone but the current dealer will throw an error in sendGameParams
          }
       }
-      //context._gameStarted = true;
       context._gameEnding = false;
       var result = await context.processMessageQueue();
       return (true);
@@ -2311,13 +2350,13 @@ class CypherPokerGame extends EventDispatcher {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#RPC">RPC</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSS.html">WSS</a></li></ul><h3>Events</h3><ul><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:connect">connect</a></li><li><a href="WebRTCClient.html#event:create">create</a></li><li><a href="WebRTCClient.html#event:disconnect">disconnect</a></li><li><a href="WebRTCClient.html#event:error">error</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Feb 19 2019 01:44:38 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Feb 27 2019 16:50:01 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

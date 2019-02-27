@@ -29,7 +29,7 @@
             <pre class="prettyprint source linenums"><code>/**
 * @file Manages proxy CypherPoker smart contracts and defines a number of related utility functions.
 *
-* @version 0.2.3
+* @version 0.4.0
 */
 
 /**
@@ -55,6 +55,8 @@
 * considered full or ready.
 * @property {Array} joinedPID Indexed array of private IDs that have been accepted by the owner. When a contract
 * is first created, this array should only have one element: the owner's PID.
+* @property {Array} restorePID Copy of the original private IDs in the &lt;code>requiredPID&lt;/code> array
+* used to restore it if members of the &lt;code>joinePID&lt;/code> array leave the table.
 * @property {Object} tableInfo Additional information to be included with the table.
 */
 /**
@@ -112,7 +114,6 @@ async function CP_SmartContract (sessionObj) {
             return(false);
          }
          if (validContractObject(requestParams.contract, privateID, requestParams.account) == false) {
-            console.error("Invalid contract creation");
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Invalid contract.", sessionObj);
             return(false);
          }
@@ -169,13 +170,16 @@ async function CP_SmartContract (sessionObj) {
             //save new game contract here
             sendContractMessage("contractnew", newContract, privateID);
          } catch (err) {
-            console.error(err.stack);
-            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
+            setPlayerBalance(newContract, privateID, "0"); //revert buy-in
+            var payloadObj = new Object();
+            payloadObj.error = new Object();
+            payloadObj.error.message = err.message;
+            //notify other contract players of the failure
+            sendContractMessage("contractnewfail", newContract, privateID, null, payloadObj);
+            cancelContract(newContract);
+            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, err.message, sessionObj);
             return(false);
          }
-         //console.log ("New contract created: \""+newContract.contractID+"\"");
-         //console.log ("   Owner PID: \""+privateID+"\"");
-         //console.log ("   Owner Account: \""+playerAccount[0].address+"\"");
          break;
       case "agree":
          var contractOwnerPID = requestParams.ownerPID;
@@ -221,11 +225,16 @@ async function CP_SmartContract (sessionObj) {
             resultObj.contract = gameContract;
             sendContractMessage("contractagree", gameContract, privateID);
          } catch (err) {
-            console.error(err.stack);
-            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Could not update account balance.", sessionObj);
+            setPlayerBalance(gameContract, privateID, "0"); //revert buy-in
+            var payloadObj = new Object();
+            payloadObj.error = new Object();
+            payloadObj.error.message = err.message;
+            //notify other contract players of the failure
+            sendContractMessage("contractagreefail", gameContract, privateID, null, payloadObj);
+            cancelContract(gameContract);
+            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, err.message, sessionObj);
             return(false);
          }
-         //console.log ("Player has agreed to contract: "+privateID);
          break;
       case "store":
          if (typeof(requestParams.type) != "string") {
@@ -391,7 +400,6 @@ async function CP_SmartContract (sessionObj) {
                         keychainsFound++;
                      }
                      if (keychainsFound == gameContract.players.length) {
-                        //console.log ("Contract "+contractID+" played to end. Analyzing...");
                         try {
                            var nonFoldedPlayers = new Array();
                            for (count = 0; count &lt; gameContract.players.length; count++) {
@@ -419,7 +427,6 @@ async function CP_SmartContract (sessionObj) {
                                  sendError(JSONRPC_ERRORS.PLAYER_ACTION_ERROR, "Contract validation failed.", sessionObj);
                                  return (false);
                               }
-                              //console.log ("Contract "+contractID+" being scored...");
                               var scoreResult = await scoreHands(gameContract);
                               //Additional information can be gathered from:
                               //   scoreResult.winningPlayers
@@ -1305,7 +1312,7 @@ async function applyPenalty (contract, playerPIDs, penaltyType) {
                penalizedPIDs.push(player.privateID);
             }
          }
-         //console.log ("Player \""+penalizedPIDs+"\" has timed out contract: "+contract.contractID);
+         //console.log ("Player(s) \""+penalizedPIDs+"\" has/have timed out contract: "+contract.contractID);
          var distributionPIDs = new Array();
          for (count = 0; count &lt; contract.players.length; count++) {
             var currentPlayer = contract.players[count];
@@ -2317,6 +2324,15 @@ function validTableObject(tableObj) {
    if (tableObj.joinedPID.length &lt; 2) {
       return (false);
    }
+   if (typeof(tableObj.restorePID) != "object") {
+      return (false);
+   }
+   if (typeof(tableObj.restorePID.length) != "number") {
+      return (false);
+   }
+   if (tableObj.restorePID.length != tableObj.joinedPID.length) {
+      return (false);
+   }
    for (var count=0; count &lt; tableObj.requiredPID.length; count++) {
       if ((typeof(tableObj.requiredPID[count]) != "string") || (tableObj.requiredPID[count] == "")) {
          return (false);
@@ -2361,7 +2377,7 @@ function validTableObject(tableObj) {
 }
 
 /**
-* Evaluates a provided object to determine if it's a valid table object and
+* Evaluates a provided object to determine if it's a valid account object and
 * optionally if the provided password correctly matches the one stored for the account.
 *
 * @param {AccountObject} accountObj The object to examine.
@@ -2460,6 +2476,41 @@ function setPlayerBalance(contractObj, privateID, balance) {
 }
 
 /**
+* Cancels a contract by immediately refunding the balances of all registered players
+* and then removing the contract. And pot balance of the contract is destroyed with
+* the contract.
+*
+* @param {ContractObject} contractObj The contract to cancel.
+*
+* @private
+* @async
+*/
+async function cancelContract(contractObj) {
+   for (var count = 0; count &lt; contractObj.players.length; count++) {
+      var player = contractObj.players[count];
+      if (player.account != null) {
+         var balance = player.balance;
+         var searchObj = new Object();
+         searchObj.address = player.account.address;
+         searchObj.type = player.account.type;
+         searchObj.network = player.account.network;
+         if (bigInt(balance).greater(0)) {
+            try {
+               var accountResults = await namespace.cp.getAccount(searchObj);
+               var updateResult = await addToAccountBalance(accountResults[0], balance);
+            } catch (err) {
+               console.error("Couldn't refund cancelled contract.");
+               console.error("   Contract ID: "+contractObj.contractID);
+               console.error("   Number of players: "+contractObj.players.length);
+               console.error("   Account: "+player.account.address);
+               console.error("   Balance: "+balance);
+            }
+        }
+      }
+   }
+}
+
+/**
 * Adds to and stores a balance amount for an account row such as one retrieved via
 * {@link validAccount}. The account should already have been checked for validity
 * and proper credentials prior to calling this function.
@@ -2487,14 +2538,14 @@ async function addToAccountBalance(accountRow, balanceInc, contract=null) {
    var balanceUpdate = bigInt(balanceInc);
    currentBalance = currentBalance.plus(balanceUpdate);
    if (currentBalance.lesser(0)) {
-      throw (new Error("Update amount exceeds available balance."));
+      throw (new Error("Insufficient account balance to continue."));
    }
    //update database
    accountRow.balance = currentBalance.toString(10);
    accountRow.updated = namespace.cp.MySQLDateTime(new Date());
    var result = await namespace.cp.saveAccount(accountRow);
    if (result != true) {
-      throw (new Error("Couldn't save account."));
+      throw (new Error("Couldn't update account."));
    }
    //update contract
    if (contract != null) {
@@ -2512,8 +2563,9 @@ async function addToAccountBalance(accountRow, balanceInc, contract=null) {
             }
          }
       }
+      throw (new Error("Couldn't find account in contract."));
    }
-   throw (new Error("Couldn't find account."));
+   return (currentBalance.toString(10));
 }
 
 /**
@@ -2604,10 +2656,13 @@ function SRADecrypt (keypair, decValue) {
 * @param {Object} fromPID The sender's private ID.
 * @param {Array} [excludePIDs=null] The private IDs to exclude from the notification.
 * The &lt;code>fromPID&lt;/code> parameter is automatically included.
+* @param {Object} [payload=null] An object containing properties to include in
+* the notification. Standard properties &lt;code>data&lt;/code>, &lt;code>from&lt;/code>, and
+* &lt;code>type&lt;/code> will be ignored.
 *
 * @private
 */
-function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null) {
+function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null, payload=null) {
    var recipients = new Array();
    if (excludePIDs == null) {
       excludePIDs = new Array();
@@ -2624,6 +2679,14 @@ function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null
       recipients.push(currentPlayer.privateID);
    });
    var messageObj = namespace.cp.buildCPMessage(messageType);
+   if (payload != null) {
+      for (var item in payload) {
+         //exclude standard properties
+         if ((item != "data") &amp;&amp; (item != "from") &amp;&amp; (item != "type")) {
+            messageObj[item] = payload[item];
+         };
+      }
+   }
    messageObj.contract = contractObj;
    namespace.websocket.sendUpdate(recipients, messageObj, fromPID);
 }
@@ -2665,13 +2728,13 @@ namespace.cp.getContractsByPID = getContractsByPID;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Feb 19 2019 01:44:16 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Feb 27 2019 16:50:47 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
