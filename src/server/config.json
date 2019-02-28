@@ -23,7 +23,7 @@
                "port":8080
             },
             "webrtc": {
-               "enabled": true;
+               "enabled": true
             }
          },
          "database":{
