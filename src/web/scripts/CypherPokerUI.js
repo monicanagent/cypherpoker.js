@@ -656,7 +656,6 @@ class CypherPokerUI {
       switch (selection) {
          case "newWindow":
             if (isDesktop()) {
-               alert ("launching new desktop window...");
                var requestData = new Object();
                var result = IPCSend("new-window", requestData)
             } else {
