@@ -122,6 +122,8 @@ function initialize(initObj) {
       options.cwd = "."; //process working directory
       options.shell = true; //hide console window
       options.windowsHide = true; //hide console window
+      //add quotes to work with paths containing spaces
+      initData.bin = "\""+initData.bin+"\"";
       //MUST include "-interactive" flag in order to receive STDOUT output:
       sqlite3 = spawn(initData.bin, ["-interactive"], options);
       //add output and process close handlers
