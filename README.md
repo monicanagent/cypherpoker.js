@@ -8,9 +8,9 @@ CypherPoker.JS is written by [the same author](https://github.com/monicanagent/)
 ***
 <p align="center"><img src="https://user-images.githubusercontent.com/9059336/53627116-94152f80-3bd5-11e9-8639-02819305018d.png"/></p>
 
-You can try out the web demo here: [https://monicanagent.github.io/cypherpoker.js/demo/web/](https://monicanagent.github.io/cypherpoker.js/demo/web/)<br/>
+**You can try out the web demo here: [https://monicanagent.github.io/cypherpoker.js/demo/web/](https://monicanagent.github.io/cypherpoker.js/demo/web/)**<br/>
 <br/>
-Tagged releases, builds, and native installers can be found here: [https://github.com/monicanagent/cypherpoker.js/releases](https://github.com/monicanagent/cypherpoker.js/releases)
+**Tagged releases, builds, and native installers can be found here: [https://github.com/monicanagent/cypherpoker.js/releases](https://github.com/monicanagent/cypherpoker.js/releases)**
 ***
 The [CypherPoker.JS wiki](https://github.com/monicanagent/cypherpoker.js/wiki) is a good place to get started with the code. It includes a [simple and complete guide](https://github.com/monicanagent/cypherpoker.js/wiki/Building-and-Running-CypherPoker.JS-for-Desktop) detailing how you can build and run CypherPoker.JS for Desktop (Windows, macOS, Linux).
 
