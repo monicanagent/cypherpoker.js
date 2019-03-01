@@ -434,7 +434,7 @@ class CypherPoker extends EventDispatcher {
       if (created) {
          this.accounts.push(account);
          this.debug("New account created:");
-         this.debug(account, dir);
+         this.debug(account, "dir");
          this.saveAccounts();
          return (account);
       } else {
@@ -601,7 +601,7 @@ class CypherPoker extends EventDispatcher {
          } finally {
             return;
          }
-      }      
+      }
       context.debug("CypherPoker.announceTable("+tableObj+")")
       var announceObj = context.buildCPMessage("tablenew");
       context.copyTable(tableObj, announceObj);
