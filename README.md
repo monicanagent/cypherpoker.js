@@ -6,7 +6,9 @@ It makes extensive use of cutting-edge [browser technologies](https://www.ecma-i
 
 CypherPoker.JS is written by [the same author](https://github.com/monicanagent/) as the [original ActionScript CypherPoker project](https://github.com/monicanagent/cypherpoker) and employs many of the same features including the SRA cryptosystem and game / peer protocols as [described in the original wiki](https://github.com/monicanagent/cypherpoker/wiki).
 ***
-You can try out the web demo here: [https://monicanagent.github.io/cypherpoker.js/demo/web/](https://monicanagent.github.io/cypherpoker.js/demo/web/)
+You can try out the web demo here: [https://monicanagent.github.io/cypherpoker.js/demo/web/](https://monicanagent.github.io/cypherpoker.js/demo/web/)<br/>
+<br/>
+Tagged releases, builds, and native installers can be found here: [https://github.com/monicanagent/cypherpoker.js/releases](https://github.com/monicanagent/cypherpoker.js/releases)
 ***
 The [CypherPoker.JS wiki](https://github.com/monicanagent/cypherpoker.js/wiki) is a good place to get started with the code. It includes a [simple and complete guide](https://github.com/monicanagent/cypherpoker.js/wiki/Building-and-Running-CypherPoker.JS-for-Desktop) detailing how you can build and run CypherPoker.JS for Desktop (Windows, macOS, Linux).
 
