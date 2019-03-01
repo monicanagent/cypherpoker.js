@@ -1,5 +1,5 @@
-# CypherPoker.JS
-
+<p align="center"><img src="https://user-images.githubusercontent.com/9059336/53623709-de91ae80-3bcb-11e9-88ec-e3395fd06152.png"></p>
+<p align="center"><img src="https://img.shields.io/github/last-commit/monicanagent/cypherpoker.js.svg"/> <img src="https://img.shields.io/github/release/monicanagent/cypherpoker.js.svg"/> <img src="https://img.shields.io/github/issues/monicanagent/cypherpoker.js.svg?style=flat-square"/></p>
 CypherPoker.JS is an open source implementation of peer to peer cryptographic poker, or Mental Poker, written in JavaScript.
 
 It makes extensive use of cutting-edge [browser technologies](https://www.ecma-international.org/ecma-262/8.0/) and desktop ([Node.js](https://nodejs.org/en/) / [Electron](https://electronjs.org/)) runtime environments.
