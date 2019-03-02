@@ -1,7 +1,7 @@
 {
-  "name": "CP_server",
+  "name": "CypherPokerJS_SS",
   "version": "0.4.0",
-  "description": "A CypherPoker.JS JSON-RPC 2.0 WebSocket Sessions server.",
+  "description": "A JSON-RPC 2.0-compliant API server for providing CypherPoker.JS services.",
   "engines": {
     "node": ">=8.0.0"
   },
