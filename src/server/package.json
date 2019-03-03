@@ -23,12 +23,18 @@
     "websocket",
     "session",
     "server",
+    "http",
+    "https",
+    "p2p",
+    "peer-to-peer",
     "json-rpc",
     "jsonrpc",
     "2.0",
     "http",
     "ws",
-    "proxy"
+    "proxy",
+    "bitcoin",
+    "cryptocurrency"
   ],
   "author": {
     "name": "Patrick Bay (Monican Agent)",

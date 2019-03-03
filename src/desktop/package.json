@@ -3,34 +3,59 @@
   "version": "0.4.0",
   "description": "CypherPoker.JS standalone desktop (Electron) application",
   "main": "main.js",
+  "homepage": "https://github.com/monicanagent/cypherpoker.js",
+  "repository": "https://github.com/monicanagent",
+  "bugs": {
+    "url": "https://github.com/monicanagent/cypherpoker.js/issues"
+  },
   "scripts": {
     "start": "electron .",
     "postinstall": "node postinstall.js",
     "doc": "jsdoc -r * -d ./docs/",
     "docs": "jsdoc -r * -d ./docs/"
   },
-  "repository": "https://github.com/monicanagent",
   "keywords": [
+    "electron",
+    "desktop",
+    "standalone",
+    "application",
+    "app",
+    "windows",
+    "macos",
+    "osx",
+    "linux",
     "websocket",
     "session",
     "server",
+    "http",
+    "https",
+    "webrtc",
+    "p2p",
+    "peer-to-peer",
     "json-rpc",
     "jsonrpc",
     "2.0",
     "http",
     "ws",
-    "proxy"
+    "proxy",
+    "bitcoin",
+    "cryptocurrency",
+    "poker",
+    "game"
   ],
-  "author": "GitHub",
+  "author": {
+    "name": "Patrick Bay (Monican Agent)",
+    "url": "https://github.com/monicanagent"
+  },
   "license": "MIT",
   "dependencies": {
     "electron": "^4.0.4",
-    "big-integer": "^1.6.36",
-    "bip32": "^1.0.2",
-    "bip39": "^2.5.0",
-    "bitcoinjs-lib": "^4.0.1",
     "request": "^2.87.0",
+    "ws": "^5.2.0",
+    "big-integer": "^1.6.36",
+    "bitcoinjs-lib": "^4.0.1",
     "secp256k1": "^3.5.2",
-    "ws": "^5.2.0"
+    "bip32": "^1.0.2",
+    "bip39": "^2.5.0"
   }
 }

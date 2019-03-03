@@ -76,6 +76,8 @@ let pubKeyHex = wallet.neutered().publicKey.toString("hex"); //public key in hex
 let privKey = wallet.toBase58(); //private key in "xprv"
 let privKeyHex = wallet.privateKey.toString("hex"); //private key in hex
 let wif = wallet.toWIF();
+let childBIP32_0 = wallet.derivePath("m/0/0");
+let childBIP32_1 = wallet.derivePath("m/0/1");
 if (!testnet) {
    console.log("Wallet root address: "+getAddress(wallet));
    console.log("Wallet \"xpub\": "+pubKey);
@@ -83,6 +85,8 @@ if (!testnet) {
    console.log("Wallet Import Format (WIF): "+wif);
    console.log("Wallet public key (hex): "+pubKeyHex);
    console.log("Wallet private key (hex): "+privKeyHex);
+   console.log("Inital derived address (m/0/0): "+getAddress(childBIP32_0));
+   console.log("Inital derived address (m/0/1): "+getAddress(childBIP32_1));
 } else {
    console.log("Testnet wallet root address: "+getAddress(wallet, bitcoin.networks.testnet));
    console.log("Testnet wallet \"tpub\": "+pubKey);
@@ -90,6 +94,8 @@ if (!testnet) {
    console.log("Testnet Wallet Import Format (WIF): "+wif);
    console.log("Testnet wallet public key (hex): "+pubKeyHex);
    console.log("Testnet wallet private key (hex): "+privKeyHex);
+   console.log("Inital derived address (m/0/0): "+getAddress(childBIP32_0, bitcoin.networks.testnet));
+   console.log("Inital derived address (m/0/1): "+getAddress(childBIP32_1, bitcoin.networks.testnet));
 }
 console.log(" ");
 
