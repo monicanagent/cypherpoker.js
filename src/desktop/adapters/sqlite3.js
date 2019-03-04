@@ -339,19 +339,36 @@ async function getWalletStatus() {
       var schema = parseSchema(schemaData);
       var querySQL = "SELECT * FROM `accounts` WHERE `type`=\"bitcoin\" AND `network`=\"main\" ORDER BY `addressIndex` DESC LIMIT 1;";
       var result = await query(querySQL, schema);
-      resultObj.bitcoin.main.startChain = String(result[0].chain);
-      resultObj.bitcoin.main.startIndex = String(result[0].addressIndex);
+      if (result.length < 1) {
+         //database empty
+         resultObj.bitcoin.main.startChain = "0";
+         resultObj.bitcoin.main.startIndex = "0";
+      } else {
+         resultObj.bitcoin.main.startChain = String(result[0].chain);
+         resultObj.bitcoin.main.startIndex = String(result[0].addressIndex);
+      }
       querySQL = "SELECT * FROM `accounts` WHERE `type`=\"bitcoin\" AND `network`=\"test3\" ORDER BY `addressIndex` DESC LIMIT 1;";
       result = await query(querySQL, schema);
-      resultObj.bitcoin.test3.startChain = String(result[0].chain);
-      resultObj.bitcoin.test3.startIndex = String(result[0].addressIndex);
+      if (result.length < 1) {
+         //database empty
+         resultObj.bitcoin.test3.startChain = "0";
+         resultObj.bitcoin.test3.startIndex = "0";
+      } else {
+         resultObj.bitcoin.test3.startChain = String(result[0].chain);
+         resultObj.bitcoin.test3.startIndex = String(result[0].addressIndex);
+      }
       var sizeMB = getFileSize(initData.dbFilePath, "MB");;
       resultObj.db.sizeMB = sizeMB;
       resultObj.db.maxMB = dbMaxMB;
       querySQL = "SELECT * FROM `accounts` WHERE `updated`=(SELECT MAX(DATETIME(updated)) FROM `accounts`) LIMIT 1;"
       result = await query(querySQL, schema);
       try {
-         var latestUpdate = new Date(result[0].updated);
+         if (result.length < 1) {
+            //no entries
+            var latestUpdate = new Date(0); //start of epoch
+         } else {
+            var latestUpdate = new Date(result[0].updated);
+         }
       } catch (err) {
          console.error("Unexpected database result in getWalletStatus:");
          console.dir(result);

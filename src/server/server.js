@@ -1,6 +1,6 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.4.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -494,7 +494,7 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
         sendError(JSONRPC_ERRORS.METHOD_NOT_FOUND_ERROR, "Method \""+requestMethod+"\" does not exist.", sessionObj);
      }
     return;
-  } else {     
+  } else {
     var script = _APIFunctions[requestMethod].script;
     var vmContext = new Object();
     vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
@@ -1060,21 +1060,41 @@ function invokeHostOnInit() {
 }
 
 /**
-* Function invoked after the main configuration data is loaded and parsed.
+* Function invoked after the main configuration data is loaded and parsed but
+* before API functions are loaded, the account system initialized, and the
+* server endpoints started.
 *
 * @async
 * @private
 */
 async function postLoadConfig() {
-   if (hostEnv.embedded == true) {
-      var dbAdapter = "sqlite3"; //this should be dynamic
-      var dbFileURL = config.CP.API.database.url;
-      var dbFilePath = dbFileURL.split(dbAdapter+"://").join("");
-      try {
-         var opened = await hostEnv.database.sqlite3.adapter.openDBFile(dbFilePath);
-      } catch (err) {
-         //couldn't open database
-         return(false);
+   if ((hostEnv.embedded == true) && (config.CP.API.database.enabled == true)) {
+      var url = config.CP.API.database.url;
+      var transport = url.split("://")[0];
+      if (transport == "https") {
+         transport = "http";
+      }
+      if (transport == "sqlite3") {
+         //using local SQLite 3 database
+         var dbFilePath = url.split(transport+"://").join("");
+         try {
+            //console.dir (hostEnv.host);
+            //startDatabase function exposed by host (Electron) environment
+            var started = await startDatabase(transport);
+            if (started == true) {
+               var opened = await hostEnv.database.sqlite3.adapter.openDBFile(dbFilePath);
+               if (opened == false) {
+                  console.log ("Couldn't open SQLite 3 database: "+dbFilePath);
+               }
+            } else {
+               console.error ("Could not start SQLite 3 database.");
+            }
+         } catch (err) {
+            //couldn't open database
+            return(false);
+         }
+      } else {
+         //using rdb or other account storage
       }
    }
    loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers

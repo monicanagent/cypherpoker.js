@@ -2,7 +2,7 @@
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
 *
-* @version 0.4.0
+* @version 0.4.1
 */
 async function CP_Account (sessionObj) {
    if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
@@ -471,7 +471,7 @@ function MySQLDateTime(dateObj) {
 
 /**
 *
-* Creates a HD (Hierarchical Deterministic) Bitcoin wallet which addresses can be
+* Creates a HD (Hierarchical Deterministic) Bitcoin wallet from which addresses can be
 * derived.
 *
 * @param {String} privKey A "xprv" or "tprv" base 58 string containing the private
@@ -622,8 +622,6 @@ async function getAccount(searchObj) {
             //no matching account, return empty result set
             return (new Array());
          } else {
-            console.error("Database error:");
-            console.dir(result);
             throw (new Error(result.error));
          }
       }
@@ -758,11 +756,7 @@ function callAccountDatabase(method, message) {
                   requestObj.params = new Object();
                   requestObj.params.message = message;
                   hostEnv.database.sqlite3.adapter.invoke(requestObj).then(result => {
-                     if ((result["error"] != undefined) && (result["error"] != null)) {
-                        reject(result);
-                     } else {
-                        resolve(result);
-                     }
+                     resolve(result); //any JSON-RPC response is valid
                   }).catch (err => {
                      reject(err);
                   });
@@ -833,7 +827,6 @@ function callAccountDatabase(method, message) {
 * contain the error object.
 */
 function getBlockchainBalance(address, APIType="bitcoin", network=null) {
-
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API[APIType];
       var url = API.url.balance;
@@ -846,8 +839,6 @@ function getBlockchainBalance(address, APIType="bitcoin", network=null) {
    		method: "GET",
    		json: true
    	}, (error, response, body) => {
-         console.log ("Blockchain balance response:");
-         console.log (JSON.stringify(body));
          if (error) {
             reject(error);
          } else {
@@ -969,7 +960,7 @@ async function sendTransaction(fromWallet, toAddress, amount, fees=null, APIType
 function newBTCTx (fromAddress, toAddress, satAmount, satFees, network=null) {
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API.bitcoin;
-      var url = API.url.createtx;
+      var url = API.url.createTx;
       if (network == null) {
          network = API.default.network;
       }
@@ -1085,7 +1076,7 @@ function sendBTCTx(txObject, network=null) {
    */
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API.bitcoin;
-      var url = API.url.sendtx;
+      var url = API.url.sendTx;
       if (network == null) {
          network = API.default.network;
       }

@@ -1,6 +1,6 @@
 /**
 * @file Entry point for CypherPoker.JS desktop (Electron) that launches bundled server and client processes.
-* @version 0.4.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -20,7 +20,8 @@
 *  clearInterval:clearInterval,<br/>
 *  setTimeout:setTimeout,<br/>
 *  clearTimeout:clearTimeout,<br/>
-*  process:process
+*  process:process,<br/>
+* startDatabase: startDatabase
 * }
 */
 
@@ -102,7 +103,8 @@ var electronEnv = {
         clearInterval:clearInterval,
         setTimeout:setTimeout,
         clearTimeout:clearTimeout,
-        process:process
+        process:process,
+        startDatabase:startDatabase
      },
      onInit:createClient
    },
@@ -113,7 +115,7 @@ var electronEnv = {
       bin: "./bin/sqlite/%os%/%bin%"
     }
    },
-   host:this
+   host:null
 }
 
 /**
@@ -301,11 +303,7 @@ console.log ("Host platform: "+process.platform+" ("+process.arch+")");
 */
 function onAppReady(launchInfo) {
    Menu.setApplicationMenu(null); //remove default menu
-   startDatabase("sqlite3").then(result => {
-      createServer();
-   }).catch(err => {
-      console.error (err.stack);
-   });
+   createServer(); //database is launched by server (if enabled)
 }
 
 /**
@@ -350,4 +348,5 @@ function start() {
 }
 
 //start the application:
+electronEnv.host = this;
 start();
