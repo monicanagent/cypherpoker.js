@@ -25,7 +25,7 @@
 * }
 */
 
-const {app, BrowserWindow, ipcMain,Menu} = require("electron");
+const {app, BrowserWindow, ipcMain, Menu} = require("electron");
 const vm = require("vm");
 const fs = require("fs");
 
@@ -33,7 +33,7 @@ const fs = require("fs");
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle} and may be used in other places in the application.
 */
-const appVersion = "0.4.0";
+const appVersion = "0.4.1";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle} and may be used in other places in the application.
@@ -238,7 +238,7 @@ function onIPCMessage (event, request) {
          response.type = "init";
          response.data = electronEnv.client;
          var winFound = false;
-         for (var count=0; count<windows.length; count++) {
+         for (var count=0; count < windows.length; count++) {
             var currentWindow = windows[count].win;
             var windowWC = currentWindow.webContents;
             if (event.sender === windowWC) {
@@ -255,7 +255,25 @@ function onIPCMessage (event, request) {
          }
          break;
       case "new-window":
+         response.type = "new-window";
+         response.message = "ok";
          createClient();
+         break;
+      case "toggle-devtools":
+         response.type = "toggle-devtools";
+         response.message = "ok";
+         for (var count=0; count < windows.length; count++) {
+            var currentWindow = windows[count].win;
+            var currentIPCID = windows[count].ipcID;
+            if (request.data["all"] == true) {
+               currentWindow.webContents.toggleDevTools();
+            } else {
+               if (currentIPCID == request.data.ipcID) {
+                  currentWindow.webContents.toggleDevTools();
+                  break;
+               }
+            }
+         }
          break;
       case "database-info":
          for (var db in electronEnv.database) {

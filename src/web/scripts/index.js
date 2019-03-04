@@ -8,7 +8,7 @@
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle}.
 */
-var appVersion = "0.4.0";
+var appVersion = "0.4.1";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle}.
@@ -193,17 +193,26 @@ function loadJSON(jsonURL) {
 * running within a desktop (Electron) environment.
 *
 * @param {String} command The command to send to the main process via IPC.
-* @param {*} data Any accompanying data to include with the <code>command</code>
+* @param {*} [data=null] Any accompanying data to include with the <code>command</code>.
+* If omitted or <code>null</code>, an empty object is created.
 *
 * @return {Object} A reply object is immediately returned if the desktop IPC
 * interface is available otherwise <code>null</code> is returned.
 */
-function IPCSend (command, data) {
+function IPCSend (command, data=null) {
    if (isDesktop()) {
       var request = new Object();
       request.command = command;
+      if (data == null) {
+         data = new Object();
+      }
       request.data = data;
-      return (ipcRenderer.sendSync("ipc-main", request));
+      request.data.ipcID = ipcID;
+      try {
+         return (ipcRenderer.sendSync("ipc-main", request));
+      } catch (err) {
+         console.error (err.stack);
+      }
    } else {
       return (null);
    }
@@ -244,6 +253,30 @@ function onIPCMessage(event, request) {
 }
 
 /**
+* Invoked when a key, or key combination, is pressed on the keyboard.
+*
+* @param {Event} event The event being dispatched.
+* @param {Object} request The request object. It must contain at least
+* a <code>command</string> to process by the handler.
+*
+* @private
+*/
+function onKeyPress(event) {
+   const key = event.key;
+   var alt = event.altKey;
+   var ctrl = event.ctrlKey;
+   var shift = event.shiftKey;
+   if (isDesktop()) {
+      //matches Dev Tools toogle keyboard shortcut in standard browser
+      if ((ctrl == true) && (alt == false) && (shift == true) && ((key == "i") || (key == "I"))) {
+         //toggle Dev Tools on all open windows:
+         // IPCSend("toggle-devtools", {all:true});
+         IPCSend("toggle-devtools");
+      }
+   }
+}
+
+/**
 * Tests whether or not the host environment is a desktop (Electron) one.
 *
 * @return {Boolean} True if the host environment is a desktop (Electron) one
@@ -280,6 +313,8 @@ onload = function () {
       ipcRenderer = null;
       hostEnv = null;
       ipcID = null;
+   } finally {
+      window.addEventListener('keydown', onKeyPress);
    }
    document.title = appTitle;
    loadJavaScript (_require[0].url);

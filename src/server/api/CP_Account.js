@@ -48,6 +48,7 @@ async function CP_Account (sessionObj) {
    var fees = config.CP.API[requestParams.type].default[requestParams.network];
    var depositFee = bigInt(fees.depositFee);
    var minerFee = bigInt(fees.minerFee);
+   //note that reported deposit fee includes the one defined in the configuration plus the dynamic miner fee:
    resultObj.fees.deposit = depositFee.plus(minerFee).toString(10);
    resultObj.fees.cashout = minerFee.toString(10);
    try {
@@ -160,10 +161,11 @@ async function CP_Account (sessionObj) {
                         var fromAddressPath = "m/" + String(accountResults[0].chain) + "/" + String(accountResults[0].addressIndex);
                         var fromWallet = wallet.derivePath(fromAddressPath);
                         var transferAmount = bigInt(balanceResult.balance);
-                        var fees = bigInt(config.CP.API[requestParams.type].default[requestParams.network].minerFee);
-                        transferAmount = transferAmount.minus(fees);
+                        var minerFee = bigInt(config.CP.API[requestParams.type].default[requestParams.network].minerFee);
+                        var depositFee = bigInt(config.CP.API[requestParams.type].default[requestParams.network].depositFee);
+                        transferAmount = transferAmount.minus(minerFee);
                         try {
-                           var txResult = await sendTransaction(fromWallet, cashoutAddress, transferAmount, fees, requestParams.type, requestParams.network);
+                           var txResult = await sendTransaction(fromWallet, cashoutAddress, transferAmount, minerFee, requestParams.type, requestParams.network);
                         } catch (err) {
                            sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Unable to forward transaction to cashout wallet.", sessionObj);
                            return(false);
@@ -176,7 +178,8 @@ async function CP_Account (sessionObj) {
                                  //Receiver: cashoutAddress
                                  //Transaction hash: txResult.tx.hash
                                  //Amount: transferAmount
-                                 //Fees: fees
+                                 //Miner fee: minerFee
+                                 //Deposit fee: depositFee
                               }
                            }
                         } else {
@@ -186,10 +189,11 @@ async function CP_Account (sessionObj) {
                         }
                         //store updated account information
                         resultObj.confirmed = true;
-                        resultObj.balance = transferAmount.toString(10); //update returned balance to include transfer fee!
-                        accountResults[0].balance = transferAmount.toString(10);
+                        transferAmount = transferAmount.minus(depositFee); //reduce amount by deposit fee
+                        resultObj.balance = transferAmount.toString(10); //amount transferred (minus fees) is the new account balance
+                        accountResults[0].balance = transferAmount.toString(10); //update database query object
                         accountResults[0].updated = MySQLDateTime(new Date());
-                        var saved = await namespace.cp.saveAccount(accountResults[0]);
+                        var saved = await namespace.cp.saveAccount(accountResults[0]); //save to database
                         if (saved == false) {
                            sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Couldn't save account information.", sessionObj);
                            return(false);
