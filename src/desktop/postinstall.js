@@ -68,6 +68,7 @@ function newHDWallets() {
 */
 function updateServerConfig(configDataStr) {
    var dataObj = JSON.parse(configDataStr);
+   dataObj.CP.API.database.enabled = true;
    dataObj.CP.API.database.url = "sqlite3://"+dbFilePath;
    dataObj.CP.API.wallets.bitcoin.xprv = wallets.mainnet.privKey;
    dataObj.CP.API.wallets.test3.tprv = wallets.testnet.privKey;
