@@ -16,8 +16,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "doc": "jsdoc -r * -d ./docs/",
-    "docs": "jsdoc -r * -d ./docs/"
+    "doc": "jsdoc . -r -c ./jsdoc.json -d ./docs/",
+    "docs": "jsdoc . -r -c ./jsdoc.json -d ./docs/"
   },
   "keywords": [
     "websocket",
