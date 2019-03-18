@@ -659,18 +659,13 @@ class P2PRouter extends EventDispatcher {
    * is evaluated and the first available (lowest index), transport matching this
    * list is used. Shared transports such as WebSocket Sessions are used as
    * efficiently as possible (e.g. sending to multiple recipients with one request).
-   *
-   * @param {Array} [prefTransports=P2PRouter.supportedTransports.preferred] Indexed
-   * array of preferred transports to use to send the data / message. Each recipient
-   * is evaluated and the first available (lowest index), transport matching this
-   * list is used. Shared transports such as WebSocket Sessions are used as
-   * efficiently as possible (e.g. sending to multiple recipients with one request).
+
    *
    * @return {Promise} An asynchronous Promise that will contain the results of
    * all send operations or will throw an error on failure.
    */
-   async broadcast(data) {
-      var transportGroups = this.createTransportGroups(this.peers);
+   async broadcast(data, prefTransports=P2PRouter.supportedTransports.preferred) {
+      var transportGroups = this.createTransportGroups(this.peers, prefTransports);
       var results = new Array();
       for (var transportType in transportGroups) {
          try {
@@ -742,9 +737,9 @@ class P2PRouter extends EventDispatcher {
          throw (new Error(`"recipients" parameter must be an array!`));
       }
       if (typeof(recipients["length"]) == "number") {
-         var transportGroups = this.createTransportGroups(recipients);
+         var transportGroups = this.createTransportGroups(recipients, prefTransports);
       } else {
-         transportGroups = this.createTransportGroups(recipients.rcp);
+         transportGroups = this.createTransportGroups(recipients.rcp, prefTransports);
       }
       var results = new Array();
       for (var transportType in transportGroups) {
@@ -806,7 +801,7 @@ class P2PRouter extends EventDispatcher {
       }
       for (var count=0; count < recipients.length; count++) {
          var privateID = recipients[count];
-         var transportObj = this.getPreferredTransport(privateID);
+         var transportObj = this.getPreferredTransport(privateID, preferred);
          if (transportObj != null) {
             var transport = transportObj.transport;
             var type = transportObj.type;
