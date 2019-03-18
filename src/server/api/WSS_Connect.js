@@ -7,7 +7,7 @@
 * Server Response -> {"jsonrpc":"2.0","result":{"message":"open","options":{},"private_id":"021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d"},"id":"2"}
 * Note: SHA256("9789091435706088:7060939278321507") = "021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d";
 *
-* @version 0.2.0
+* @version 0.4.1
 */
 async function WSS_Connect (sessionObj) {
    if (sessionObj.endpoint.startsWith("ws") == false) {
@@ -23,11 +23,16 @@ async function WSS_Connect (sessionObj) {
    }
    var requestData = sessionObj.requestObj;
    var requestParams = requestData.params;
+   if (typeof(requestParams["options"]) != "object") {
+      sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Connection options not supplied or not an object.", sessionObj);
+      return (false);
+   }
    var responseObj = new Object();
    var connectionID = namespace.websocket.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
    var resultObj = new Object(); //result to send in response
    resultObj.message = null; //single word response message
-   resultObj.options = new Object(); //for future use
+   resultObj.connect = new Array(); //list of already connected peers (may be empty)
+   resultObj.options = new Array(); //associated list of peer options (as of v0.4.1)
    if ((namespace.websocket.connections[connectionID] == null) || (namespace.websocket.connections[connectionID] == undefined)) {
       sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
       return (false);
@@ -44,10 +49,10 @@ async function WSS_Connect (sessionObj) {
                connectionObj.socket = sessionObj.serverResponse; //assign outgoing WebSockket instance
                connectionObj.last_update = new Date();
                connectionObj.private_id = namespace.websocket.makePrivateID(connectionObj.server_token, connectionObj.user_token);
+               connectionObj.options = requestParams.options; //as of v0.4.1s
                connectionObj.socket.addEventListener("close", handleWebSocketClose);
                resultObj.message = "open";
                resultObj.private_id = connectionObj.private_id;
-               resultObj.connect = new Array(); //include list of connected peers for new peer
                //notify other peers of new connection
                var activeSessions = namespace.websocket.allSessions(true);
                for (var count = 0; count < activeSessions.length; count++) {
@@ -56,8 +61,10 @@ async function WSS_Connect (sessionObj) {
                      var messageObj = buildJSONRPC();
                      messageObj.result.type = "session";
                      messageObj.result.connect = connectionObj.private_id;
+                     messageObj.result.options = requestParams.options;
                      activeSessions[count].socket.send(JSON.stringify(messageObj));
                      resultObj.connect.push(activeSessions[count].private_id);
+                     resultObj.options.push(activeSessions[count].options);
                   }
                }
                sendResult(resultObj, sessionObj);

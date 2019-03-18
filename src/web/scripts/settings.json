@@ -1,11 +1,25 @@
 {
    "p2p":{
-      "create":"return (new WSS())",
-      "connectURL":"ws://localhost:8090"
+      "connectInfo":{
+         "create":"return (new P2PRouter())",
+         "type":"wss",
+         "url":"ws://127.0.0.1:8090"
+      },
+      "transports": {
+         "preferred":["webrtc","wss","ortc"],
+         "quickConnect":true
+      }
+   },
+   "api":{
+      "connectInfo":{
+         "create":"return (new APIRouter())",
+         "type":"wss",
+         "url":"ws://127.0.0.1:8090"
+      }
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",
-      "bitLength": 512,
+      "bitLength": 32,
       "radix": 16
    },
    "rootPeers": {

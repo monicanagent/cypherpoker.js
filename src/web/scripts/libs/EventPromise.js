@@ -4,7 +4,7 @@
 *
 * @file Binds asynchronous events to Promise objects.
 *
-* @version 0.2.0
+* @version 0.4.1
 */
 /**
 * @class Creates promises from standard JavaScript events for
@@ -68,3 +68,5 @@ class EventPromise {
 }
 //register function with global object inheritance tree
 Object.prototype.onEventPromise = EventPromise.onEventPromise;
+//make the property non-enumerable to prevent including it during enumeration (for..in loops, etc.)
+Object.defineProperty(Object.prototype, 'onEventPromise', {enumerable: false});

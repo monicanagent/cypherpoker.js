@@ -1,7 +1,7 @@
 /**
 * @file Information management for an individual CypherPoker.JS player.
 *
-* @version 0.2.3
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -287,7 +287,6 @@ class CypherPokerPlayer extends EventDispatcher {
       if (includeKeychain) {
          returnObj.keychain = Array.from(this.keychain);
       }
-      delete returnObj.onEventPromise;
       return (returnObj);
    }
 

@@ -1,11 +1,17 @@
 /**
 * @file Handles asynchronous JSON-RPC 2.0 requests to either a HTTP / HTTPS or
-* WebSocket / Secure WebSocket endpoints. Requires <code>EventPromise</code>
+* WebSocket / Secure WebSocket endpoint. Requires <code>EventPromise</code>
 * to exist in the current execution context.
 *
-* @version 0.2.0
+* @version 0.4.1
 */
-var __rpc_request_id = 1;
+
+/**
+* @property {Number} __rpc_request_id unique RPC message id value that can be used
+* across the application. Use {@link uniqueRPCID} to get a new unique value.
+* @private
+*/
+var __rpc_request_id = 0;
 
 /**
 * Invokes a RPC request through either a HTTP or WebSocket (or their secure
@@ -80,28 +86,28 @@ function RPC(method, params, transport, generateOnly=false, msgID=null) {
    if ((transport == null) || (transport == undefined)) {
       var transportType = "generate";
   } else {
-     if ((transport["response"] != null) || (transport["response"] != undefined)) {
+     if ((transport["response"] != null) && (transport["response"] != undefined)) {
        transportType = "http";
+    } else if (transport.toString() == "APIRouter") {
+        transportType = "router";
      } else {
        transportType = "websocket";
      }
   }
-  //https / wss are assumed to have identical interfaces as http / ws (for now)
-  let requestObj = new Object();
-  requestObj.jsonrpc = "2.0";
-  requestObj.method = method;
-  if (msgID != null) {
-     requestObj.id = msgID;
-  } else {
-     requestObj.id = __rpc_request_id;
+  if (msgID == null) {
+      msgID = uniqueRPCID();
   }
-  requestObj.params = params;
+  let requestObj = buildJSONRPC("request", {"method":method, "params":params, "id":msgID});
+  //https / wss are assumed to have identical interfaces as http / ws (for now)
   switch (transportType) {
     case "http":
       transport.overrideMimeType("application/json-rpc");
       transport.responseType = "json";
       var promise = transport.onEventPromise("load");
       transport.send(JSON.stringify(requestObj));
+      break;
+    case "router":
+      promise = transport.request(requestObj);
       break;
     case "websocket":
       promise = transport.onEventPromise("message");
@@ -122,6 +128,72 @@ function RPC(method, params, transport, generateOnly=false, msgID=null) {
    default:
       break;
   }
-  __rpc_request_id++;
   return (promise);
+}
+
+/**
+* Builds a valid JSON-RPC request, result, or notification object.
+*
+* @param {String} [type="request"] The JSON-RPC message type. Valid types include:<br/>
+* <ul>
+* <li><code>"request"</code>: A request / method invocation object. </li>
+* <li><code>"result"</code>: An invocation result object.</li>
+* <li><code>"notification"</code>: A notification object.</li>
+* </ul>
+* @param {Object} [options=null] An object containing additional options
+* for the returned object depending on its type.
+* @param {Object} [options.id=null] An id value for the object. If <code>type</code>
+* is a "result" or "request" and this value is <code>null</code> or omiited,
+* a random value is used. If <code>type</code> is "notification" the <code>id</code>
+* is ommitted according to specification.
+* @param {String} [options.method=null] A remote RPC method to invoke. If <code>type</code>
+* is "request" and this value is <code>null</code> or omiited, an exception is thrown.
+* If <code>type</code> is not "request" this option is ignored.
+* @param {Object|Array} [options.params=null] Parameters to invoke the remote <code>method</code>
+* with. If <code>type</code> is not "request" this option is ignored.
+* @param {String} [version="2.0"] The JSON-RPC version identifier.
+*
+* @return {Object} A JSON-RPC-formatted object of the defined type.
+*
+* @see https://www.jsonrpc.org/specification
+*/
+function buildJSONRPC (type="request", options=null, version="2.0") {
+   var JSONRPC = new Object();
+   JSONRPC.jsonrpc = version;
+   if (options == null) {
+      options = new Object();
+   }
+   if ((type == "result") || (type == "request")) {
+      if (options["id"] == undefined) {
+         JSONRPC.id = String(Math.random()).split(".")[1];
+      } else {
+         JSONRPC.id = options.id;
+      }
+   }
+   if ((type == "result") || (type == "notification")) {
+      JSONRPC.result = new Object();
+   } else if (type == "request") {
+      if (typeof(options["method"]) != "string") {
+         throw (new Error("options.method must be a string."));
+      }
+      JSONRPC.method = options.method;
+      if (options["params"] != undefined) {
+         if (typeof(options.params) != "object") {
+            throw (new Error("options.params must be an array or object."));
+         }
+         JSONRPC.params = options.params;
+      }
+   }
+   return (JSONRPC);
+}
+
+/**
+* Returns a unique RPC <code>id</code> value that can be used to identify
+* JSON-RPC 2.0 messages.
+*
+* @return {String} A unique <code>id</code>.
+*/
+function uniqueRPCID() {
+   __rpc_request_id++;
+   return (String(__rpc_request_id));
 }

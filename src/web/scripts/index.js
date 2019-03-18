@@ -70,13 +70,14 @@ var ipcID = null;
 * @private
 */
 const _require = [
-   {"url":"./scripts/libs/platform.js"},
    {"url":"./scripts/libs/Polyfills.js"},
    {"url":"./scripts/libs/EventDispatcher.js"},
    {"url":"./scripts/libs/EventPromise.js"},
    {"url":"./scripts/libs/RPC.js"},
-   {"url":"./scripts/libs/WSS.js"},
+   {"url":"./scripts/libs/WSSClient.js"},
    {"url":"./scripts/libs/WebRTCClient.js"},
+   {"url":"./scripts/libs/APIRouter.js"},
+   {"url":"./scripts/libs/P2PRouter.js"},
    {"url":"./scripts/libs/WorkerHost.js"},
    {"url":"./scripts/libs/SRACrypto.js"},
    {"url":"./scripts/libs/BigInteger.min.js"},

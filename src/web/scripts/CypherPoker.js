@@ -4,7 +4,7 @@
 * manages accounts and tables, launches games, and provides accesss to other shared
 * functionality.
 *
-* @version 0.3.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -15,8 +15,11 @@
 * @example
 * var settingsObj = {
 *    "p2p":{
-*       "create":"return (new WSS())",
-*       "connectURL":"ws://localhost:8090"
+*       "create":"return (new P2PRouter())",
+*       "connectURL":{
+            "type":"wss",
+            "url":"ws://localhost:8090"
+         }
 *    },
 *    "crypto":{
 *       "create":"return (new SRACrypto(4))"
@@ -26,6 +29,7 @@
 * var cypherpoker = new CypherPoker(settingsObj);
 *
 * @extends EventDispatcher
+* @see {@link P2PRouter}
 * @see {@link WSS}
 * @see {@link SRACrypto}
 */
@@ -68,11 +72,12 @@ class CypherPoker extends EventDispatcher {
     * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
     */
     /**
-    * An external peer is making a request to join one of our tables.
+    * An external peer has made a successful request to join one of our tables.
     *
     * @event CypherPoker#tablejoinrequest
     * @type {Event}
     * @property {Object} data The JSON-RPC 2.0 object containing the request.
+    * @property {String} joined The private ID of the peer that has just joined.
     * @property {Object} data.result The standard JSON-RPC 2.0 notification result object.
     * @property {String} data.result.from The private ID of the request sender.
     * @property {CypherPoker#TableObject} data.result.data The table associated with the notification.
@@ -163,8 +168,8 @@ class CypherPoker extends EventDispatcher {
    */
    initialize() {
       this.debug ("CypherPoker.initialize()");
-      //create peer-to-peer networking
-      this._p2p = Function(this.settings.p2p.create)();
+      //create peer-to-peer routing interface
+      this._p2p = Function(this.settings.p2p.connectInfo.create)();
       //create cryptosystem
       this._crypto = Function(this.settings.crypto.create)();
       this.p2p.addEventListener("message", this.handleP2PMessage, this);
@@ -206,13 +211,31 @@ class CypherPoker extends EventDispatcher {
    async start() {
       this.debug ("CypherPoker.start()");
       try {
-         var result = await this.p2p.connect(this.settings.p2p.connectURL);
+         //establish P2P connection
+         var result = await this.p2p.connectRendezvous(this.settings.p2p.connectInfo);
+         //create API networking interface
+         var APIUrl = this.settings.api.connectInfo.url;
+         var APIConnType = this.settings.api.connectInfo.type;
+         APIUrl = APIUrl.trim();
+         APIConnType = APIConnType.trim();
+         var P2PUrl = this.settings.p2p.connectInfo.url;
+         var P2PConnType = this.settings.p2p.connectInfo.type;
+         P2PUrl = P2PUrl.trim();
+         P2PConnType = P2PConnType.trim();
+         this._api = Function(this.settings.api.connectInfo.create)();
+         if ((P2PUrl == APIUrl) && (APIConnType == P2PConnType)) {
+            //shared P2P / API connection
+            this.api.connection = this.p2p.rendezvous;
+         } else {
+            result = await this.api.connectAPI(this.settings.api.connectInfo);
+         }
          this._connected = true;
          var event = new Event("start");
          this.dispatchEvent(event);
       } catch (err) {
          result = null;
          this._connected = false;
+         console.error (err);
          throw(new Error("Couldn't connect to peer-to-peer network."));
       }
       return (result);
@@ -231,11 +254,20 @@ class CypherPoker extends EventDispatcher {
    * @property {Object} p2p Reference to a peer-to-peer networking interface
    * supporting the property <code>privateID</code> and functions <code>connect(serverURL)</code>,
    * <code>broadcast(message)</code>, and <code>direct(message, [recipient,recipient...])</code>.
-   * For example, {@link WSS}
+   * For example, {@link P2PRouter}
    * @readonly
    */
    get p2p() {
       return (this._p2p);
+   }
+
+   /**
+   * @property {Object} api Reference to a networking interface over which RPC API functions
+   * are invoked. This <i>may</i> be the same interface as {@link p2p}.
+   * @readonly
+   */
+   get api() {
+      return (this._api);
    }
 
    /**
@@ -726,11 +758,10 @@ class CypherPoker extends EventDispatcher {
          tableObj.toString = function() {
            return ("[object CypherPoker#TableObject]");
          }
-         this._joinTableRequests.push(tableObj);
-         this.sendJoinTableRequest(tableObj);
          tableObj._resolve = resolve;
          tableObj._reject = reject;
-         tableObj.joinTimeoutID = setTimeout(this.onJoinTableRequestTimeout, replyTimeout, tableObj, this);
+         this._joinTableRequests.push(tableObj);
+         this.sendJoinTableRequest(tableObj);
       });
       return (promise);
    }
@@ -775,13 +806,40 @@ class CypherPoker extends EventDispatcher {
    * Sends a "tablejoinrequest" message to a table's owner.
    *
    * @param {CypherPoker#TableObject} tableObj The table of the owner to send a join request to.
+   * @property {Number} [replyTimeout=25000] A time, in milliseconds, to wait for the reply
+   * before considering the request as having timed out.
+   * @async
    * @private
    */
-   sendJoinTableRequest(tableObj) {
+   async sendJoinTableRequest(tableObj, replyTimeout=20000) {
       this.debug("CypherPoker.sendJoinTableRequest("+tableObj+")");
       var joinRequestObj = this.buildCPMessage("tablejoinrequest");
       this.copyTable(tableObj, joinRequestObj);
-      this.p2p.send(joinRequestObj, [tableObj.ownerPID])
+      try {
+         //should these be checked individually?
+         var quickConnect = this.settings.p2p.transports.quickConnect;
+         var preferredTransport = this.settings.p2p.transports.preferred[0];
+      } catch (err) {
+         quickConnect = true;
+         preferredTransport = "wss";
+      }
+      try {
+         if (quickConnect == true) {
+            //non-blocking connection attempt
+            this.p2p.connectPeer(tableObj.ownerPID, preferredTransport).catch(err => {
+               console.warn(err);
+            });
+         } else {
+            //blocking connection attempt
+            var result = await this.p2p.connectPeer(tableObj.ownerPID, preferredTransport);
+         }
+      } catch (err) {
+         console.error(err);
+      }
+      //connected successfully on required or "any" transport
+      this.p2p.send(joinRequestObj, [tableObj.ownerPID]);
+      tableObj.joinTimeoutID = setTimeout(this.onJoinTableRequestTimeout, replyTimeout, tableObj, this);
+      return (true);
    }
 
    /**
@@ -1180,9 +1238,13 @@ class CypherPoker extends EventDispatcher {
                         if (((requiredPID == event.data.result.from) || (requiredPID == "*")) && (joined == false)) {
                            currentTable.requiredPID.splice(count2, 1);
                            currentTable.joinedPID.push(event.data.result.from);
-                           var joinResponse = this.buildCPMessage("tablejoin");
-                           this.copyTable(currentTable, joinResponse);
+                           var  joinResponse = this.buildCPMessage("tablejoin");
+                           //changed format in v0.4.1
+                           joinResponse.table = new Object();
+                           joinResponse.joined = event.data.result.from;
+                           this.copyTable(currentTable, joinResponse.table);
                            this.p2p.send(joinResponse, this.createTablePIDList(currentTable.joinedPID, false));
+                           ownEvent.joined = event.data.result.from;
                            ownEvent.table = currentTable;
                            this.dispatchEvent(ownEvent);
                            this.dispatchTableReadyEvent(currentTable);
@@ -1197,30 +1259,53 @@ class CypherPoker extends EventDispatcher {
             }
             break;
          case "tablejoin":
+            //message structure changed in v0.4.1
+            var joinedPID = message.joined;
             var newTable = new Object();
             if ((this._joinedTables == undefined) || (this._joinedTables == null)) {
                this._joinedTables = new Array();
             }
-            this.copyTable(message, newTable);
+            this.copyTable(message.table, newTable);
             for (count = 0; count < this._joinedTables.length; count++) {
                currentTable = this._joinedTables[count];
-               if ((currentTable.tableID == message.tableID) && (currentTable.tableName == message.tableName)) {
+               if ((currentTable.tableID == message.table.tableID) && (currentTable.tableName == message.table.tableName)) {
                   //someone else has joined the owner's table
                   this._joinedTables[count] = newTable;
                   newTable.toString = function() {
                      return ("[object CypherPoker#TableObject]");
                   }
                   ownEvent.table = newTable;
-                  this.dispatchEvent(ownEvent);
-                  this.dispatchTableReadyEvent(newTable);
+                  try {
+                     //should these be checked individually?
+                     var quickConnect = this.settings.p2p.transports.quickConnect;
+                     var preferredTransport = this.settings.p2p.transports.preferred[0];
+                  } catch (err) {
+                     quickConnect = true;
+                     preferredTransport = "wss";
+                  }
+                  this.p2p.connectPeer(joinedPID, preferredTransport).then(result => {
+                     if (quickConnect == false) {
+                        this.dispatchEvent(ownEvent);
+                        this.dispatchTableReadyEvent(newTable);
+                     }
+                  }).catch (err => {
+                     //probably doesn't support requested transport -- automatically using fallback (probably WebSocket Sessions)
+                     console.warn (err);
+                     this.dispatchEvent(ownEvent);
+                     this.dispatchTableReadyEvent(newTable);
+                  });
+                  if (quickConnect == true) {
+                     this.dispatchEvent(ownEvent);
+                     this.dispatchTableReadyEvent(newTable);
+                  }
                   return;
                }
             }
             for (var count = 0; count < this._joinTableRequests.length; count++) {
                var requestObj = this._joinTableRequests[count];
                if ((requestObj.ownerPID == event.data.result.from) &&
-                   (requestObj.tableID == message.tableID) &&
-                   (requestObj.tableName == message.tableName)) {
+                   (requestObj.tableID == message.table.tableID) &&
+                   (requestObj.tableName == message.table.tableName)) {
                       //we've just joined the owner's table
                       this._joinTableRequests.splice(count, 1);
                       clearTimeout(requestObj.joinTimeoutID);

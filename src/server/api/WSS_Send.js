@@ -6,7 +6,7 @@
 * Client Request -> {"jsonrpc":"2.0","method":"WSS_Send","id":3,"params":{"user_token":"7060939278321507","server_token":"9789091435706088","type":"broadcast","data":"Hello, everyone!"}}
 * Server Response -> {"jsonrpc":"2.0","result":{"message":"ok"},"id":3}
 *
-* @version 0.2.0
+* @version 0.4.1
 */
 async function WSS_Send (sessionObj) {
    if (sessionObj.endpoint.startsWith("ws") == false) {
@@ -54,8 +54,11 @@ async function WSS_Send (sessionObj) {
          sendDirect(fromAddr, to_array, requestParams.data);
          break;
       case "broadcast":
+         if (requestParams["exclude"] == undefined) {
+            requestParams.exclude = null;
+         }
          //to everyone
-         sendBroadcast(fromAddr, requestParams.data);
+         sendBroadcast(fromAddr, requestParams.data, requestParams.exclude);
          break;
       default:
          sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Unrecognized message \"type\".", sessionObj);
@@ -102,12 +105,15 @@ function sendDirect(fromPID, toArray, sendData) {
 *
 * @param {String} fromPID The private ID of the sender.
 * @param {*} sendData The data to send to the recipients.
+* @param {Object} [exclude=null] If not omitted or null, this object should
+* contain an indexed <code>rcp</code> array of recpients to exclude from
+* the broadcast.
 */
-function sendBroadcast(fromPID, sendData)  {
+function sendBroadcast(fromPID, sendData, exclude=null)  {
    var activeSessions = namespace.websocket.allSessions(true);
    for (var count = 0; count < activeSessions.length; count++) {
-      //don't include sender in broadcast
-      if (activeSessions[count].private_id != fromPID) {
+      //don't include sender or excluded recipients in broadcast
+      if ((activeSessions[count].private_id != fromPID) && (isExcluded(activeSessions[count].private_id, exclude) == false)) {
          var messageObj = buildJSONRPC();
          messageObj.result.type = "broadcast";
          messageObj.result.from = fromPID;
@@ -146,6 +152,36 @@ function sendUpdate(toArray, sendData, fromPID=null) {
          }
       }
    }
+}
+
+/**
+* Checks if a private ID is included in a list of exclusions (such as in
+* a {@link sendBroadcast} call).
+*
+* @param {String} privateID The privateID to check.
+* @param {Object} [exclude=null] The object containing the exclusion list.
+* This object must contain a <code>rcp</code> property which is an indexed \
+* array of recipients being excluded.
+*
+* @return {Boolean} True if the specific <code>privateID</code> was included in the
+* exclusion list, false otherwise.
+*/
+function isExcluded(privateID, exclude=null) {
+   if (exclude == null) {
+      return (false);
+   }
+   if ((exclude["rcp"] == null) || (exclude["rcp"] == undefined)) {
+      return (false);
+   }
+   if (typeof(exclude.rcp.length) != "number") {
+      return (false);
+   }
+   for (var count = 0; count < exclude.rcp.length; count++) {
+      if (privateID == exclude.rcp[count]) {
+         return (true);
+      }
+   }
+   return (false);
 }
 
 if (namespace.websocket == undefined) {

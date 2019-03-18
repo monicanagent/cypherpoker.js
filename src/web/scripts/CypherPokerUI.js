@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.4.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -329,7 +329,6 @@ class CypherPokerUI {
    * @param {String} [indexURL="./templates/index.json"] The URL of the JSON file containing
    * the list of templates to load.
    *
-   * @private
    * @async
    */
    async loadTemplates(indexURL="./templates/index.json") {
@@ -1611,7 +1610,11 @@ class CypherPokerUI {
       ui.updateJoinedTableStatus(metaTags, true);
       ui.cypherpoker.removeEventListener("tableready", ui.onTableReady);
       ui.cypherpoker.addEventListener("tableready", ui.onTableReady, ui);
-      ui.cypherpoker.joinTable(table);
+      ui.cypherpoker.joinTable(table).catch (err => {
+         ui.showDialog("Table join request has timed out.");
+         ui.hideDialog(4000);
+         ui.onLobbyButtonClick("cancel_game");
+      });
    }
 
    /**

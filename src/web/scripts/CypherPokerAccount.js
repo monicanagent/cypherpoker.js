@@ -1,7 +1,7 @@
 /**
 * @file Contains information and functionality associated with a single managed account.
 *
-* @version 0.4.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -165,7 +165,6 @@ class CypherPokerAccount extends EventDispatcher {
       if (includePassword) {
          returnObj.password = this.password;
       }
-      delete returnObj.onEventPromise;
       return (returnObj);
    }
 
@@ -342,16 +341,15 @@ class CypherPokerAccount extends EventDispatcher {
       for (var item in params) {
          sendObj[item] = params[item];
       }
-      delete sendObj.onEventPromise;
       sendObj.action = action;
       sendObj.user_token = this.cypherpoker.p2p.userToken;
       sendObj.server_token = this.cypherpoker.p2p.serverToken;
       var requestID = "CP" + String(Math.random()).split(".")[1];
-      var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.p2p.webSocket, false, requestID);
+      var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.api, false, requestID);
       var result = JSON.parse(rpc_result.data);
       //since messages over web sockets are asynchronous the next immediate message may not be ours so:
       while (requestID != result.id) {
-         rpc_result = await this.cypherpoker.p2p.webSocket.onEventPromise("message");
+         rpc_result = await this.cypherpoker.api.rawConnection.onEventPromise("message");
          result = JSON.parse(rpc_result.data);
          //we could include a max wait limit here
       }

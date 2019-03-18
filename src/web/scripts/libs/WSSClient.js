@@ -1,18 +1,19 @@
 /**
-* @file WebSocket Session interface.
+* @file WebSocket Sessions client interface.
 *
-* @version 0.2.0
+* @version 0.4.1
 */
 
 /**
 * @class A WebSocket Session client interface used to connect to peers. Requires
 * {@link RPC} and {@link EventPromise} to exist in the current execution
 * context.
+* @extends EventDispatcher
 */
-class WSS extends EventDispatcher {
+class WSSClient extends EventDispatcher {
 
    /**
-   * Creates an instance of WSS.
+   * Creates an instance of WSSClient.
    *
    * @param {String} [handshakeServerAddress] The address of the WSS handshake
    * server (available as {@link handshakeServerAddr}). If not provided and
@@ -118,6 +119,7 @@ class WSS extends EventDispatcher {
    /**
    * @property {Array} peers A list of currently connected peers, as managed by
    * this instance.
+   * @readonly
    */
    get peers() {
       if (this["_peers"] == undefined) {
@@ -127,21 +129,47 @@ class WSS extends EventDispatcher {
    }
 
    /**
+   * @property {Object} peerOptions Options objects associated with peer
+   * private IDs in the {@link peers} list. That is:<br/>
+   * <code>peerOptions[privateID]=optionsObject</code>
+   * @readonly
+   */
+   get peerOptions() {
+      if (this["_peerOptions"] == undefined) {
+         this._peerOptions = new Object();
+      }
+      return (this._peerOptions);
+   }
+
+   /**
    * Initiates a WebSocket Session by performing a handshake and subsequent
    * connection to the WSS server.
    *
-   * @param {String} [socketServerAddr] The WebSocket server address to connect
+   * @param {String} [socketServerAddr=null] The WebSocket server address to connect
    * to. If omitted, the assigned handshake server address will be used for
    * both the handshake and the connection.
    * @param {Boolean} [useHTTPHandshake=false] If true, a HTTP /  HTTPS
    * request is used for the handshake otherwise the handshake and
    * connection both happen on the same WebSocket connection.
+   * @param {Object} [connectData=null] Optional data to include with the connect API
+   * call. If omitted or <code>null</code>, an empty object is created and a minimal <code>options</code>
+   * object is appended. If included, any <code>user_token</code> and <code>server_token</code>
+   * properties will be overriden with handshake {@link WSSClient#userToken} and
+   * {@link WSSClient#serverToken} values.
+   * @param {Object} [connectData.options] The peer connection options for this connection.
+   * If omitted or <code>null</code> a minimal connection options object is created with
+   * default values.
+   * @param {Boolean} [connectData.options.wss=true] Denotes whether (<code>true</code>) or not
+   * (<code>false</code>) WebSocket Sessions is supported by the client.
+   * @param {Boolean} [connectData.options.webrtc=false] Denotes whether (<code>true</code>) or not
+   * (<code>false</code>) <a href="https://webrtc.org/">WebRTC</a> is supported by the client.
+   * @param {Boolean} [connectData.options.ortc=false] Denotes whether (<code>true</code>) or not
+   * (<code>false</code>) <a href="https://ortc.org/">ORTC</a> is support by the client.
    *
    * @throws {Error} Thrown when a valid handshake / socket server address was
    * not supplied, or the connection could not be established.
-   * @todo Add better connection error handling.
    */
-   async connect(socketServerAddress, useHTTPHandshake=false) {
+   async connect(socketServerAddress=null, useHTTPHandshake=false, connectData=null) {
       if (typeof(socketServerAddress) == "string") {
          this._ssa = socketServerAddress;
       }
@@ -182,6 +210,18 @@ class WSS extends EventDispatcher {
             this._serverToken = resultData.result.server_token;
          }
       }
+      if (connectData == null) {
+         connectData = new Object();
+      }
+      if ((connectData["options"] == undefined) || (connectData["options"] == null)) {
+         //default connection options (as of v0.4.1)
+         connectData.options = new Object();
+         connectData.options.wss = true;
+         connectData.options.webrtc = false;
+         connectData.options.ortc = false;
+      }
+      connectData.user_token = this.userToken;
+      connectData.server_token = this.serverToken;
       if (this.webSocket == null) {
          this._websocket = new WebSocket(this.socketServerAddr);
          this.webSocket.addEventListener("error", event => {
@@ -194,10 +234,7 @@ class WSS extends EventDispatcher {
          }
          this.webSocket.session = this;
       }
-      var message_event = await RPC("WSS_Connect", {
-         "user_token":this.userToken,
-         "server_token":this.serverToken
-      }, this.webSocket); //connect the websocket using the tokens
+      var message_event = await RPC("WSS_Connect", connectData, this.webSocket); //connect the WebSocket
       var rpc_result_obj = JSON.parse(message_event.data);
       if (rpc_result_obj.error != undefined) {
          throw (new Error("Couldn't establish WebSocket Session: ("+rpc_result_obj.error.code+") "+rpc_result_obj.error.message));
@@ -214,9 +251,11 @@ class WSS extends EventDispatcher {
       }
       if ((rpc_result_obj.result["connect"] != undefined) && (rpc_result_obj.result["connect"] != null)) {
          var connectedPeersList = rpc_result_obj.result["connect"];
+         var optionsList = rpc_result_obj.result["options"]; //as of v0.4.1
          if (typeof(connectedPeersList) == "object") {
-            connectedPeersList.forEach (function (currentValue, index, sourcArr) {
-               this.peers.push(currentValue);
+            connectedPeersList.forEach (function (peerPID, index, sourcArr) {
+               this.peers.push(peerPID);
+               this.peerOptions[peerPID] = optionsList[index];
             }, this);
          }
       }
@@ -229,15 +268,30 @@ class WSS extends EventDispatcher {
    * Broadcasts a message to all connected peers.
    *
    * @param {*} data The data / message to broadcast.
+   * @param {Object|Array} [excludeRecipients=null] If not omitted, null, or an empty
+   * array this should be an indexed array of recipient private IDs to exclude
+   * from the broadcast (if, for example, they will receive the data via
+   * another communication channel).
    *
    * @return {Promise} An asynchronous Promise that will contain the result of
    * the broadcast or will throw an error on failure.
    */
-   async broadcast (data) {
+   async broadcast(data, excludeRecipients=null) {
       var broadcastObj = new Object();
-      broadcastObj.user_token=this.userToken;
-      broadcastObj.server_token=this.serverToken;
+      broadcastObj.user_token = this.userToken;
+      broadcastObj.server_token = this.serverToken;
       broadcastObj.type = "broadcast";
+      if (excludeRecipients != null) {
+         if (typeof(excludeRecipients["length"]) == "number") {
+            //excludeRecipients is an array so add it to the "rcp" property
+            var WSSExcObj = new Object();
+            WSSExcObj.rcp = excludeRecipients;
+         } else {
+            //excludeRecipients is al_wssReady an object so assume everything is in place
+            WSSExcObj = excludeRecipients;
+         }
+         broadcastObj.exclude = WSSExcObj;
+      }
       broadcastObj.data = data;
       var rpc_result = await RPC("WSS_Send", broadcastObj, this.webSocket);
       return (rpc_result);
@@ -255,9 +309,9 @@ class WSS extends EventDispatcher {
    * structure is dynamicaly generated before sending.
    *
    * @return {Promise} An asynchronous Promise that will contain the result of
-   * the send or will throw an error on failure.
+   * the send or reject with an <code>Error</code> object on failure.
    */
-   async send (data, recipients) {
+   async send(data, recipients) {
       if (typeof(recipients) != "object") {
          throw (new Error(`"recipients" parameter must be an array!`));
       }
@@ -269,13 +323,13 @@ class WSS extends EventDispatcher {
          //recipients is al_wssReady an object so assume everything is in place
          WSSRecpObj = recipients;
       }
-      var broadcastObj = new Object();
-      broadcastObj.user_token=this.userToken;
-      broadcastObj.server_token=this.serverToken;
-      broadcastObj.type = "direct";
-      broadcastObj.to = WSSRecpObj;
-      broadcastObj.data = data;
-      var rpc_result = await RPC("WSS_Send", broadcastObj, this.webSocket);
+      var sendObj = new Object();
+      sendObj.user_token = this.userToken;
+      sendObj.server_token = this.serverToken;
+      sendObj.type = "direct";
+      sendObj.to = WSSRecpObj;
+      sendObj.data = data;
+      var rpc_result = await RPC("WSS_Send", sendObj, this.webSocket);
       return (rpc_result);
    }
 
@@ -295,19 +349,16 @@ class WSS extends EventDispatcher {
             case "broadcast":
                var event = new Event("message");
                event.data = dataObj;
-               event._event = event;
                this.session.dispatchEvent(event);
                break;
             case "direct":
                event = new Event("message");
                event.data = dataObj;
-               event._event = event;
                this.session.dispatchEvent(event);
                break;
             case "update":
                event = new Event("update");
                event.data = dataObj;
-               event._event = event;
                this.session.dispatchEvent(event);
                break;
             case "session":
@@ -315,17 +366,19 @@ class WSS extends EventDispatcher {
                   //dataObj.result.connect is the private ID of the new connection
                   event = new Event("peerconnect");
                   event.data = dataObj;
-                  event._message_event = event;
                   this.session.peers.push(dataObj.result.connect);
+                  this.session.peerOptions[dataObj.result.connect] = dataObj.result.options;
                   this.session.dispatchEvent(event);
                } else if (typeof(dataObj.result.disconnect) == "string") {
                   //dataObj.result.disconnect is the private ID of the disconnect
                   event = new Event("peerdisconnect");
                   event.data = dataObj;
-                  event._message_event = event;
+                  event._event = eventObj;
                   for (var count = 0; count < this.session.peers.length; count++) {
                      if (this.session.peers[count] == dataObj.result.disconnect) {
                         this.session.peers.splice(count, 1);
+                        this.session.peerOptions[dataObj.result.disconnect] = null;
+                        delete this.session.peerOptions[dataObj.result.disconnect];
                         break;
                      }
                   }
@@ -352,6 +405,10 @@ class WSS extends EventDispatcher {
       var event = new Event("close");
       event._event = event;
       this.session.dispatchEvent(event);
+   }
+
+   toString() {
+      return ("WSSClient");
    }
 
 }
