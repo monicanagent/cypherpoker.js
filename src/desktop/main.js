@@ -257,7 +257,25 @@ function onIPCMessage (event, request) {
       case "new-window":
          response.type = "new-window";
          response.message = "ok";
-         createClient();
+         if (request.data.url != undefined) {
+            var url = request.data.url;
+         } else {
+            url = null;
+         }
+         if (request.data.winName != undefined) {
+            var winName = request.data.winName;
+         } else {
+            winName = null;
+         }
+         if (url != null) {
+            if (winName != null) {
+               createClient(url, winName);
+            } else {
+               createClient(url);
+            }
+         } else {
+            createClient();
+         }
          break;
       case "toggle-devtools":
          response.type = "toggle-devtools";
