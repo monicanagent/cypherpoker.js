@@ -85,18 +85,21 @@ function updateServerConfig(configDataStr) {
 // POST-INSTALL PATCH BEGINS
 console.log ("Patching installed modules for Electron compatibility...");
 
-// Replace "rmd160" hash reference with "ripemd160" which is required as of Electron 4.0.4 because
-// of switch from OpenSSL to BoringSSL): https://github.com/electron/electron/pull/16574
-console.log ("Patching bip32 library...");
-var patchScript = fs.readFileSync("./node_modules/bip32/crypto.js", {encoding:"UTF-8"});
-patchScript = patchScript.split("rmd160").join("ripemd160");
-fs.writeFileSync("./node_modules/bip32/crypto.js", patchScript, {encoding:"UTF-8"});
-console.log ("bip32 patched.");
-console.log ("Patching bitcoinjs-lib library...");
-var patchScript = fs.readFileSync("./node_modules/bitcoinjs-lib/src/crypto.js", {encoding:"UTF-8"});
-patchScript = patchScript.split("rmd160").join("ripemd160");
-fs.writeFileSync("./node_modules/bitcoinjs-lib/src/crypto.js", patchScript, {encoding:"UTF-8"});
-console.log ("bitcoinjs-lib patched.");
+//don't update 32-bit Linux (only OpenSSL in legacy Electron version)
+if (process.arch != "ia32") {
+   // Replace "rmd160" hash reference with "ripemd160" which is required as of Electron 4.0.4 because
+   // of switch from OpenSSL to BoringSSL): https://github.com/electron/electron/pull/16574
+   console.log ("Patching bip32 library...");
+   var patchScript = fs.readFileSync("./node_modules/bip32/crypto.js", {encoding:"UTF-8"});
+   patchScript = patchScript.split("rmd160").join("ripemd160");
+   fs.writeFileSync("./node_modules/bip32/crypto.js", patchScript, {encoding:"UTF-8"});
+   console.log ("bip32 patched.");
+   console.log ("Patching bitcoinjs-lib library...");
+   var patchScript = fs.readFileSync("./node_modules/bitcoinjs-lib/src/crypto.js", {encoding:"UTF-8"});
+   patchScript = patchScript.split("rmd160").join("ripemd160");
+   fs.writeFileSync("./node_modules/bitcoinjs-lib/src/crypto.js", patchScript, {encoding:"UTF-8"});
+   console.log ("bitcoinjs-lib patched.");
+}
 
 console.log ("All patches applied.");
 
