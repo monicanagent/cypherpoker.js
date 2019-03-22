@@ -1,7 +1,7 @@
 /**
 * @file Manages proxy CypherPoker smart contracts and defines a number of related utility functions.
 *
-* @version 0.4.0
+* @version 0.4.1
 */
 
 /**
@@ -51,7 +51,7 @@
 * @property {Object} history Contains a history of card generation, encryption, and decryption operations for correctness analysis.
 */
 async function CP_SmartContract (sessionObj) {
-   if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
+   if ((namespace.wss == null) || (namespace.wss == undefined)) {
       sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "No WebSocket Session server defined.", sessionObj);
       return (false);
    }
@@ -70,8 +70,8 @@ async function CP_SmartContract (sessionObj) {
       return(false);
    }
    var responseObj = new Object();
-   var connectionID = namespace.websocket.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
-   var privateID = namespace.websocket.makePrivateID(requestParams.server_token, requestParams.user_token);
+   //var connectionID = namespace.wss.makeConnectionID(sessionObj); //makeConnectionID defined in WSS_Handshake.js
+   var privateID = namespace.wss.getPrivateID(sessionObj); //getPrivateID defined in WSS_Handshake.js
    if (privateID == null) {
       //must have active WSS session!
       sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "No active session.", sessionObj);
@@ -2660,7 +2660,7 @@ function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null
       }
    }
    messageObj.contract = contractObj;
-   namespace.websocket.sendUpdate(recipients, messageObj, fromPID);
+   namespace.wss.sendUpdate(recipients, messageObj, fromPID);
 }
 
 /**
@@ -2672,10 +2672,10 @@ function sendContractMessage(messageType, contractObj, fromPID, excludePIDs=null
 */
 function handleWebSocketClose(event) {
    try{
-      for (var connectionID in namespace.websocket.connections) {
-         if ((namespace.websocket.connections[connectionID] != undefined) && (namespace.websocket.connections[connectionID] != null)) {
-            for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
-               var connectionObj = namespace.websocket.connections[connectionID][count];
+      for (var connectionID in namespace.wss.connections) {
+         if ((namespace.wss.connections[connectionID] != undefined) && (namespace.wss.connections[connectionID] != null)) {
+            for (var count = 0; count < namespace.wss.connections[connectionID].length; count++) {
+               var connectionObj = namespace.wss.connections[connectionID][count];
                // connectionObj.private_id disconnected
             }
          }

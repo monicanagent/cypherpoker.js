@@ -5,7 +5,7 @@
 * @version 0.4.1
 */
 async function CP_Account (sessionObj) {
-   if ((namespace.websocket == null) || (namespace.websocket == undefined)) {
+   if ((namespace.wss == null) || (namespace.wss == undefined)) {
       sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "No WebSocket Session server defined.", sessionObj);
       return (false);
    }
@@ -36,8 +36,8 @@ async function CP_Account (sessionObj) {
       return(false);
    }
    var responseObj = new Object();
-   var connectionID = namespace.websocket.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
-   var privateID = namespace.websocket.makePrivateID(requestParams.server_token, requestParams.user_token);
+   //var connectionID = namespace.wss.makeConnectionID(sessionObj); //makeConnectionID defined in WSS_Handshake.js
+   var privateID = namespace.wss.getPrivateID(sessionObj); //getPrivateID defined in WSS_Handshake.js
    if (privateID == null) {
       //must have active WSS session!
       sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Session not established.", sessionObj);

@@ -1,0 +1,34 @@
+<!-- Template content must be enclosed ina a tag (div, span, etc.) -->
+<div id="connectivityManageForm" name="connectivityManageForm" class="connectivityManageContainer">
+   <table id="connectivityTableContainer">
+      <tr>
+         <td id="apiTableDivider">
+            <label>Saved Services API Connections:
+               <select id="apiConnectionList" class="apiConnectionList" onchange="cypherpoker.connectivityManager.populateAPIConnectionInputs()">
+               </select>
+            </label><br/>
+            <label>Selected Services Connection:
+               <input type="url" id="apiConnectionURL" name="apiConnectionURL" placeholder="Connection URL" />
+            </label><button id="connectAPIButton" class="connectAPIButton" onclick="cypherpoker.connectivityManager.onConnectAPIClick()">CONNECT</button>&nbsp;<button id="saveAPIButton" class="saveAPIButton" onclick="cypherpoker.connectivityManager.onSaveAPIClick()">SAVE</button><br/>
+            <a href ="#" onclick="ui.toggleShow('#connectivityManageForm #apiConnectionAdvanced')">Advanced &dArr;</a>
+            <div id="apiConnectionAdvanced" name="apiConnectionAdvanced" class="apiConnectionAdvancedContainer" hidden="true">
+               <label>Connection creation script: <input type="text" id="apiConnectionCreate" name="apiConnectionCreate" placeholder="API connection creation script" value="return(new APIRouter())"/></label>
+            </div>
+         </td>
+         <td id="p2pTableDivider">
+            <label>Saved Peer-to-Peer Rendezvous Connections:
+               <select id="p2pConnectionList" class="p2pConnectionList" onchange="cypherpoker.connectivityManager.populateP2PConnectionInputs()">
+               </select>
+            </label><br/>
+            <label>Selected Rendezvous Connection:
+               <input type="url" id="p2pConnectionURL" name="p2pConnectionURL" placeholder="Connection URL" />
+            </label><button id="connectP2PButton" class="connectP2PButton" onclick="cypherpoker.connectivityManager.onConnectP2PClick()">CONNECT</button>&nbsp;<button id="saveP2PButton" class="saveP2PButton" onclick="cypherpoker.connectivityManager.onSaveP2PClick()">SAVE</button><br/>
+            <a href ="#" onclick="ui.toggleShow('#connectivityManageForm #p2pConnectionAdvanced')">Advanced &dArr;</a>
+            <div id="p2pConnectionAdvanced" name="p2pConnectionAdvanced" class="p2pConnectionAdvancedContainer" hidden="true">
+               <label>Connection creation script: <input type="text" id="p2pConnectionCreate" name="p2pConnectionCreate" placeholder="P2P connection creation script" value="return(new P2PRouter())"/></label><br/>
+               <label hidden="true">Manual connection negotiation: <textarea id="manualConnectionData" class="manualConnectionDataInput" name="manualConnectionData"></textarea></label>
+            </div>
+         </td>
+      </tr>
+   </table>
+</div>

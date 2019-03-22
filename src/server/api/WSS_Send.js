@@ -13,23 +13,19 @@ async function WSS_Send (sessionObj) {
       sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "WebSocket connect request must be made through a WebSocket connection.", sessionObj);
       return(false);
    }
-   if (namespace.websocket.handshakeOK(sessionObj) == false) {
+   if (namespace.wss.handshakeOK(sessionObj) == false) {
       sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Handshake not established.", sessionObj);
       return(false);
    }
    var requestData = sessionObj.requestObj;
    var requestParams = requestData.params;
-   var responseObj = new Object();
-   var connectionID = namespace.websocket.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
-   var resultObj = new Object(); //result to send in response
-   resultObj.message = null;
    if (paramExists(requestData, "type") == false) {
       sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Message \"type\" not specified.", sessionObj);
       return(false);
    }
    var responseObj = new Object();
-   responseObj.message = null;
-   var fromAddr = namespace.websocket.makePrivateID(requestParams.server_token, requestParams.user_token);
+   //var connectionID = namespace.wss.makeConnectionID(sessionObj); //makeConnectionID defined in WSS_Handshake.js
+   var fromAddr = namespace.wss.getPrivateID(sessionObj); //getPrivateID defined in WSS_Handshake.js
    switch (requestParams.type.toLowerCase()) {
       case "direct":
          //to only specific recipients
@@ -68,7 +64,7 @@ async function WSS_Send (sessionObj) {
    //everything went fine!
    responseObj.message = "ok";
    sendResult(responseObj, sessionObj);
-   return(false);
+   return(true);
 }
 
 /**
@@ -79,7 +75,7 @@ async function WSS_Send (sessionObj) {
 * @param {*} sendData The data to send to the recipients.
 */
 function sendDirect(fromPID, toArray, sendData) {
-   var activeSessions = namespace.websocket.allSessions(true);
+   var activeSessions = namespace.wss.allSessions(true);
    var sent_num = 0;
    for (var count = 0; count < activeSessions.length; count++) {
       for (var count2 = 0; count2 < toArray.length; count2++) {
@@ -110,7 +106,7 @@ function sendDirect(fromPID, toArray, sendData) {
 * the broadcast.
 */
 function sendBroadcast(fromPID, sendData, exclude=null)  {
-   var activeSessions = namespace.websocket.allSessions(true);
+   var activeSessions = namespace.wss.allSessions(true);
    for (var count = 0; count < activeSessions.length; count++) {
       //don't include sender or excluded recipients in broadcast
       if ((activeSessions[count].private_id != fromPID) && (isExcluded(activeSessions[count].private_id, exclude) == false)) {
@@ -132,7 +128,7 @@ function sendBroadcast(fromPID, sendData, exclude=null)  {
 * the message is a non-peer-initiated update.
 */
 function sendUpdate(toArray, sendData, fromPID=null) {
-   var activeSessions = namespace.websocket.allSessions(true);
+   var activeSessions = namespace.wss.allSessions(true);
    var sent_num = 0;
    for (var count = 0; count < activeSessions.length; count++) {
       for (var count2 = 0; count2 < toArray.length; count2++) {
@@ -184,10 +180,10 @@ function isExcluded(privateID, exclude=null) {
    return (false);
 }
 
-if (namespace.websocket == undefined) {
-   namespace.websocket = new Object();
+if (namespace.wss == undefined) {
+   namespace.wss = new Object();
 }
 
-namespace.websocket.sendDirect = sendDirect;
-namespace.websocket.sendBroadcast = sendBroadcast;
-namespace.websocket.sendUpdate = sendUpdate;
+namespace.wss.sendDirect = sendDirect;
+namespace.wss.sendBroadcast = sendBroadcast;
+namespace.wss.sendUpdate = sendUpdate;

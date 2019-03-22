@@ -74,10 +74,11 @@ const _require = [
    {"url":"./scripts/libs/EventDispatcher.js"},
    {"url":"./scripts/libs/EventPromise.js"},
    {"url":"./scripts/libs/RPC.js"},
-   {"url":"./scripts/libs/WSSClient.js"},
-   {"url":"./scripts/libs/WebRTCClient.js"},
+   {"url":"./scripts/libs/transports/WSSClient.js"},
+   {"url":"./scripts/libs/transports/WebRTCClient.js"},
    {"url":"./scripts/libs/APIRouter.js"},
    {"url":"./scripts/libs/P2PRouter.js"},
+   {"url":"./scripts/libs/ConnectivityManager.js"},
    {"url":"./scripts/libs/WorkerHost.js"},
    {"url":"./scripts/libs/SRACrypto.js"},
    {"url":"./scripts/libs/BigInteger.min.js"},
@@ -96,22 +97,16 @@ const _require = [
    },
    {"url":"./scripts/CypherPoker.js",
       "onload": () => {
-
-         //Temporary WebRTC test code starts:
-         //var rtc = new WebRTCClient();
-         //var promise = rtc.onEventPromise("icecandidate").then (event => {
-         //   console.log ("description:\n"+JSON.stringify(event.description));
-         //});
-         //rtc.createPeerConnection();
-         //Temporary WebRTC test code ends.
-
          ui.showDialog ("Loading game settings...");
          //EventDispatcher and EventPromise must already exist here!
          loadJSON(_settingsURL).onEventPromise("load").then(promise => {
             if (promise.target.response != null) {
                cypherpoker = new CypherPoker(promise.target.response);
-               ui.cypherpoker = cypherpoker; //connect the instance to the UI
-               cypherpoker.start().then(result => {
+               ui.cypherpoker = cypherpoker; //attach the cypherpoker instance to the UI
+               var urlParams = parseURLParameters(document.location);
+               var startOptions = new Object();
+               startOptions.urlParams = urlParams;
+               cypherpoker.start(startOptions).then(result => {
                   console.log ("CypherPoker.JS instance fully started and connected.");
                }).catch(err => {
                   ui.showDialog(err.message);
@@ -125,6 +120,24 @@ const _require = [
       }
    }
 ]
+
+/**
+* Parses a supplied URL string that may contain parameters (e.g. document.location),
+* and returns an object with the parameters parsed to name-value pairs. Any URL-encoded
+* properties are decoded to native representations prior to being parsed.
+*
+* @param {String} urlString The URL string, either absolute or relative, to parse.
+*
+* @return {URLSearchParams} A [URLSearchParams]{@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
+* instance containing the parsed name-value pairs found in the <code>urlString</code>.
+*
+* @see {@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
+*/
+function parseURLParameters(urlString) {
+   var decodedURL = decodeURI(urlString);
+   var urlObj = new URL(decodedURL);
+   return (urlObj.searchParams);
+}
 
 /**
 * Loads an external JavaScript file by adding a <script> tag to the

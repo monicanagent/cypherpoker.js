@@ -13,6 +13,65 @@
 class WSSClient extends EventDispatcher {
 
    /**
+   * A new peer has connected to the WSS server.
+   *
+   * @event WSSClient#peerconnect
+   * @type {Event}
+   *
+   * @property {Object} data The parsed JSON-RPC 2.0 object received
+   * in the notification.
+   */
+   /**
+   * A peer has disconnected from the WSS server.
+   *
+   * @event WSSClient#peerdisconnect
+   * @type {Event}
+   *
+   * @property {Object} data The parsed JSON-RPC 2.0 object received
+   * in the notification.
+   */
+   /**
+   * A message has been received from a peer via the WSS server. This may either
+   * be a direct message or a broadcast.
+   *
+   * @event WSSClient#message
+   * @type {Event}
+   *
+   * @property {Object} data The parsed JSON-RPC 2.0 object containing
+   * the received message.
+   */
+   /**
+   * An update notification has been received from the WSS server.
+   *
+   * @event WSSClient#update
+   * @type {Event}
+   *
+   * @property {Object} data The parsed JSON-RPC 2.0 object containing
+   * the received message.
+   */
+   /**
+   * The private ID of this connection has changed and a notification
+   * has been sent to the connected peer.
+   *
+   * @event WSSClient#privateid
+   * @type {Event}
+   *
+   * @property {String} privateID The new private ID for this connection.
+   */
+   /**
+   * The private ID of a connected peer has changed and the internal
+   * [peers]{@link WSSClient#peers} list has been updated.
+   *
+   * @event WSSClient#peerpid
+   * @type {Event}
+   *
+   * @property {Object} data The parsed JSON-RPC 2.0 object containing
+   * the change notification.
+   * @property {String} oldPrivateID The old / previous private ID of the peer.
+   * @property {String} newPrivateID The new / changed private ID of the peer.
+   */
+
+   /**
    * Creates an instance of WSSClient.
    *
    * @param {String} [handshakeServerAddress] The address of the WSS handshake
@@ -265,6 +324,40 @@ class WSSClient extends EventDispatcher {
    }
 
    /**
+   * Changes the private ID associated with this connection. The private ID
+   * is updated on the server and reflected in the [privateID]{@link WSSClient#privateID}
+   * property.
+   *
+   * @param {String} newPrivateID The new private ID to set for this connection.
+   *
+   * @return {Promise} The promise resolves with <code>true</code> if the private
+   * ID was successfully changed, otherwise it rejects with <code>false</code>.
+   *
+   * @async
+   */
+   async changePrivateID(newPrivateID) {
+      var sendObj = new Object();
+      sendObj.user_token = this.userToken;
+      sendObj.server_token = this.serverToken;
+      sendObj.action = "setPID";
+      sendObj.privateID = newPrivateID;
+      var requestID = "WSS_Session"+String(Math.random()).split("0.")[1];
+      var rpc_result = await RPC("WSS_Session", sendObj, this.webSocket, false, requestID);
+      var result = JSON.parse(rpc_result.data);
+      //since raw API messages are asynchronous the next immediate message may not be ours so:
+      while (requestID != result.id) {
+         rpc_result = await this.webSocket.onEventPromise("message");
+         result = JSON.parse(rpc_result.data);
+         //we could include a max wait limit here
+      }
+      this._privateID = newPrivateID;
+      var event = new Event("privateid");
+      event.privateID = newPrivateID;
+      this.dispatchEvent(event);
+      return (true);
+   }
+
+   /**
    * Broadcasts a message to all connected peers.
    *
    * @param {*} data The data / message to broadcast.
@@ -373,12 +466,24 @@ class WSSClient extends EventDispatcher {
                   //dataObj.result.disconnect is the private ID of the disconnect
                   event = new Event("peerdisconnect");
                   event.data = dataObj;
-                  event._event = eventObj;
                   for (var count = 0; count < this.session.peers.length; count++) {
                      if (this.session.peers[count] == dataObj.result.disconnect) {
                         this.session.peers.splice(count, 1);
                         this.session.peerOptions[dataObj.result.disconnect] = null;
                         delete this.session.peerOptions[dataObj.result.disconnect];
+                        break;
+                     }
+                  }
+                  this.session.dispatchEvent(event);
+               } else if (typeof(dataObj.result.change) == "object") {
+                  //in the future we may support different types of session updates
+                  event = new Event("peerpid");
+                  event.data = dataObj;
+                  for (var count = 0; count < this.session.peers.length; count++) {
+                     if (this.session.peers[count] == dataObj.result.oldPrivateID) {
+                        this.session.peers.splice(count, 1);
+                        //insert at the same index
+                        this.session.peers.splice(count, 0, dataObj.result.newPrivateID);
                         break;
                      }
                   }

@@ -5,26 +5,26 @@
 * Client Request -> {"jsonrpc":"2.0","method":"WSS_Handshake","id":"1","params":{"user_token":"7060939278321507"}}
 * Server Response -> {"jsonrpc":"2.0","result":{"message":"accept","numconnections":1,"maxconnections":3,"peerconnections":1,"server_token":"9789091435706088"},"id":"1"}
 *
-* @version 0.2.0
+* @version 0.4.1
 */
 async function WSS_Handshake (sessionObj) {
    if ((sessionObj.endpoint.startsWith("http") == false)  && (rpc_options.http_only_handshake)) {
       sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "Session handshake must be made through HTTP / HTTPS service.", sessionObj);
       return (false);
    }
-   if ((namespace.websocket["connections"] == undefined) || (namespace.websocket["connections"] == null)) {
-      namespace.websocket.connections = new Object();
+   if ((namespace.wss["connections"] == undefined) || (namespace.wss["connections"] == null)) {
+      namespace.wss.connections = new Object();
    }
    var requestData = sessionObj.requestObj;
    var requestParams = requestData.params;
    var responseObj = new Object();
-   var connectionID = namespace.websocket.makeConnectionID(sessionObj);
-   var num_activeconnections = 0; //number of currently active WebSocket connections namespace.websocketly
-   for (var item in namespace.websocket.connections) {
-      if ((namespace.websocket.connections[item] != undefined) && (namespace.websocket.connections[item] != null)) {
+   var connectionID = namespace.wss.makeConnectionID(sessionObj);
+   var num_activeconnections = 0; //number of currently active WebSocket connections namespace.wssly
+   for (var item in namespace.wss.connections) {
+      if ((namespace.wss.connections[item] != undefined) && (namespace.wss.connections[item] != null)) {
          //we also need to ook at multiple connections from the same IP (if allowed)...
-         for (var count = 0; count < namespace.websocket.connections[item].length; count++) {
-            var websocketObj = namespace.websocket.connections[item][count];
+         for (var count = 0; count < namespace.wss.connections[item].length; count++) {
+            var websocketObj = namespace.wss.connections[item][count];
             if (websocketObj.user_token == requestParams.user_token) {
                //when the IP is the same then the user token can't be!
                sendError(JSONRPC_ERRORS.SESSION_CLOSE, "User token already exists for your IP.", sessionObj);
@@ -34,15 +34,16 @@ async function WSS_Handshake (sessionObj) {
          }
       }
    }
-   var server_token = String(Math.random()).split("0.").join(""); //unique, per-connection (per-socket) server token
-   if ((namespace.websocket.connections[connectionID] == undefined) || (namespace.websocket.connections[connectionID] == null)) {
+   var server_token = namespace.wss.makeConnectionToken();
+   if ((namespace.wss.connections[connectionID] == undefined) || (namespace.wss.connections[connectionID] == null)) {
       var connectionObj = new Object();
       connectionObj.user_token = requestParams.user_token;
       connectionObj.socket = null; //not yet connected
       connectionObj.last_update = new Date();
       connectionObj.server_token = server_token;
-      namespace.websocket.connections[connectionID] = new Array();
-      namespace.websocket.connections[connectionID].push(connectionObj);
+      connectionObj.clear_token = null;
+      namespace.wss.connections[connectionID] = new Array();
+      namespace.wss.connections[connectionID].push(connectionObj);
       num_activeconnections++; //new connection just added
       responseObj.message = "accept";
       responseObj.numconnections = 1;
@@ -51,7 +52,7 @@ async function WSS_Handshake (sessionObj) {
       responseObj.server_token = server_token;
       sendResult(responseObj, sessionObj);
    } else {
-      let num_activeconnections = namespace.websocket.connections[connectionID].length;
+      let num_activeconnections = namespace.wss.connections[connectionID].length;
       if (num_activeconnections >= rpc_options.max_ws_per_ip) {
          var infoObj = new Object();
          infoObj.numconnections = num_activeconnections;
@@ -64,7 +65,8 @@ async function WSS_Handshake (sessionObj) {
          connectionObj.socket = null; //not yet connected
          connectionObj.last_update = Date.now();
          connectionObj.server_token = server_token;
-         namespace.websocket.connections[connectionID].push(connectionObj);
+         connectionObj.clear_token = null;
+         namespace.wss.connections[connectionID].push(connectionObj);
          responseObj.message = "accept";
          num_activeconnections++; //new connection just added
          responseObj.numconnections = num_activeconnections;
@@ -102,15 +104,25 @@ function makeConnectionID (sessionObj) {
 /**
 * Creates a private session identifier from given server and user tokens.
 *
-* @param {String} server_token The (ideally) randomly generated per-connection /
-* per-WebSocket ID generated by the server for the associated user.
-* @param {String} user_token The (ideally) randomly generated token generated
-* by the user / client.
+* @param {Object} sessionObj A session object such as that generated by a WSS JSON-RPC 2.0
+* server. No validation is performed on the session object's <code>server_token</code>,
+* <code>user_token</code> properties (this should be done prior to invoking this function).
+*
 * @return {String} The SHA256 hash of the server token concatenated with a semi-colon
-* and the user token: <code>SHA256(server_token + ":" + user_token)</code>. <code>null</code>
-* is returned if either of the input parameters is invalid.
+* and the user token: <code>SHA256(server_token + ":" + user_token)</code>, or just
+* the <code>clear_token</code> if a valid one is found (this can be set via
+* {@link WSS_Update}). <code>null</code> is returned if either of the
+* input parameters is invalid.
 */
-function makePrivateID (server_token, user_token) {
+function makePrivateID (sessionObj) {
+   try {
+      var requestData = sessionObj.requestObj; //JSON-RPC 2.0 object
+      var requestParams = requestData.params; //JSON-RPC request parameters
+      var server_token = requestParams.server_token;
+      var user_token = requestParams.user_token;
+   } catch (err) {
+      return (null);
+   }
    if (typeof(server_token) != "string") {
       return (null);
    }
@@ -130,6 +142,64 @@ function makePrivateID (server_token, user_token) {
 }
 
 /**
+* Returns a private session identifier from given server and user tokens.
+*
+* @param {Object} sessionObj A session object such as that generated by a WSS JSON-RPC 2.0
+* server. No validation is performed on the session object's <code>server_token</code>,
+* <code>user_token</code> properties (this should be done prior to invoking this function).
+*
+* @return {String} The private identifier associated with the established
+* session, or <code>null</code> if no identifier can be found.
+*/
+function getPrivateID(sessionObj) {
+   try {
+      var requestData = sessionObj.requestObj; //JSON-RPC 2.0 object
+      var requestParams = requestData.params; //JSON-RPC request parameters
+      var server_token = requestParams.server_token;
+      var user_token = requestParams.user_token;
+   } catch (err) {
+      return (null);
+   }
+   var connectionID = namespace.wss.makeConnectionID(sessionObj);
+   if ((namespace.wss.connections[connectionID] == undefined) || (namespace.wss.connections[connectionID] == null)) {
+      namespace.wss.connections[connectionID] = new Array();
+      return (null);
+   }
+   if (typeof(server_token) != "string") {
+      return (null);
+   }
+   if (typeof(user_token) != "string") {
+      return (null);
+   }
+   if (server_token.length == 0) {
+      return (null);
+   }
+   if (user_token.length == 0) {
+      return (null);
+   }
+   for (var count = 0; count < namespace.wss.connections[connectionID].length; count++) {
+      var connectionObj = namespace.wss.connections[connectionID][count];
+      if ((user_token == connectionObj.user_token) && (server_token == connectionObj.server_token)){
+         return (connectionObj.private_id);
+      }
+   }
+   return (null);
+}
+
+/**
+* Generates a random server connection token to be used for authentication (for example,
+* to be used as a <code>server_token</code>).
+*
+* @return {String} A randomly generated server connection token.
+*
+* @todo Update to use more secure random source(s).
+*/
+function makeConnectionToken() {
+   var token = String(Math.random()).split("0.").join("");
+   return (token);
+}
+
+/**
 * Verifies whether a handshake for a specific session has been successfully established.
 *
 * @param {Object} sessionObj The session object associated with the incoming request.
@@ -137,15 +207,15 @@ function makePrivateID (server_token, user_token) {
 * established, false if the information doesn't match a live internal session record.
 */
 function handshakeOK(sessionObj) {
-   var connectionID = namespace.websocket.makeConnectionID(sessionObj);
-   if ((namespace.websocket.connections[connectionID] == null) || (namespace.websocket.connections[connectionID] == undefined)) {
+   var connectionID = namespace.wss.makeConnectionID(sessionObj);
+   if ((namespace.wss.connections[connectionID] == null) || (namespace.wss.connections[connectionID] == undefined)) {
       return (false)
    }
-   if (namespace.websocket.connections[connectionID].length == 0) {
+   if (namespace.wss.connections[connectionID].length == 0) {
       return (false);
    }
-   for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
-      var connectionObj = namespace.websocket.connections[connectionID][count];
+   for (var count = 0; count < namespace.wss.connections[connectionID].length; count++) {
+      var connectionObj = namespace.wss.connections[connectionID][count];
       if (connectionObj.user_token == sessionObj.requestObj.params.user_token) {
          if (connectionObj.server_token == sessionObj.requestObj.params.server_token) {
             return (true);
@@ -169,21 +239,21 @@ function handshakeOK(sessionObj) {
 */
 function allSessions(activeOnly = true) {
    var returnArr = new Array();
-   if ((namespace.websocket == undefined) || (namespace.websocket == null)) {
-      namespace.websocket = new Object();
+   if ((namespace.wss == undefined) || (namespace.wss == null)) {
+      namespace.wss = new Object();
       return (returnArr);
    }
-   if ((namespace.websocket.connections == undefined) || (namespace.websocket.connections == null)) {
-      namespace.websocket.connections = new Object();
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
       return (returnArr);
    }
-   for (var cid in namespace.websocket.connections) {
-      if ((namespace.websocket.connections[cid] == undefined) || (namespace.websocket.connections[cid] == null)) {
-         namespace.websocket.connections[cid] = new Array();
+   for (var cid in namespace.wss.connections) {
+      if ((namespace.wss.connections[cid] == undefined) || (namespace.wss.connections[cid] == null)) {
+         namespace.wss.connections[cid] = new Array();
          return (returnArr);
       }
-      for (var count = 0; count < namespace.websocket.connections[cid].length; count++) {
-         var connectionObj = namespace.websocket.connections[cid][count];
+      for (var count = 0; count < namespace.wss.connections[cid].length; count++) {
+         var connectionObj = namespace.wss.connections[cid][count];
          if (activeOnly) {
             if (connectionObj.socket != null) {
                returnArr.push(connectionObj);
@@ -196,10 +266,13 @@ function allSessions(activeOnly = true) {
    return (returnArr);
 }
 
-if (namespace.websocket == undefined) {
-   namespace.websocket = new Object();
+if (namespace.wss == undefined) {
+   namespace.wss = new Object();
 }
-namespace.websocket.makeConnectionID = makeConnectionID;
-namespace.websocket.makePrivateID = makePrivateID;
-namespace.websocket.handshakeOK = handshakeOK;
-namespace.websocket.allSessions = allSessions;
+
+namespace.wss.makeConnectionID = makeConnectionID;
+namespace.wss.getPrivateID = getPrivateID;
+namespace.wss.makePrivateID = makePrivateID;
+namespace.wss.makeConnectionToken = makeConnectionToken;
+namespace.wss.handshakeOK = handshakeOK;
+namespace.wss.allSessions = allSessions;

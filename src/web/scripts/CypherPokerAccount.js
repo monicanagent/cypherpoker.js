@@ -92,6 +92,23 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
+   * @property {Array} domains Each element in this indexed array is a domain,
+   * URL, API, or other service identifier with which this account is associated.
+   * Using this account with other domains / services will most likely result in
+   * an "account not found" error.
+   */
+   set domains(domainsSet) {
+      this._domains = domainsSet;
+   }
+
+   get domains() {
+      if (this._domains == undefined) {
+         this._domains = new Array();
+      }
+      return (this._domains);
+   }
+
+   /**
    * @property {BigInteger} balance="0" The current total account balance. Note that
    * this is different than the {@link CypherPokerPlayer#balance} property
    * which reflects the player balance for a single game (e.g. buy-in).
@@ -162,6 +179,7 @@ class CypherPokerAccount extends EventDispatcher {
       returnObj.type = this.type;
       returnObj.network = this.network;
       returnObj.balance = this.balance.toString(10);
+      returnObj.domains = this.domains;
       if (includePassword) {
          returnObj.password = this.password;
       }
@@ -298,7 +316,7 @@ class CypherPokerAccount extends EventDispatcher {
    */
    async transfer(amount, toAccount) {
       if ((this.password == "") || (this.password == null)) {
-         throw(new Error("Account password not set"));
+         throw(new Error("Account password not set."));
       }
       var params = new Object();
       params.address = this.address;
@@ -342,8 +360,8 @@ class CypherPokerAccount extends EventDispatcher {
          sendObj[item] = params[item];
       }
       sendObj.action = action;
-      sendObj.user_token = this.cypherpoker.p2p.userToken;
-      sendObj.server_token = this.cypherpoker.p2p.serverToken;
+      sendObj.user_token = this.cypherpoker.api.userToken;
+      sendObj.server_token = this.cypherpoker.api.serverToken;
       var requestID = "CP" + String(Math.random()).split(".")[1];
       var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.api, false, requestID);
       var result = JSON.parse(rpc_result.data);

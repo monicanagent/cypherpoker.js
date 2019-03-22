@@ -15,8 +15,8 @@ async function WSS_Connect (sessionObj) {
       return (false);
    }
    try {
-      if ((namespace.websocket["connections"] == undefined) || (namespace.websocket["connections"] == null)) {
-         namespace.websocket.connections = new Array();
+      if ((namespace.wss["connections"] == undefined) || (namespace.wss["connections"] == null)) {
+         namespace.wss.connections = new Array();
       }
    } catch (err) {
       console.error(err.stack);
@@ -28,33 +28,33 @@ async function WSS_Connect (sessionObj) {
       return (false);
    }
    var responseObj = new Object();
-   var connectionID = namespace.websocket.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
+   var connectionID = namespace.wss.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
    var resultObj = new Object(); //result to send in response
    resultObj.message = null; //single word response message
    resultObj.connect = new Array(); //list of already connected peers (may be empty)
    resultObj.options = new Array(); //associated list of peer options (as of v0.4.1)
-   if ((namespace.websocket.connections[connectionID] == null) || (namespace.websocket.connections[connectionID] == undefined)) {
+   if ((namespace.wss.connections[connectionID] == null) || (namespace.wss.connections[connectionID] == undefined)) {
       sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
       return (false);
    }
-   if (namespace.websocket.connections[connectionID].length == 0) {
+   if (namespace.wss.connections[connectionID].length == 0) {
       sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
       return (false);
    }
-   for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
-      var connectionObj = namespace.websocket.connections[connectionID][count];
+   for (var count = 0; count < namespace.wss.connections[connectionID].length; count++) {
+      var connectionObj = namespace.wss.connections[connectionID][count];
       if (connectionObj.user_token == requestParams.user_token) {
          if (connectionObj.server_token == requestParams.server_token) {
             if (connectionObj.socket == null) {
                connectionObj.socket = sessionObj.serverResponse; //assign outgoing WebSockket instance
                connectionObj.last_update = new Date();
-               connectionObj.private_id = namespace.websocket.makePrivateID(connectionObj.server_token, connectionObj.user_token);
-               connectionObj.options = requestParams.options; //as of v0.4.1s
+               connectionObj.private_id = namespace.wss.makePrivateID(sessionObj); //as of v0.4.1
+               connectionObj.options = requestParams.options; //as of v0.4.1
                connectionObj.socket.addEventListener("close", handleWebSocketClose);
                resultObj.message = "open";
                resultObj.private_id = connectionObj.private_id;
                //notify other peers of new connection
-               var activeSessions = namespace.websocket.allSessions(true);
+               var activeSessions = namespace.wss.allSessions(true);
                for (var count = 0; count < activeSessions.length; count++) {
                   //don't include sender in broadcast
                   if (activeSessions[count].user_token != requestParams.user_token) {
@@ -94,22 +94,22 @@ async function WSS_Connect (sessionObj) {
 */
 function handleWebSocketClose(event) {
    try{
-      for (var connectionID in namespace.websocket.connections) {
-         if ((namespace.websocket.connections[connectionID] != undefined) && (namespace.websocket.connections[connectionID] != null)) {
-            for (var count = 0; count < namespace.websocket.connections[connectionID].length; count++) {
-               var connectionObj = namespace.websocket.connections[connectionID][count];
+      for (var connectionID in namespace.wss.connections) {
+         if ((namespace.wss.connections[connectionID] != undefined) && (namespace.wss.connections[connectionID] != null)) {
+            for (var count = 0; count < namespace.wss.connections[connectionID].length; count++) {
+               var connectionObj = namespace.wss.connections[connectionID][count];
                if (connectionObj.socket == event.target) {
-                  namespace.websocket.connections[connectionID].splice(count, 1);
+                  namespace.wss.connections[connectionID].splice(count, 1);
                   //notify other peers of new connection -- disconnection session should now be removed
-                  var activeSessions = namespace.websocket.allSessions(true);
+                  var activeSessions = namespace.wss.allSessions(true);
                   for (var count2 = 0; count2 < activeSessions.length; count2++) {
                      var messageObj = buildJSONRPC();
                      messageObj.result.type = "session";
                      messageObj.result.disconnect = connectionObj.private_id;
                      activeSessions[count2].socket.send(JSON.stringify(messageObj));
                   }
-                  if (namespace.websocket.connections[connectionID].length == 0) {
-                     namespace.websocket.connections[connectionID] = undefined;
+                  if (namespace.wss.connections[connectionID].length == 0) {
+                     namespace.wss.connections[connectionID] = undefined;
                   }
                   return;
                }
@@ -121,6 +121,6 @@ function handleWebSocketClose(event) {
    }
 }
 
-if (namespace.websocket == undefined) {
-   namespace.websocket = new Object();
+if (namespace.wss == undefined) {
+   namespace.wss = new Object();
 }

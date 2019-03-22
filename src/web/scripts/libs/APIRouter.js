@@ -10,10 +10,49 @@
 class APIRouter extends EventDispatcher {
 
    /**
-   * Creates an instance of APIRouter.
+   * An API service message has been received on one of the supported transports
+   * being handled by this instance. Both "direct" and "message" types emit
+   * the same event (examine the <code>data</code> property to differentiate).
+   *
+   * @event APIRouter#message
+   * @type {Event}
+   * @property {Object} data A native JSON-RPC 2.0 result or notification object.
+   * @property {String} transportType The transport type through which the message
+   * was received.
+   * @property {Object} transport A reference to the transport interface that initially
+   * handled the receipt of the message.
    */
-   constructor() {
+   /**
+   * A server-originating "update" message has been received on one of the supported
+   * transports handled by this instance.
+   *
+   * @event APIRouter#update
+   * @type {Event}
+   * @property {Object} data A native JSON-RPC 2.0 result or notification object.
+   * @property {String} transportType The transport type through which the message
+   * was received.
+   * @property {Object} transport A reference to the transport interface that initially
+   * handled the receipt of the message.
+   */
+
+   /**
+   * Creates an instance of APIRouter.
+   *
+   * @param {Object} [configData=null] Application configuration data, usually as loaded at
+   * startup.
+   */
+   constructor(configData=null) {
       super();
+      this._config = configData;
+   }
+
+   /**
+   * @property {Object} config Application configuration data, usually loaded
+   * at application startup (<code>settings.json</code> file).
+   * @readonly
+   */
+   get config() {
+      return (this._config);
    }
 
    /**
@@ -30,6 +69,14 @@ class APIRouter extends EventDispatcher {
 
    set connection(cSet) {
       this._connection = cSet;
+      //remove any existing listeners
+      this._connection.removeEventListener("message", this.onMessage);
+      this._connection.removeEventListener("update", this.onUpdate);
+      this._connection.removeEventListener("peerpid", this.onPeerPIDUpdate);
+      //add new listeners
+      this._connection.addEventListener("message", this.onMessage, this);
+      this._connection.addEventListener("update", this.onUpdate, this);
+      this._connection.addEventListener("peerpid", this.onPeerPIDUpdate, this);
    }
 
    /**
@@ -51,10 +98,18 @@ class APIRouter extends EventDispatcher {
    * established.
    */
    get privateID() {
-      if (this.connection == null) {
-         return (null);
+      if ((this.connection == null) && (this._privateID == undefined)) {
+         this._privateID = null;
+      } else {
+         if (this._privateID == undefined) {
+            this._privateID = this.connection.privateID;
+         }
       }
-      return (this.connection.privateID);
+      return (this._privateID);
+   }
+
+   set privateID(PIDSet) {
+      this._privateID = PIDSet;
    }
 
    /**
@@ -62,10 +117,18 @@ class APIRouter extends EventDispatcher {
    * the API {@link connection}.
    */
    get userToken() {
-      if (this.connection == null) {
-         return (null);
+      if ((this.connection == null) && (this._userToken == undefined)) {
+         this._userToken = null;
+      } else {
+         if (this._userToken == undefined) {
+            this._userToken = this.connection.userToken;
+         }
       }
-      return (this.connection.userToken);
+      return (this._userToken);
+   }
+
+   set userToken (utSet) {
+      this._userToken = utSet;
    }
 
    /**
@@ -73,10 +136,18 @@ class APIRouter extends EventDispatcher {
    * the API {@link connection}.
    */
    get serverToken() {
-      if (this.connection == null) {
-         return (null);
+      if ((this.connection == null) && (this._serverToken == undefined)) {
+         this._serverToken = null;
+      } else {
+         if (this._serverToken == undefined) {
+            this._serverToken = this.connection.serverToken;
+         }
       }
-      return (this.connection.serverToken);
+      return (this._serverToken);
+   }
+
+   set serverToken (stSet) {
+      this._serverToken = stSet;
    }
 
    /**
@@ -125,22 +196,16 @@ class APIRouter extends EventDispatcher {
          throw (new Error("The connection info \"type\" property must be a string."));
       }
       switch (connectionInfo.type) {
-         case "ws":
-            this._connection = new WSSClient();
-            this.connection.addEventListener("message", this.onMessage, this);
-            this.connection.addEventListener("update", this.onUpdate, this);
-            this.connection.addEventListener("peerconnect", this.onPeerConnect, this);
-            this.connection.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
-            var result = this.connection.connect(connectionInfo.url);
-            return (result);
-            break;
          case "wss":
-            this._connection = new WSSClient(connectionInfo.url);
-            this.connection.addEventListener("message", this.onMessage, this);
-            this.connection.addEventListener("update", this.onUpdate, this);
-            this.connection.addEventListener("peerconnect", this.onPeerConnect, this);
-            this.connection.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
-            result = this.connection.connect(connectionInfo.url);
+            this.connection = new WSSClient(connectionInfo.url);
+            try {
+               var connectData = new Object();
+               connectData.options = P2PRouter.supportedTransports.options; //P2PRouter advertised as connection options
+               var result = await this.connection.connect(connectionInfo.url, false, connectData);
+            } catch (err) {
+               this.connection.destroy();
+               this.connection = null;
+            }
             return (result);
             break;
          case "webrtc":
@@ -148,6 +213,101 @@ class APIRouter extends EventDispatcher {
          default:
             throw (new Error("Unrecognized connection type \""+connectInfo.type+"\""));
             break;
+      }
+   }
+
+   /**
+   * Changes the private ID associated with the [connection]{@link APIRouter#connection}. The private ID
+   * is updated on the server and reflected in the [privateID]{@link WSSClient#privateID}
+   * property.
+   *
+   * @param {String} newPrivateID The new private ID to set for this connection.
+   *
+   * @return {Promise} The promise resolves with <code>true</code> if the private
+   * ID was successfully changed, otherwise it rejects with <code>false</code>.
+   *
+   * @async
+   */
+   async changePrivateID(newPrivateID) {
+      var changed = await this.connection.changePrivateID(newPrivateID);
+      if (changed == true) {
+         this._privateID = newPrivateID;
+      }
+   }
+
+   /**
+   * Handles any "peerpid" message events received from the API connection.
+   *
+   * @param {Event} event An update message event received from the API connection.
+   *
+   * @fires APIRouter#peerpid
+   * @private
+   */
+   async onPeerPIDUpdate(event) {
+      var newEvent = new Event("peerpid");
+      newEvent.oldPrivateID = event.data.result.change.oldPrivateID;
+      newEvent.newPrivateID = event.data.result.change.newPrivateID
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
+   * Handles any "message" events received on the API transport.
+   *
+   * @param {Event} event A message event received from the API transport.
+   *
+   * @fires APIRouter#message
+   * @private
+   */
+   onMessage(event) {
+      var source = event.target.toString();
+      var newEvent = new Event("message");
+      if (source == "WSSClient") {
+         newEvent.data = event.data;
+         newEvent.data.result.transport = "wss";
+         newEvent.transport = event.target;
+      } else if (source == "WebRTCClient") {
+         //TODO: add support for WebRTC API call messages
+         var jsonObj = buildJSONRPC("notification");
+         jsonObj.data = event.data;
+         jsonObj.data.result.from = this.getPIDByTransport(event.target);
+         jsonObj.data.result.transport = "webrtc";
+         newEvent.data = jsonObj.data;
+         newEvent.transport = event.target;
+      }
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
+   * Handles any "update" message events received on a supported transport.
+   *
+   * @param {Event} event An update message event received from the API.
+   *
+   * @fires APIRouter#update
+   * @private
+   */
+   async onUpdate(event) {
+      var source = event.target.toString();
+      var newEvent = new Event("update");
+      newEvent.data = event.data;
+      newEvent.transport = event.target;
+      if (source == "WSSClient") {
+         newEvent.transportType = "wss";
+      } else if (source == "WebRTCClient") {
+         newEvent.transportType = "webrtc";
+      }
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
+   * Prepares the instance for destruction by closing any open transports,
+   * removing references and event listeners, and otherwise cleaning up.
+   *
+   * @async
+   */
+   async destroy() {
+      if (this.connection != null) {
+         this.connection.removeEventListener("message", this.onMessage);
+         this._connection = null;
       }
    }
 

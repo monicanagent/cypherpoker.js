@@ -46,6 +46,14 @@ class P2PRouter extends EventDispatcher {
    * new connection was established.
    */
    /**
+   * A connected peer has changed private IDs.
+   *
+   * @event P2PRouter#peerpid
+   * @type {Event}
+   * @property {String} oldPrivateID The old / previous private ID for the peer.
+   * @property {String} newPrivateID The new / changed private ID for the peer.
+   */
+   /**
    * A  peer-to-peer connection has closed.
    *
    * @event P2PRouter#peerdisconnect
@@ -178,7 +186,7 @@ class P2PRouter extends EventDispatcher {
          P2PRouter._supportedTransports.options = new Object();
          P2PRouter._supportedTransports.sendModel = new Object();
          if (DetectRTC.isWebRTCSupported == true) {
-            P2PRouter._supportedTransports.options.webrtc = false;
+            P2PRouter._supportedTransports.options.webrtc = true;
             P2PRouter._supportedTransports.sendModel.webrtc = "single";
          } else {
             P2PRouter._supportedTransports.options.webrtc = false;
@@ -280,13 +288,35 @@ class P2PRouter extends EventDispatcher {
    * A reference to the P2P rendezvous, signalling, and fallback connection handler, or <code>null</code>
    * if no such connection exists or is invalid.
    * @type {*}
-   * @readonly
    */
    get rendezvous() {
       if (this._rendezvous == undefined) {
          return (null);
       }
       return (this._rendezvous);
+   }
+
+   set rendezvous(rendSet) {
+      this._rendezvous = rendSet;
+      //remove any existing listeners
+      this._rendezvous.removeEventListener("message", this.onMessage);
+      this._rendezvous.removeEventListener("update", this.onUpdate);
+      this._rendezvous.removeEventListener("peerconnect", this.onPeerConnect);
+      this._rendezvous.removeEventListener("peerpid", this.onPeerPIDUpdate);
+      this._rendezvous.removeEventListener("peerdisconnect", this.onPeerDisconnect);
+      //add new listeners
+      this._rendezvous.addEventListener("message", this.onMessage, this);
+      this._rendezvous.addEventListener("update", this.onUpdate, this);
+      this._rendezvous.addEventListener("peerconnect", this.onPeerConnect, this);
+      this._rendezvous.addEventListener("peerpid", this.onPeerPIDUpdate, this);
+      this._rendezvous.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
+      switch (this._rendezvous.toString()) {
+         case "WSSClient":
+            this.updatePeerConnections(["wss"],[this._rendezvous]);
+            break;
+         default:
+            break;
+      }
    }
 
    /**
@@ -379,11 +409,7 @@ class P2PRouter extends EventDispatcher {
          case "wss":
             try {
                connectData.options = P2PRouter.supportedTransports.options;
-               this._rendezvous = new WSSClient(connectionInfo.url);
-               this.rendezvous.addEventListener("message", this.onMessage, this);
-               this.rendezvous.addEventListener("update", this.onUpdate, this);
-               this.rendezvous.addEventListener("peerconnect", this.onPeerConnect, this);
-               this.rendezvous.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
+               this.rendezvous = new WSSClient(connectionInfo.url);
                var result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
                this.updatePeerConnections(["wss"],[this.rendezvous]);
             } catch (err) {
@@ -412,7 +438,6 @@ class P2PRouter extends EventDispatcher {
    updatePeerConnections(openTypes=null, transports=null) {
       for (var privateID in this.rendezvous.peerOptions) {
          var options = this.rendezvous.peerOptions[privateID];
-         options = {"webrtc":true, "wss":true,"ortc":false};
          this.insertPeerConnectionObject(privateID, options);
          //overwrite any defines open types
          if (openTypes != null) {
@@ -474,6 +499,67 @@ class P2PRouter extends EventDispatcher {
    }
 
    /**
+   * Changes the private ID associated with this instance. Any connected peers
+   * are notified of this change.
+   *
+   * @param {String} newPrivateID The new private ID to set for this instance.
+   * @param {Boolean} [allSuccess=false] If true, all attached peers must
+   * be successfully notified of the change in order for the returned promise
+   * to resolve with <code>true</code>. If false, only the <code>rendezvous</code>
+   * server must be successfully updated.
+   *
+   * @return {Promise} The promise resolves with <code>true</code> if the private
+   * ID was successfully changed, otherwise it rejects with
+   * <code>false</code>. If <code>allSuccess</code> is true, all connected peers
+   * must be successfully notified of the change for the promise to resolve
+   * with <code>true</code>, otherwise only the [rendezvous]{@link P2PRouter#rendezvous}
+   * server needs to be successfully updated.
+   *
+   * @async
+   */
+   async changePrivateID(newPrivateID, allSuccess=false) {
+      var sentTransports = new Array();
+      var updated = await this.rendezvous.changePrivateID(newPrivateID);
+      if (updated == true) {
+         this._privateID = newPrivateID;
+      }
+      sentTransports.push(this.rendezvous);
+      for (var PID in this.peerConnections) {
+         var connectionObj = this.peerConnections[PID];
+         for (var transportType in connectionObj.status) {
+            var status = connectionObj.status[transportType];
+            var transport = connectionObj.transport[transportType];
+            if (status == "open") {
+               var sent = false;
+               for (var count=0; count < sentTransports.length; count++) {
+                  if (sentTransports[count] === transport) {
+                     sent = true;
+                     break;
+                  }
+               }
+               if (sent == false) {
+                  var changed = await transport.changePrivateID(newPrivateID);
+                  sentTransports.push(transport);
+                  if (changed == false) {
+                     if (allSuccess == true) {
+                        updated = false;
+                     }
+                     if (P2PRouter.supportedTransports[transportType].sendModel == "single") {
+                        console.warn ("Could not send private ID change notification to: "+transport.peerID);
+                     } else if (P2PRouter.supportedTransports[transportType].sendModel == "multi") {
+                        console.warn ("Could not broadcast private ID change notification via: "+transport.toString());
+                     } else {
+                        console.warn ("Could not broadcast private ID change notification via unsupported transport.");
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return (updated);
+   }
+
+   /**
    * Requests a direct connection to a peer with a specific transport.
    *
    * @param {String} privateID The private ID of the peer to request the connection to.
@@ -505,6 +591,7 @@ class P2PRouter extends EventDispatcher {
                wrtcInst.addEventListener("peerconnect", this.onPeerConnect, this);
                wrtcInst.addEventListener("message", this.onMessage, this);
                wrtcInst.addEventListener("update", this.onUpdate, this);
+               wrtcInst.addEventListener("peerpid", this.onPeerPIDUpdate, this);
                wrtcInst.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
                this.peerConnections[privateID].transport[transportType] = wrtcInst;
                this.peerConnections[privateID].connectPromise[transportType].resolve = resolve;
@@ -622,6 +709,7 @@ class P2PRouter extends EventDispatcher {
                currentTransport.removeEventListener("message", this.onMessage, this);
                currentTransport.removeEventListener("update", this.onUpdate, this);
                currentTransport.removeEventListener("peerconnect", this.onPeerConnect, this);
+               currentTransport.removeEventListener("peerpid", this.onPeerPIDUpdate, this);
                currentTransport.removeEventListener("peerdisconnect", this.onPeerDisconnect, this);
             }
             //remove entry
@@ -682,7 +770,6 @@ class P2PRouter extends EventDispatcher {
                      return (element == recipient);
                   });
                   if (exclude == false) {
-                     console.log ("Sending over "+transport+" to "+recipient);
                      var result = await transport.broadcast(data);
                   }
                   results.push(result);
@@ -694,13 +781,11 @@ class P2PRouter extends EventDispatcher {
                   var sharedRecipients = sharedGroups[count].recipients;
                   var sharedTransport = sharedGroups[count].transport;
                   var sharedExclude = excludeArr.concat(sharedGroups[count].exclude);
-                  console.log ("Sending over "+sharedTransport+" to "+sharedRecipients);
                   result = await sharedTransport.broadcast(data, sharedExclude);
                   results.push(result);
                }
             } else if (sendModel == "none") {
                //try fallback connection as a last resort
-               console.log ("Sending over rendezvous to "+sharedRecipients);
                result = await this.rendezvous.broadcast(data, excludeArr);
                results.push(result);
             }
@@ -766,7 +851,7 @@ class P2PRouter extends EventDispatcher {
                }
             } else if (sendModel == "none") {
                //try fallback connection as a last resort
-               result = await this.rendezvious.send(data, recipients);
+               result = await this.rendezvous.send(data, recipients);
                results.push(result);
             }
          } catch (err) {
@@ -1079,6 +1164,35 @@ class P2PRouter extends EventDispatcher {
    }
 
    /**
+   * Handles any "peerpid" message events received on routed transports. The
+   * [peerConnections]{@link P2PRouter#peerConnections} is automatically
+   * updated to reflect the changed private ID.
+   *
+   * @param {Event} event An update message event received from a supported transport.
+   *
+   * @fires P2PRouter#peerpid
+   * @private
+   */
+   async onPeerPIDUpdate(event) {
+      var oldPID = event.data.result.change.oldPrivateID;
+      var newPID = event.data.result.change.newPrivateID;
+      if (oldPID == newPID) {
+         return;
+      }
+      if ((this.peerConnections[oldPID] == undefined) || (this.peerConnections[oldPID] == null)) {
+         //may ne a duplicated notification
+         return;
+      }
+      //update peerConnections object
+      this.peerConnections[newPID] = this.peerConnections[oldPID];
+      delete this.peerConnections[oldPID];
+      var newEvent = new Event("peerpid");
+      newEvent.oldPrivateID = oldPID;
+      newEvent.newPrivateID = newPID;
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
    * Invoked when peer requests a direct peer-to-peer connection.
    *
    * @param {String} privateID The private ID of the peer requesting the connection.
@@ -1104,6 +1218,7 @@ class P2PRouter extends EventDispatcher {
                wrtcInst.addEventListener("peerconnect", this.onPeerConnect, this);
                wrtcInst.addEventListener("message", this.onMessage, this);
                wrtcInst.addEventListener("update", this.onUpdate, this);
+               wrtcInst.addEventListener("peerpid", this.onPeerPIDUpdate, this);
                wrtcInst.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
                this.insertPeerConnectionObject(privateID, P2PRouter.supportedTransports.options); //if not exist
                this.peerConnections[privateID].transport[transportType] = wrtcInst;
@@ -1138,6 +1253,7 @@ class P2PRouter extends EventDispatcher {
       var newEvent = new Event("peerconnect");
       newEvent.transport = event.target;
       if (source == "WSSClient") {
+         console.dir (event.data);
          var privateID = event.data.result.connect;
          if ((event.data.result.options == undefined) || (event.data.result.options == null)) {
             //added for pre-v0.4.1 compatibility
@@ -1204,7 +1320,47 @@ class P2PRouter extends EventDispatcher {
    onPeerConnectTimeout(privateID, transportType, reject, context) {
       console.error ("Attempt to establish peer connection using \""+transportType+"\" transport to \""+privateID+"\" has timed out.");
       console.error ("Using fallback transport \""+context.getPreferredTransport(privateID).type+"\".");
+      context.peerConnections[privateID].connectTimeout[transportType] = null;
       context.setConnectionStatus(privateID, "failed", transportType);
+   }
+
+   /**
+   * Prepares the instance for destruction by closing any open transports, = null;
+   * removing references and event listeners, and otherwise cleaning up.
+   *
+   * @async
+   */
+   async destroy() {
+      if (this.rendezvous != null) {
+         this.rendezvous.removeEventListener("message", this.onMessage);
+         this.rendezvous.removeEventListener("update", this.onUpdate);
+         this.rendezvous.removeEventListener("peerconnect", this.onPeerConnect);
+         this.rendezvous.removeEventListener("peerpid", this.onPeerPIDUpdate);
+         this.rendezvous.removeEventListener("peerdisconnect", this.onPeerDisconnect);
+         try {
+            var result = await this.rendezvous.disconnect();
+         } catch (err) {
+         }
+         this._rendezvous = null;
+      }
+      for (var privateID in this.peerConnections) {
+         try {
+            this.peerConnections[privateID].transport.removeEventListener("peerconnect", this.onPeerConnect);
+            this.peerConnections[privateID].transport.removeEventListener("message", this.onMessage);
+            this.peerConnections[privateID].transport.removeEventListener("update", this.onUpdate);
+            this.peerConnections[privateID].transport.removeEventListener("peerpid", this.onPeerPIDUpdate);
+            this.peerConnections[privateID].transport.removeEventListener("peerdisconnect", this.onPeerDisconnect);
+            if (this.peerConnections[privateID].connectTimeout[transportType] != null) {
+               this.clearTimeout(this.peerConnections[privateID].connectTimeout[transportType]);
+               this.peerConnections[privateID].connectTimeout[transportType] = null;
+            }
+            var result = await this.peerConnections[privateID].transport.disconnect();
+         } catch (err) {
+         } finally {
+            this.peerConnections[privateID].transport = null;
+            this.peerConnections[privateID].status = "closed";
+         }
+      }
    }
 
    toString() {

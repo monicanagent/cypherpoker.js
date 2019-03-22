@@ -15,22 +15,37 @@
 * @example
 * var settingsObj = {
 *    "p2p":{
-*       "create":"return (new P2PRouter())",
-*       "connectURL":{
-            "type":"wss",
-            "url":"ws://localhost:8090"
-         }
-*    },
-*    "crypto":{
-*       "create":"return (new SRACrypto(4))"
-*    },
-*    "debug":false
+*      "connectInfo":{
+*          "create":"return (new P2PRouter())",
+*         "type":"wss",
+*          "url":"ws://127.0.0.1:8090"
+*      },
+*      "transports": {
+*         "preferred":["webrtc","wss","ortc"],
+*         "quickConnect":true
+*       }
+*   },
+*   "api":{
+*      "connectInfo":{
+*         "create":"return (new APIRouter())",
+*        "type":"wss",
+*         "url":"ws://127.0.0.1:8090"
+*      }
+*   },
+*   "crypto":{
+*      "create":"return (new SRACrypto(4))",
+*      "bitLength": 1024,
+*      "radix": 16
+*   },
+*   "debug":false
 * }
 * var cypherpoker = new CypherPoker(settingsObj);
 *
 * @extends EventDispatcher
 * @see {@link P2PRouter}
-* @see {@link WSS}
+* @see {@link APIRouter}
+* @see {@link WSSClient}
+* @see {@link WebRTCClient}
 * @see {@link SRACrypto}
 */
 class CypherPoker extends EventDispatcher {
@@ -50,7 +65,7 @@ class CypherPoker extends EventDispatcher {
    * @property {Array} restorePID Copy of the original private IDs in the <code>requiredPID</code> array
    * used to restore it if members of the <code>joinePID</code> array leave the table.
    * @property {Object} tableInfo Additional information to be included with the table. Use this object rather than
-   * a {@link CypherPoker#TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
+   * a [TableObject]{@link CypherPoker#TableObject} at the root level since it is dynamic (may cause unexpected behaviour).
    */
 
     //Event definitions:
@@ -149,37 +164,33 @@ class CypherPoker extends EventDispatcher {
    *
    * @param {Object} settingsObject An external settings object specifying startup
    * and initialization options for the instance. This reference is set to the
-   * {@link CypherPoker#settings} property.
+   * [settingas]{@link CypherPoker#settings} property.
    *
    */
    constructor (settingsObject) {
       super();
-      this._connected = false;
+      this._apiConnected = false;
+      this._p2pConnected = false;
       this._settings = settingsObject;
       this.initialize();
    }
 
    /**
    * Called to intialize the instance after all settings are created / loaded.
-   * Sets the {@link CypherPoker#p2p} and {@link CypherPoker#crypto} references using settings functions.
-   * Also adds an internal listener for <code>message</code> events on {@link CypherPoker#p2p},
+   * Sets the [p2p]{@link CypherPoker#p2p} and [crypto]{@link CypherPoker#crypto} references using settings functions.
+   * Also adds an internal listener for <code>message</code> events on [p2p]{@link CypherPoker#p2p},
    * in order to process some of them internally.
    * @private
    */
    initialize() {
       this.debug ("CypherPoker.initialize()");
-      //create peer-to-peer routing interface
-      this._p2p = Function(this.settings.p2p.connectInfo.create)();
       //create cryptosystem
       this._crypto = Function(this.settings.crypto.create)();
-      this.p2p.addEventListener("message", this.handleP2PMessage, this);
-      //restore saved accounts
-      this.restoreAccounts();
    }
 
    /**
    * Creates a <code>console</code>-based output based on the type if the
-   * <code>debug</code> property of {@link CypherPoker#settings} is <code>true</code>.
+   * <code>debug</code> property of [settings]{@link CypherPoker#settings} is <code>true</code>.
    *
    * @param {*} msg The message to send to the console output.
    * @param {String} [type="log"] The type of output that the <code>msg</code> should
@@ -205,40 +216,56 @@ class CypherPoker extends EventDispatcher {
    * completed. Usually this function can be invoked directly after a new
    * instance is created unless otherwise required.
    *
+   * @param {Object} [options=null] Optional startup options that can be used
+   * to override default settings, behaviours, and functionality.
+   * @param {URLSearchParams} [options.urlParams] Any options that may have
+   * been supplied to the application via the URL as parameters (name-value pairs).
+   *
    * @fires CypherPoker#start
    * @async
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
    */
-   async start() {
+   async start(options=null) {
       this.debug ("CypherPoker.start()");
-      try {
-         //establish P2P connection
-         var result = await this.p2p.connectRendezvous(this.settings.p2p.connectInfo);
-         //create API networking interface
-         var APIUrl = this.settings.api.connectInfo.url;
-         var APIConnType = this.settings.api.connectInfo.type;
-         APIUrl = APIUrl.trim();
-         APIConnType = APIConnType.trim();
-         var P2PUrl = this.settings.p2p.connectInfo.url;
-         var P2PConnType = this.settings.p2p.connectInfo.type;
-         P2PUrl = P2PUrl.trim();
-         P2PConnType = P2PConnType.trim();
-         this._api = Function(this.settings.api.connectInfo.create)();
-         if ((P2PUrl == APIUrl) && (APIConnType == P2PConnType)) {
-            //shared P2P / API connection
-            this.api.connection = this.p2p.rendezvous;
-         } else {
-            result = await this.api.connectAPI(this.settings.api.connectInfo);
+      //parse startup options, if provided
+      if (options != null) {
+         try {
+            if (options.urlParams != undefined) {
+               this.processURLParams(options.urlParams);
+            }
+         } catch (err) {
+            //this should not be fatal
+            console.warn(err);
          }
-         this._connected = true;
-         var event = new Event("start");
-         this.dispatchEvent(event);
-      } catch (err) {
-         result = null;
-         this._connected = false;
-         console.error (err);
-         throw(new Error("Couldn't connect to peer-to-peer network."));
       }
+      //restore saved accounts
+      this.restoreAccounts(this.settings.api.connectInfo.url);
+      //start connections
+      this._connectivityManager = new ConnectivityManager(this);
+      this.connectivityManager.registerListener("message", "p2p", this.handleP2PMessage, this);
+      var result = await this.connectivityManager.startConnections();
+      var event = new Event("start");
+      this.dispatchEvent(event);
       return (result);
+   }
+
+   /**
+   * @param {URLSearchParams} urlParams Options supplied as parsed URL parameters
+   * to apply to the [settings]{@link CypherPoker#settings} object.
+   * */
+   processURLParams(urlParams) {
+      if (urlParams.has("p2p.url") == true) {
+         this.settings.p2p.connectInfo.url = urlParams.get("p2p.url");
+      }
+      if (urlParams.has("p2p.type") == true) {
+         this.settings.p2p.connectInfo.type = urlParams.get("p2p.type");
+      }
+      if (urlParams.has("api.url") == true) {
+         this.settings.api.connectInfo.url = urlParams.get("api.url");
+      }
+      if (urlParams.has("api.type") == true) {
+         this.settings.api.connectInfo.type = urlParams.get("api.type");
+      }
    }
 
    /**
@@ -251,23 +278,71 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * @property {Object} p2p Reference to a peer-to-peer networking interface
+   * @property {Object} p2p=null Reference to a peer-to-peer networking interface
    * supporting the property <code>privateID</code> and functions <code>connect(serverURL)</code>,
    * <code>broadcast(message)</code>, and <code>direct(message, [recipient,recipient...])</code>.
    * For example, {@link P2PRouter}
-   * @readonly
    */
    get p2p() {
-      return (this._p2p);
+      if (this.connectivityManager == null) {
+         return (null);
+      }
+      return (this.connectivityManager.p2p);
+   }
+
+   set p2p(p2pSet) {
+      this.connectivityManager.p2p = p2pSet;
    }
 
    /**
-   * @property {Object} api Reference to a networking interface over which RPC API functions
-   * are invoked. This <i>may</i> be the same interface as {@link p2p}.
-   * @readonly
+   * @property {Object} api=null Reference to a networking interface over which RPC API functions
+   * are invoked. This <i>may</i> be the same interface as [p2p]{@link CypherPoker#p2p}.
    */
    get api() {
-      return (this._api);
+      if (this.connectivityManager == null) {
+         return (null);
+      }
+      return (this.connectivityManager.api);
+   }
+
+   set api(apiSet) {
+      this.connectivityManager.api = apiSet;
+   }
+
+   /**
+   * @property {Boolean} apiConnected=false True if the instance is connected to the
+   * API services provider and ready to accept requests.
+   * @readonly
+   */
+   get apiConnected() {
+      if (this.connectivityManager == null) {
+         return (false);
+      }
+      return (this.connectivityManager.apiConnected);
+   }
+
+   /**
+   * @property {Boolean} p2pConnected=false True if the instance is connected to the peer-to-peer
+   * network and ready to accept requests.
+   * @readonly
+   */
+   get p2pConnected() {
+      if (this.connectivityManager == null) {
+         return (false);
+      }
+      return (this.connectivityManager.p2pConnected);
+   }
+
+   /**
+   * @property {ConnectivityManager} connectivityManager A reference to the connectivity manager
+   * instance used to control the [p2p]{@link CypherPoker#p2p} and [api]{@link CypherPoker#api}
+   * instances as well as to provide utility functions for {@link CypherPokerUI}.
+   */
+   get connectivityManager() {
+      if (this._connectivityManager == undefined) {
+         this._connectivityManager = null;
+      }
+      return (this._connectivityManager);
    }
 
    /**
@@ -276,15 +351,6 @@ class CypherPoker extends EventDispatcher {
    */
    get crypto() {
       return (this._crypto);
-   }
-
-   /**
-   * @property {Boolean} connected=false True if the instance is connected to the peer-to-peer
-   * network and ready to accept requests.
-   * @readonly
-   */
-   get connected() {
-      return (this._connected);
    }
 
    /**
@@ -364,7 +430,7 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * @property {Number} maxCapturedTables=99 The maximum number of tables that should be
-   * captured to the {@link CypherPoker#announcedTables} array. Once this limit is reached,
+   * captured to the [announcedTables]{@link CypherPoker#announcedTables} array. Once this limit is reached,
    * items are shuffled so that new items always have the smallest index.
    */
    set maxCapturedTables(maxSet) {
@@ -381,8 +447,8 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * @property {Number} maxCapturesPerPeer=5 The maximum number of tables that should be
-   * captured to the {@link CypherPoker#announcedTables} array per peer. If this many tables
-   * currently exist in {@link CypherPoker#announcedTables} array, new and/or unique announcements
+   * captured to the [announcedTables]{@link CypherPoker#announcedTables} array per peer. If this many tables
+   * currently exist in [announcedTables]{@link CypherPoker#announcedTables} array, new and/or unique announcements
    * by the same peer will be ignored.
    */
    set maxCapturesPerPeer(maxSet) {
@@ -413,33 +479,85 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * Restores saved accounts from the browser's <code>localStorage</code>.
+   * Restores saved accounts from the browser's <code>localStorage</code> for
+   * a specific domain or API service and stores them to the
+   * [accounts]{@link CypherPoker#accounts} array. Any accounts present
+   * in the array are removed.
+   *
+   * @param {String|Array} domain The domain(s), URL(s), or unique server identifier(s)
+   * associated with the accounts to be restored. If a string is supplied only accounts
+   * matching the single identitier will be restored. If this parameter is an array,
+   * accounts matching any element will be restored. If null is supplied, all
+   * accounts will be restored.
    *
    * @private
    */
-   restoreAccounts() {
+   restoreAccounts(domains) {
       var storage = window.localStorage;
       var accountsArr = storage.getItem("accounts");
+      this._accounts = new Array();
+      this._NDAccounts = new Array(); //non-domain accounts (stored for saving)
       if (accountsArr != null) {
          accountsArr = JSON.parse(accountsArr);
          for (var count=0; count < accountsArr.length; count++) {
             var currentAccountData = accountsArr[count];
-            var newAccount = new CypherPokerAccount(this, currentAccountData);
-            this.accounts.push(newAccount);
+            if (currentAccountData.domains == undefined) {
+               //upgrade account data to v0.4.1 (some accounts may be miscategorized)
+               currentAccountData.domains = new Array();
+               if (typeof(domains) == "string") {
+                  currentAccountData.domains.push(domains);
+               } else {
+                  currentAccountData.domains = currentAccountData.domains.concat(domains);
+               }
+            }
+            if (domains != null) {
+               var inDomain = currentAccountData.domains.some(element => {
+                  if (typeof(domains) == "string") {
+                     return (element == domains);
+                  } else {
+                     return (domains.some(el => {
+                        return (el == element);
+                     }, this));
+                  }
+               }, this);
+            } else {
+               inDomain = true;
+            }
+            if (inDomain) {
+               var newAccount = new CypherPokerAccount(this, currentAccountData);
+               this.accounts.push(newAccount);
+            } else {
+               //track for saveAccounts
+               this._NDAccounts.push(currentAccountData);
+           }
          }
       }
    }
 
    /**
-   * Saves the internal {@link CypherPoker#accounts} array to the
+   * Clears the [accounts]{@link CypherPoker#accounts} array and any non-domain
+   * (inactive) accounts currently in memory. This function does <i>not</i>
+   * clear any user interface elements that contain account information.
+   */
+   clearAccounts() {
+      this._accounts = new Array();
+      this._NDAccounts = new Array();
+   }
+
+   /**
+   * Saves the internal [accounts]{@link CypherPoker#accounts} array to the
    * browser's <code>localStorage</code>.
    */
    saveAccounts() {
       var storage = window.localStorage;
-      //strip out unnecessary and circular references
       var saveArray = new Array();
+      //include domain accounts
       for (var count=0; count < this.accounts.length; count++) {
          saveArray.push(this.accounts[count].toObject(true));
+      }
+      //include non-domain accounts
+      for (count=0; count < this._NDAccounts.length; count++) {
+         saveArray.push(this._NDAccounts[count]); //not CypherPokerAccount objects
       }
       storage.setItem("accounts", JSON.stringify(saveArray));
    }
@@ -461,7 +579,8 @@ class CypherPoker extends EventDispatcher {
       var account = new CypherPokerAccount(this);
       account.type = type;
       account.network = network;
-      account.password = password;
+      account.password = password
+      account.domains.push(this.settings.api.connectInfo.url);
       var created = await account.create();
       if (created) {
          this.accounts.push(account);
@@ -477,7 +596,7 @@ class CypherPoker extends EventDispatcher {
    /**
    * Creates a new CypherPoker.JS table and optionally begins to advertise it on the
    * available peer-to-peer network. The table is automatically joined and added
-   * to the {@link CypherPoker#joinedTables} array.
+   * to the [joinedTables]{@link CypherPoker#joinedTables} array.
    *
    * @param {String} tableName The name of the table to create.
    * @param {Number|Array} players If this is a number it specifies that ANY other players
@@ -489,8 +608,8 @@ class CypherPoker extends EventDispatcher {
    * Omitting this parameter or setting it to <code>null</code> causes an ID to be
    * automatically generated.
    * @param {Boolean} [activateBeacon=true] If true, an internal beacon is automatically
-   * started at a {@link CypherPoker#beaconInterval} interval to advertise the table on the peer-to-peer
-   * network. If false, use the {@link CypherPoker#announceTable} function to manually announce the
+   * started at a [beaconInterval]{@link CypherPoker#beaconInterval} interval to advertise the table on the peer-to-peer
+   * network. If false, use the [announceTable]{@link CypherPoker#announceTable} function to manually announce the
    * returned table.
    *
    * @return {CypherPoker#TableObject} A newly created CypherPoker.JS table as specified by
@@ -502,7 +621,7 @@ class CypherPoker extends EventDispatcher {
       } else {
          this.debug("CypherPoker.createTable(\""+tableName+"\", "+players+", "+tableInfo+", "+tableID+", "+activateBeacon+")");
       }
-      if (!this.connected) {
+      if (!this.p2pConnected) {
          throw(new Error("Peer-to-peer network connection not established."));
       }
       var newTableObj = new Object();
@@ -547,14 +666,15 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * Removes a table from the {@link CypherPoker#joinedTables} or {@link CypherPoker#announcedTables}
-   * array and stops any announcement beacon associated with it if applicable.
+   * Removes a table from the [joinedTables]{@link CypherPoker#joinedTables} or
+   * [announcedTables]{@link CypherPoker#announcedTables} array and stops any
+   * announcement beacon associated with it if applicable.
    *
    * @param {CypherPoker#TableObject} tableObj The table to remove and, if applicable, stop
    * announcing.
    * @param {Boolean} [announced=false] If true, the referenced table is removed from the
-   * {@link CypherPoker#announcedTables} array otherwise it's removed from the {@link CypherPoker#joinedTables}
-   * array.
+   * {@link CypherPoker#announcedTables} array otherwise it's removed from the
+   * [joinedTables]{@link CypherPoker#joinedTables} array.
    *
    * @return {Boolean} True if the table was successfully removed, false if no such table
    * could be found.
@@ -581,13 +701,13 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * Removes all tables from the {@link CypherPoker#joinedTables} and
-   * {@link CypherPoker#announcedTables} arrays. Any table announcements or join
+   * Removes all tables from the [joinedTables]{@link CypherPoker#joinedTables} and
+   * [announcedTables]{@link CypherPoker#announcedTables} arrays. Any table announcements or join
    * requests currently in progress are cancelled.
    *
-   * @param {Boolean} [joined=true] If true, all tables in the {@link CypherPoker#joinedTables}
+   * @param {Boolean} [joined=true] If true, all tables in the [joinedTables]{@link CypherPoker#joinedTables}
    * array should be removed.
-   * @param {Boolean} [announced=true] If true, all tables in the {@link CypherPoker#announcedTables}
+   * @param {Boolean} [announced=true] If true, all tables in the [announcedTables]{@link CypherPoker#announcedTables}
    * array should be removed.
    */
    removeAllTables(joined=true, announced=true) {
@@ -643,9 +763,9 @@ class CypherPoker extends EventDispatcher {
    /**
    * Checks whether the supplied argument is a valid CypherPoker.JS table object.
    *
-   * @param {CypherPoker#TableObject} [tableObj=null] The object to examine.
+   * @param {TableObject} [tableObj=null] The object to examine.
    *
-   * @return {Boolean} True if the supplied object appears to be a valid {@link CypherPoker#TableObject}
+   * @return {Boolean} True if the supplied object appears to be a valid [TableObject]{@link CypherPoker#TableObject}
    * suitable for use with CypherPoker.JS
    */
    isTableValid(tableObj=null) {
@@ -689,10 +809,10 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Evaluates whether a table is ready or not. A table is considered
-   * ready if it is a valid {@link CypherPoker#TableObject}, has one or more joined private
+   * ready if it is a valid [TableObject]{@link CypherPoker#TableObject}, has one or more joined private
    * IDs and no required private IDs.
    *
-   * @param {CypherPoker#TableObject} tableObj The table to evaluate.
+   * @param {TableObject} tableObj The table to evaluate.
    *
    * @return {Boolean} True if the table is ready.
    */
@@ -722,7 +842,7 @@ class CypherPoker extends EventDispatcher {
    joinTable(tableObj=null, replyTimeout=20000) {
       this.debug("CypherPoker.joinTable("+tableObj+", "+replyTimeout+")");
       var promise = new Promise((resolve, reject) => {
-         if (!this.connected) {
+         if (!this.p2pConnected) {
             throw(new Error("Peer-to-peer network connection not established."));
          }
          if (!this.isTableValid(tableObj)) {
@@ -781,7 +901,7 @@ class CypherPoker extends EventDispatcher {
       } else {
          this.debug("CypherPoker.sendToTable("+tableObj+", "+message+")");
       }
-      if (!this.connected) {
+      if (!this.p2pConnected) {
          throw(new Error("Peer-to-peer network connection not established."));
       }
       if (!this.isTableValid(tableObj)) {
@@ -882,7 +1002,7 @@ class CypherPoker extends EventDispatcher {
    */
    leaveJoinedTable(tableObj) {
       this.debug("CypherPoker.leaveJoinedTable("+tableObj+")");
-      if (!this.connected) {
+      if (!this.p2pConnected) {
          throw(new Error("Peer-to-peer network connection not established."));
       }
       if (!this.isTableValid(tableObj)) {
@@ -926,7 +1046,7 @@ class CypherPoker extends EventDispatcher {
    *
    * @return {Array} A list of tables currently joined that matches one or more of the
    * search criteria specified in the parameters. If all parameters are null, the whole
-   * list of joined tables is returned (same as {@link CypherPoker#joinedTables}).
+   * list of joined tables is returned (same as [joinedTables]{@link CypherPoker#joinedTables}).
    */
    getJoinedTables(tableName=null, tableID=null, ownerPID=null) {
       var returedTables = new Array();
@@ -970,10 +1090,10 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Copies the core properties of a source table object to another object. The
-   * target object will be identifiable as a {@link CypherPoker#TableObject} after
+   * target object will be identifiable as a [TableObject]{@link CypherPoker#TableObject} after
    * the copy.
    *
-   * @param {CypherPoker#TableObject} sourceTable The table from which to copy from.
+   * @param {TableObject} sourceTable The table from which to copy from.
    * @param {Object} targetObject The target object to copy the core properties
    * of <code>sourceTable</code> to.
    */
@@ -1061,9 +1181,9 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Dispatches a "tableready" event when the associated table is considered
-   * ready (see: {@link CypherPoker#isTableReady}).
+   * ready (see: [isTableReady]{@link CypherPoker#isTableReady}).
    *
-   * @param {CypherPoker#TableObject} tableObj The table to evaluate and include with the
+   * @param {TableObject} tableObj The table to evaluate and include with the
    * the event if ready.
    *
    * @return {Boolean} True if the table is ready and the event was dispatched.
@@ -1156,11 +1276,11 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Removes and optionally destroys a game instance from the internal
-   * {@link CypherPoker#games} array.
+   * [games]{@link CypherPoker#games} array.
    *
    * @param {CypherPokerGame} gameRef A reference the tracked game instance to remove.
-   * @param {Boolean} [destroy=true] If true, the instance's {@link CypherPokerGame#destroy} function
-   * is invoked prior to removal.
+   * @param {Boolean} [destroy=true] If true, the instance's [destroy]{@link CypherPokerGame#destroy}
+   * function is invoked prior to removal.
    */
    removeGame (gameRef, destroy=true) {
       for (var count=0; count<this._games.length; count++) {
@@ -1176,10 +1296,10 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * Removes and optionally destroys all game instances in the internal
-   * {@link CypherPoker#games} array.
+   * [games]{@link CypherPoker#games} array.
    *
-   * @param {Boolean} [destroy=true] If true, each instance's {@link CypherPokerGame#destroy} function
-   * is invoked prior to removal.
+   * @param {Boolean} [destroy=true] If true, each instance's [destroy]{@link CypherPokerGame#destroy}
+   * function is invoked prior to removal.
    */
    removeAllGames (destroy=true) {
       if (destroy) {
@@ -1362,16 +1482,16 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * Captures a new table announcement to the {@link CypherPoker#announcedTables} array if
-   * the table is unique and falls within the peer limit {@link CypherPoker#maxCapturesPerPeer}.
-   * When the {@link CypherPoker#announcedTables} array reaches the {@link CypherPoker#maxCapturedTables}
-   * limit, the last table is <code>pop</code>ped off of the end of the array and
-   * the new table is <code>unshift</code>ed into it. In this way the table announcements
-   * are always in chronological order of receipt with the smallest index being
+   * Captures a new table announcement to the [announcedTables]{@link CypherPoker#announcedTables} array if
+   * the table is unique and falls within the peer limit [maxCapturesPerPeer]{@link CypherPoker#maxCapturesPerPeer}.
+   * When the [announcedTables]{@link CypherPoker#announcedTables} array reaches the
+   * [maxCapturedTables]{@link CypherPoker#maxCapturedTables} limit, the last table is
+   * <code>pop</code>ped off of the end of the array and the new table is <code>unshift</code>ed into it.
+   * In this way the table announcements are always in chronological order of receipt with the smallest index being
    * the newest.
    *
    * @param {Object} tableResult A JSON-RPC 2.0 <code>result</code> object containing
-   * a valid {@link CypherPoker#TableObject} in its <code>data</code> property.
+   * a valid [TableObject]{@link CypherPoker#TableObject} in its <code>data</code> property.
    * @return {Boolean} True if the table was succesfully captured, false if it was
    * out of limit(s) or otherwise unqualified.
    * @private

@@ -69,6 +69,15 @@ class WebRTCClient extends EventDispatcher {
    *
    * @property {*} message The received message.
    */
+   /**
+   * The private ID of this connection has changed and a notification
+   * has been sent to the connected peer.
+   *
+   * @event WebRTCClient#privateid
+   * @type {Event}
+   *
+   * @property {String} privateID The new private ID for this connection.
+   */
 
    /**
    * Creates a new instance of WebRTCClient.
@@ -250,6 +259,31 @@ class WebRTCClient extends EventDispatcher {
    }
 
    /**
+   * Changes the private ID associated with this connection. Any attached
+   * peer is notified of this changed via a <code>session</code> message.
+   *
+   * @param {String} newPrivateID The new private ID to set for this connection.
+   *
+   * @return {Promise} The promise resolves with <code>true</code> if the private
+   * ID was successfully changed, otherwise it rejects with <code>false</code>.
+   *
+   * @async
+   */
+   async changePrivateID(newPrivateID) {
+      var JSONObj = buildJSONRPC("notification");
+      JSONObj.result.type = "session";
+      JSONObj.result.change = new Object();
+      JSONObj.result.change.oldPrivateID = this.privateID;
+      JSONObj.result.change.newPrivateID = newPrivateID;
+      this.dataChannel.send(JSON.stringify(JSONObj)); //don't wait for response
+      this._privateID = newPrivateID;
+      var event = new Event("privateid");
+      event.privateID = newPrivateID;
+      this.dispatchEvent(event);
+      return (true);
+   }
+
+   /**
    * Sets a remote offer SDP received from an initiating peer during a connection
    * negotiation.
    *
@@ -348,9 +382,14 @@ class WebRTCClient extends EventDispatcher {
    *
    * @param {String|Object} data The message to send. If the message is
    * not a string it is stringified into JSON string data.
+   *
+   * @todo Test this functionality
    */
    sendUpdate (data) {
-      //TODO: implement
+      var JSONObj = buildJSONRPC("notification"); //don't include id
+      JSONObj.result.type = "update";
+      JSONObj.result.data = data;
+      this.dataChannel.send(JSON.stringify(JSONObj));
    }
 
    /**
@@ -640,6 +679,17 @@ class WebRTCClient extends EventDispatcher {
                newEvent = new Event("update");
                newEvent.data = dataObj;
                wrtcClient.dispatchEvent(newEvent);
+               break;
+            case "session":
+               if (typeof(dataObj.result.change) == "object") {
+                  //in the future we may support different types of session updates
+                  event = new Event("peerpid");
+                  event.data = dataObj;
+                  wrtcClient.peerID = dataObj.result.newPrivateID;
+                  wrtcClient.dispatchEvent(event);
+               } else {
+                  //unhandled session message
+               }
                break;
             default:
                console.error ("Unrecognized messaged type \""+dataObj.result.type+"\"");

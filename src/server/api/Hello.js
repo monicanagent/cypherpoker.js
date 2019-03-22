@@ -1,5 +1,5 @@
 /**
-* @file API example of a simple response to "Hello".
+* @file API example of a simple response to "Hello". Or respond with an error.
 *
 * @example
 * Client Request -> {"jsonrpc":"2.0","method":"Hello","id":"0","params":{}}
@@ -8,4 +8,6 @@
 */
 async function Hello (sessionObj) {
   sendResult(", World!", sessionObj);
+  //...or reply with an error:
+  //sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Something went wrong!", sessionObj);
 }
