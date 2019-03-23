@@ -138,6 +138,9 @@ process.on("unhandledRejection", (reason, p) => {
 *
 * @param {String} dbAdapter The database adapter to start. The name must match one of those defined
 * in the {@link electronEnv}.database objects.
+*
+* @todo Add error reporting when starting adapter (right now if there's a syntax error the
+* application just stops halway through startup and doesn't continue or halt).
 */
 async function startDatabase(dbAdapter) {
    var adapterData = electronEnv.database[dbAdapter];

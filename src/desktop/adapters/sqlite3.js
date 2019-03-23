@@ -36,14 +36,14 @@ var dbOpened = false;
 var firstCapture = true;
 /**
 * @property {Boolean} busy=true True if the adapter is currently busy processing a
-* request, false if it's available.
+* query, false if it's available.
 */
 var busy = true;
 /**
 * @property {Array} requestQueue Array of requests queued if {@link busy} is true.
-* The newest request is at the end of the array and the oldest at the beginning.
+* The newest request is at the start of the array and the oldest at the end.
 */
-var requestQueue = new Array();;
+var requestQueue = new Array();
 /**
 * @property {Promise} currentPromise=null The promise representing the binary operation currently
 * being processed.
@@ -134,6 +134,7 @@ function initialize(initObj) {
       currentPromise = new Object();
       currentPromise.resolve = resolve;
       currentPromise.reject = reject;
+      busy = false;
       console.log ("SQLite3 adapter initialized.");
    });
    return (promise);
@@ -150,9 +151,9 @@ function onSTDOUT(data) {
       if (currentPromise != null) {
          var results = collateResults(data.toString(), currentPromise.schema);
          currentPromise.resolve(results);
+         busy = false;
+         processQueue();
       }
-      busy = false;
-      processRequestQueue();
    } else {
       //process startup messages
       var versionStr = data.toString().split("\n")[0];
@@ -162,7 +163,7 @@ function onSTDOUT(data) {
       firstCapture = false;
       currentPromise.resolve(true);
       busy = false;
-      processRequestQueue();
+      processQueue();
    }
 }
 
@@ -178,6 +179,8 @@ function onSTDERR(data) {
    if (firstCapture == false) {
       currentPromise.reject(data.toString());
       currentPromise = null;
+      busy = false;
+      processQueue();
    }
 }
 
@@ -189,8 +192,8 @@ function onSTDERR(data) {
 function onProcessClose(code) {
    //we don't expect the process to terminate while the application is running so we
    // display an error message:
+   busy = true;
    console.error ("SQLite3 process has terminated with code "+code);
-   busy = true; //prevent any additional attempts to communicate with the process
    firstCapture = true; //in case it's restarted
 }
 
@@ -520,9 +523,7 @@ function getElapsedUpdateSeconds(latestUpdate) {
 
 /**
 * Invokes an asynchronous request to the adapter, usually by a hosted application module
-* (e.g. server API function). If the adapter is currently {@link busy} then the
-* request is queued using {@link queueRequest}, otherwise it is processed immediately via
-* {@link processRequest}.
+* (e.g. server API function).
 *
 * @param {Object} requestObj An object containing details of the request.
 * @param {String} requestObj.method A database access method to invoke.
@@ -537,107 +538,58 @@ function getElapsedUpdateSeconds(latestUpdate) {
 * with an error.
 */
 function invoke(requestObj) {
-   var queueObj = new Object();
-   queueObj.requestObj = requestObj;
+   var promiseObj = new Object();
+   promiseObj.requestObj = requestObj;
    var promise = new Promise(function(resolve, reject) {
-      queueObj.resolve = resolve;
-      queueObj.reject = reject;
+      promiseObj.resolve = resolve;
+      promiseObj.reject = reject;
    });
-   if (busy == false) {
-      processRequest(queueObj);
-   } else {
-      queueRequest(queueObj);
-   }
+   processRequest(promiseObj);
    return (promise);
-}
-
-/**
-* Queues a request made through the {@link invoke} function, usually if the adapter
-* is currently {@link busy}, to the {@link requestQueue}.
-*
-* @param {Object} queueObj An object containing the request and promise references to
-* queue.
-* @param {Object} queueObj.requestObj Contains the details and parameters of the
-* request being queued.
-* @param {Function} queueObj.resolve The associated Promise's <code>resolve</code> function
-* to be invoked when the request has successfully been processed.
-* @param {Function} queueObj.reject The associated Promise's <code>reject</code> function
-* to be invoked when the request has been rejected (an error thrown or an invalid result received).
-*/
-function queueRequest(queueObj) {
-   requestQueue.push(queueObj);
-}
-
-/**
-* Removes the first queued request in the {@link requestQueue} and
-* processes it via {@link processRequest}.
-*/
-function processRequestQueue() {
-   if (requestQueue.length > 0) {
-      var queueObj = requestQueue.shift();
-      processRequest(queueObj);
-   }
 }
 
 /**
 * Immediately processes a queued request made to the adapter.
 *
-* @param {Object} queueObj An object containing the queued request and promise references.
-* @param {Object} queueObj.requestObj Contains the details and parameters of the
-* queued request.
-* @param {Function} queueObj.resolve The associated Promise's <code>resolve</code> function
+* @param {Object} promiseObj An object containing the request and promise references.
+* @param {Object} promiseObj.requestObj Contains the details and parameters of the
+* request.
+* @param {Function} promiseObj.resolve The associated Promise's <code>resolve</code> function
 * to be invoked when the request has successfully been processed.
-* @param {Function} queueObj.reject The associated Promise's <code>reject</code> function
+* @param {Function} promiseObj.reject The associated Promise's <code>reject</code> function
 * to be invoked when the request has been rejected (an error thrown or an invalid result received).
 */
-function processRequest(queueObj) {
-   busy = true;
-   var requestObj = queueObj.requestObj;
-   var resolve = queueObj.resolve;
-   var reject = queueObj.reject;
+function processRequest(promiseObj) {
+   var requestObj = promiseObj.requestObj;
+   var resolve = promiseObj.resolve;
+   var reject = promiseObj.reject;
    switch (requestObj.method) {
       case "walletstatus":
          getWalletStatus().then(resultObj => {
             resolve(resultObj);
-            busy = false;
-            processRequestQueue();
          }).catch(errorObj => {
             reject(errorObj);
-            busy = false;
-            processRequestQueue();
          });
          break;
       case "getrecord":
          getAccountRecord(requestObj).then(resultObj => {
             resolve(resultObj);
-            busy = false;
-            processRequestQueue();
          }).catch(errorObj => {
             reject(errorObj);
-            busy = false;
-            processRequestQueue();
          });
          break;
       case "putrecord":
          putAccountRecord(requestObj).then(resultObj => {
             resolve(resultObj);
-            busy = false;
-            processRequestQueue();
          }).catch(errorObj => {
             reject(errorObj);
-            busy = false;
-            processRequestQueue();
          });
          break;
       case "updaterecord":
          updateAccountRecord(requestObj).then(resultObj => {
             resolve(resultObj);
-            busy = false;
-            processRequestQueue();
          }).catch(errorObj => {
             reject(errorObj);
-            busy = false;
-            processRequestQueue();
          });
          break;
       default:
@@ -645,14 +597,31 @@ function processRequest(queueObj) {
          errorObj.error.code = -32601;
          errorObj.error.message = "Method "+requestObj.method+" not found.";
          reject (errorObj);
-         busy = false;
-         processRequestQueue();
          break;
    }
 }
 
 /**
-* Executes an asynchronous query on the database.
+* Processes the next waiting query promise in the {@link requestQueue} if
+* one is available.
+*
+* @private
+*/
+function processQueue() {
+   if (busy == true) {
+      return;
+   }
+   if (requestQueue.length > 0) {
+      busy = true;
+      currentPromise = requestQueue.pop(); //remove from end (oldest)
+      sqlite3.stdin.write(currentPromise.sql+"\n");
+   }
+}
+
+/**
+* Executes an asynchronous query on the database. If {@link busy}<code>=true</code>, the
+* query is queued to the {@link requestQueue} to be processed when the current query
+* has completed.
 *
 * @param {String} SQL The query to execute.
 * @param {Array} [schemaArray=null] A parsed table schema array to apply to to the query result.
@@ -666,11 +635,22 @@ function processRequest(queueObj) {
 */
 function query(SQL, schemaArray=null) {
    var promise = new Promise(function(resolve, reject) {
-      currentPromise = new Object();
-      currentPromise.schema = schemaArray;
-      currentPromise.resolve = resolve;
-      currentPromise.reject = reject;
-      sqlite3.stdin.write(SQL+"\n");
+      if (busy == false) {
+         currentPromise = new Object();
+         currentPromise.schema = schemaArray;
+         currentPromise.sql = SQL;
+         currentPromise.resolve = resolve;
+         currentPromise.reject = reject;
+         sqlite3.stdin.write(SQL+"\n");
+      } else {
+         var queuedPromise = new Object();
+         queuedPromise.schema = schemaArray;
+         queuedPromise.sql = SQL;
+         queuedPromise.resolve = resolve;
+         queuedPromise.reject = reject;
+         requestQueue.unshift(queuedPromise); //add newest to beginning
+      }
+      busy = true;
    });
    return (promise);
 }
