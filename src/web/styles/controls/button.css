@@ -1,0 +1,14 @@
+/*
+
+Default button.
+
+*/
+button {
+   cursor: pointer;
+   font-family: 'Exo 2', sans-serif;
+   color: #ffff00;
+   background-color: #0A0A0A;
+   border-width: 1px;
+   border-radius: 0px 10px 10px 0px;
+   padding: 5px 5px 5px 5px;
+}

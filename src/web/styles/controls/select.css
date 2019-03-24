@@ -1,0 +1,12 @@
+/*
+
+Dropdown select element.
+
+*/
+select {
+   font-family: 'Exo 2', sans-serif;
+   color: #ffffff;
+   background-color: #000000;
+   border-radius: 10px 0px 0px 10px;
+   padding: 5px 5px 5px 5px;
+}
