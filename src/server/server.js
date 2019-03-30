@@ -3,6 +3,8 @@
 * @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
+*
+* @todo Separate CypherPoker.JS-specific and generic WebSocket Sessions functionality and publish WSS as an independent project (e.g. NPM + GitHub)
 */
 
 //JSDoc typedefs:
@@ -14,7 +16,7 @@
 */
 /**
 * Server objects exposed to API modules.
-* @typedef {Object} Exposed_Server_Objects
+* @typedef {Object} Exposed_API_Objects
 * @default {
 *  namespace:namespace,<br/>
 *  config:{@link config},<br/>
@@ -39,6 +41,24 @@
 *  JSONRPC_ERRORS:{@link JSONRPC_ERRORS}
 * }
 */
+
+/**
+* Server objects exposed to gateway modules. Note that
+* because gateways are not executed in their own virtual machines
+* they have access to most top-level objects.
+* @typedef {Object} Exposed_Gateway_Objects
+* @default {
+*  config:{@link config},<br/>
+*  validateJSONRPC:{@link validateJSONRPC},<br/>
+*  paramExists:{@link paramExists},<br/>
+*  processRPCRequest:{@link processRPCRequest},<br/>
+*  invokeAPIFunction:{@link invokeAPIFunction},<br/>
+*  sendError:{@link sendError},<br/>
+*  sendResult:{@link sendResult},<br/>
+*  buildJSONRPC:{@link buildJSONRPC},<br/>
+*  handleHTTPRequest:{@link handleHTTPRequest}
+* }
+*/
 /**
 * @typedef {ws} wsserv A WebSocket endpoint ("ws" module).
 */
@@ -51,12 +71,14 @@ const path = require("path");
 const vm = require("vm");
 const http = require("http");
 const https = require("https");
+var Gateways = null; //loaded dynamically post-config
 const websocket = require("ws");
 const request = require("request");
 const crypto = require("crypto");
 const bigInt = require("big-integer");
 const bitcoin = require("bitcoinjs-lib");
 const secp256k1 = require("secp256k1"); //required for Bitcoin transaction signing
+
 
 /**
 * @property {Object} namespace A global object containing references and data shared by API scripts.
@@ -90,6 +112,10 @@ var http_server;
 * @property {wsserv} ws_server The default WebSocket endpoint.
 */
 var ws_server;
+/**
+* @property {Gateways} gateways A reference to the gateways manager instance.
+*/
+var gateways;
 /**
 * @const {Number} [ws_ping_interval=15000] The number of milliseconds to ping connected
 * WebSockets at in order to keep them alive.
@@ -141,12 +167,14 @@ const JSONRPC_ERRORS = {
 * of calls are encountered in a request batch a JSONRPC_INTERNAL_ERROR error is thrown.
 * @property {HTTP_Headers_Array} http_headers Default headers to include in HTTP / HTTPS responses. Each array element is an object
 * containing a name / value pair.
-* @property {Exposed_Server_Objects} exposed_objects Internal server references to expose to external API functions. Note that each internal
+* @property {Exposed_API_Objects} exposed_api_objects Internal server references to expose to external API functions. Note that each internal
 * reference may be assigned an alias instead of its actual name.
 * @property {Number} api_timelimit=3000 The time limit, in milliseconds, to allow external API functions to execute.
 * @property {Boolean} http_only_handshake=false Defines whether session handshakes are done only through HTTP/HTTPS (true),
 * or if they can be done through the WebSocket server (false).
 * @property {Number} max_ws_per_ip=5 The maximum number of concurrent WebSocket connections to allow from a single IP.
+* @property {Exposed_Gateway_Objects} exposed_gateway_objects Internal server references to expose to communication gateways functions. Note that each internal
+* reference may be assigned an alias instead of its actual name.
 */
 var rpc_options = {
   api_dir: "./api",
@@ -157,7 +185,7 @@ var rpc_options = {
 		{"Access-Control-Allow-Origin" : "*"}, //CORS header for global access
 		{"Content-Type" : "application/json-rpc"}
   ],
-  exposed_objects: {
+  exposed_api_objects: {
     namespace:namespace,
     config:config,
     require:require,
@@ -182,9 +210,22 @@ var rpc_options = {
   },
   api_timelimit: 3000,
   http_only_handshake: false,
-  max_ws_per_ip: 5
+  max_ws_per_ip:5,
+  exposed_gateway_objects: {
+     hostEnv:hostEnv,
+     config:config,
+     getConfigByPath:getConfigByPath,
+     validateJSONRPC:validateJSONRPC,
+     paramExists:paramExists,
+     processRPCRequest:processRPCRequest,
+     invokeAPIFunction:invokeAPIFunction,
+     sendError:sendError,
+     sendResult:sendResult,
+     buildJSONRPC:buildJSONRPC,
+     handleHTTPRequest:handleHTTPRequest
+ }
 }
-rpc_options.exposed_objects.rpc_options = rpc_options; // expose the options too (circular reference!)
+rpc_options.exposed_api_objects.rpc_options = rpc_options; // expose the options too (circular reference!)
 
 /**
 * @const {Object} _APIFunctions Enumerated functions found in the API directory as specified in {@linkcode rpc_options}.
@@ -345,8 +386,8 @@ function registerAPIFunction(fileName) {
     //only process files ending in ".js" or ".javascript"
     var script = fs.readFileSync(fullPath, {encoding:"UTF-8"});
     var vmContext = new Object();
-    rpc_options.exposed_objects.hostEnv = hostEnv; //overwrite default reference
-    vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
+    rpc_options.exposed_api_objects.hostEnv = hostEnv; //overwrite default reference
+    vmContext = Object.assign(rpc_options.exposed_api_objects, vmContext);
     var context = vm.createContext(vmContext);
     try {
       vm.runInContext(script, context, {timeout:rpc_options.api_timelimit});
@@ -364,6 +405,36 @@ function registerAPIFunction(fileName) {
       console.log(`External reference "${functionName}" (${fullPath}) is not a function. Not registered.`);
     }
   }
+}
+
+/**
+* Returns a configuration setting from the configuration data such as the
+* global application {@link config} via a do-notation path string (as in
+* standard JavaScript dot notation).
+*
+* @param {String} configPath The path of the object within the configuration object
+* to retrieve.
+* @param {Object} [configObj=config] The current configuration object being evaluated.
+* This reference is passed for recursion but may be used to limit the search to specific
+* child objects only.
+*
+* @return {*} The first matching configuration object or property, or <code>null</code> if
+* it can't be found.
+*/
+function getConfigByPath(configPath, configObj=config) {
+   var pathSplit = configPath.split(".")
+   var currentItem = pathSplit.shift();
+   var found = null;
+   for (var configItem in configObj) {
+      if (configItem == currentItem) {
+         if (pathSplit.length > 0) {
+            found = getConfigByPath(pathSplit.join("."), configObj[configItem])
+         } else {
+            return (configObj[configItem]);
+         }
+      }
+   }
+   return (found);
 }
 
 /**
@@ -393,7 +464,6 @@ function validateJSONRPC (dataObj) {
   }
   return (null);
 }
-
 
 /**
 * Main RPC request handler for all endpoints. Successfully parsed requests are passed to {@link invokeAPIFunction} otherwise an
@@ -497,7 +567,7 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
   } else {
     var script = _APIFunctions[requestMethod].script;
     var vmContext = new Object();
-    vmContext = Object.assign(rpc_options.exposed_objects, vmContext);
+    vmContext = Object.assign(rpc_options.exposed_api_objects, vmContext);
     var context = vm.createContext(vmContext);
     vm.runInContext(script, context, {timeout:rpc_options.api_timelimit});
     context[requestMethod](sessionObj).catch(err => {
@@ -664,7 +734,6 @@ function sendResult(result, sessionObj) {;
       console.error(err);
    }
 }
-
 
 /**
 * Builds a JSON-RPC message object.
@@ -1082,7 +1151,7 @@ async function postLoadConfig() {
             //startDatabase function exposed by host (Electron) environment
             var started = await startDatabase(transport);
             if (started == true) {
-               var opened = await hostEnv.database.sqlite3.adapter.openDBFile(dbFilePath);
+               var opened = await hostEnv.database.sqlite3.vm.openDBFile(dbFilePath);
                if (opened == false) {
                   console.log ("Couldn't open SQLite 3 database: "+dbFilePath);
                }
@@ -1121,7 +1190,7 @@ if ((this["electronEnv"] != undefined) && (this["electronEnv"] != null)) {
 //load external configuration data from default location
 loadConfig().then (configObj => {
    console.log ("Configuration data successfully loaded and parsed.");
-   rpc_options.exposed_objects.config = config;
+   rpc_options.exposed_api_objects.config = config;
    if (config.CP.API.RPC.http.enabled == true) {
       rpc_options.http_port = config.CP.API.RPC.http.port;
    } else {
@@ -1138,6 +1207,15 @@ loadConfig().then (configObj => {
    } else {
       //account system not yet successfully created
    }
+   rpc_options.exposed_gateway_objects.hostEnv = hostEnv;
+   rpc_options.exposed_gateway_objects.config = config;
+   if (hostEnv.embedded == true) {
+      Gateways = require(hostEnv.dir.server + "./libs/Gateways.js");
+   } else {
+      Gateways = require("./libs/Gateways.js");
+   }
+   gateways = new Gateways(rpc_options.exposed_gateway_objects, config.CP.API.gateways);
+   gateways.initialize();
 }).catch (err => {
    console.error ("Couldn't load or parse configuration data.");
    console.error (err);

@@ -1,13 +1,24 @@
 <!-- Template content must be enclosed ina a tag (div, span, etc.) -->
 <div id="connectivityManageForm" name="connectivityManageForm" class="connectivityManageContainer">
-   <table id="connectivityTableContainer">
-      <tr>
+   <span>SDB &harr; Manual Connectivity:</span>
+   <label class="switch" id="enableServerAccessCB">
+      <input type="checkbox" onclick="ui.toggleShow('#sdbConnect');ui.toggleShow('#manualConnect');"><span class="slider round"></span>
+   </label>
+   <table id="connectivityTableContainer" width="100%">
+      <tr id="sdbConnect">
+         <td id="sdbTableDivider">
+            <div id="connectFromSDB" name="connectFromSDB" class="connectFromSDB">
+               <label class="connectSDBLabel">Connect using Services Descriptor Bundle (SDB): <textarea id="connectSDB" class="connectSDB" name="connectSDB"></textarea></label>&nbsp;<button id="connectSDBButton" onclick="cypherpoker.connectivityManager.onConnectUsingSDBClick()">CONNECT</button>
+            </div>
+         </td>
+      </tr>
+      <tr id="manualConnect" hidden="true">
          <td id="apiTableDivider">
-            <label>Saved Services API Connections:
+            <label>Saved API Connections:<br/>
                <select id="apiConnectionList" class="apiConnectionList" onchange="cypherpoker.connectivityManager.populateAPIConnectionInputs()">
                </select>
             </label><br/>
-            <label>Selected Services Connection:
+            <label>Use API Connection:
                <input type="url" id="apiConnectionURL" name="apiConnectionURL" placeholder="Connection URL" />
             </label><button id="connectAPIButton" class="connectAPIButton" onclick="cypherpoker.connectivityManager.onConnectAPIClick()">CONNECT</button>&nbsp;<button id="saveAPIButton" class="saveAPIButton" onclick="cypherpoker.connectivityManager.onSaveAPIClick()">SAVE</button><br/>
             <a href ="#" onclick="ui.toggleShow('#connectivityManageForm #apiConnectionAdvanced')">Advanced &dArr;</a>
@@ -16,18 +27,52 @@
             </div>
          </td>
          <td id="p2pTableDivider">
-            <label>Saved Peer-to-Peer Rendezvous Connections:
+            <label>Saved Peer-to-Peer Rendezvous Connections:<br/>
                <select id="p2pConnectionList" class="p2pConnectionList" onchange="cypherpoker.connectivityManager.populateP2PConnectionInputs()">
                </select>
             </label><br/>
-            <label>Selected Rendezvous Connection:
+            <label>Use Rendezvous Connection:
                <input type="url" id="p2pConnectionURL" name="p2pConnectionURL" placeholder="Connection URL" />
             </label><button id="connectP2PButton" class="connectP2PButton" onclick="cypherpoker.connectivityManager.onConnectP2PClick()">CONNECT</button>&nbsp;<button id="saveP2PButton" class="saveP2PButton" onclick="cypherpoker.connectivityManager.onSaveP2PClick()">SAVE</button><br/>
             <a href ="#" onclick="ui.toggleShow('#connectivityManageForm #p2pConnectionAdvanced')">Advanced &dArr;</a>
             <div id="p2pConnectionAdvanced" name="p2pConnectionAdvanced" class="p2pConnectionAdvancedContainer" hidden="true">
                <label>Connection creation script: <input type="text" id="p2pConnectionCreate" name="p2pConnectionCreate" placeholder="P2P connection creation script" value="return(new P2PRouter())"/></label><br/>
-               <label hidden="true">Manual connection negotiation: <textarea id="manualConnectionData" class="manualConnectionDataInput" name="manualConnectionData"></textarea></label>
             </div>
+         </td>
+      </tr>
+   </table>
+   <table id="serverTableDivider" width="100%" hidden="true">
+      <tr>
+         <td width="100%">
+            <!-- Rounded switch -->
+            <span>Enable external access to API / P2P services using&nbsp;<select id="gatewaysList" class="gatewaysList"></select>&nbsp;</span>
+            <label class="switch" id="enableServerAccessCB">
+               <input type="checkbox" onclick="cypherpoker.connectivityManager.onEnableServerAccessClick(this)"><span class="slider round"></span>
+            </label>
+            <table>
+               <tr>
+                  <td>
+                     <div id="serverSDBTypeRadioGroup">
+                        <input type="radio" id="serverSDBsB85" name="serverSDBType" value="base85-s" onclick="cypherpoker.connectivityManager.onServerSDBOptionClick()" checked>
+                        <label for="serverSDBsB85">Generate SDB-s Base85</label><br/>
+                        <input type="radio" id="serverSDBB85" name="serverSDBType" value="base85-l" onclick="cypherpoker.connectivityManager.onServerSDBOptionClick()">
+                        <label for="serverSDBB85">Generate SDB Base85</label><br/>
+                        <input type="radio" id="serverSDBB64" name="serverSDBType" value="base64-l" onclick="cypherpoker.connectivityManager.onServerSDBOptionClick()">
+                        <label for="serverSDBB64">Generate SDB Base64</label>
+                     </div>
+                  </td>
+                  <td>
+                     <div id="serverAccessGroup">
+                        <input type="checkbox" id="serverP2PAccess" name="serverP2PAccess" value="p2p" onclick="cypherpoker.connectivityManager.onServerSDBOptionClick()" checked>
+                        <label for="serverP2PAccess">Generate SDB for Peer-to-Peer Connectivity</label><br/>
+                        <input type="checkbox" id="serverAPIAccess" name="serverAPIAccess" value="api" onclick="cypherpoker.connectivityManager.onServerSDBOptionClick()" checked>
+                        <label for="serverAPIAccess">Generate SDB for API Connectivity</label><br/>
+                     </div>
+                  </td>
+               </tr>
+            </table>
+            <br/>
+            <label class="serverSDBLabel">Services Descriptor Bundle (SDB): <textarea id="serverSDB" class="serverSDB" name="serverSDB"></textarea></label>&nbsp;<button id="copyServerSDBToClipboardButton" onclick="cypherpoker.connectivityManager.serverSDBToClipboard()">Copy to Clipboard</button>
          </td>
       </tr>
    </table>

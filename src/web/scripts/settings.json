@@ -1,41 +1,41 @@
 {
    "p2p":{
-      "connectInfo":{
-         "create":"return (new P2PRouter())",
-         "type":"wss",
-         "url":"ws://127.0.0.1:8090"
-      },
-      "transports": {
-         "preferred":["webrtc","wss","ortc"],
-         "quickConnect":true
-      }
+     "connectInfo":{
+        "create":"return (new P2PRouter())",
+        "type":"wss",
+        "url":"ws://127.0.0.1:8090"
+     },
+     "transports": {
+        "preferred":["webrtc","wss","ortc"],
+        "quickConnect":true
+     }
    },
    "api":{
-      "connectInfo":{
-         "create":"return (new APIRouter())",
-         "type":"wss",
-         "url":"ws://127.0.0.1:8090"
-      }
+     "connectInfo":{
+        "create":"return (new APIRouter())",
+        "type":"wss",
+        "url":"ws://127.0.0.1:8090"
+     }
    },
    "crypto":{
-      "create":"return (new SRACrypto(4))",
-      "bitLength": 32,
-      "radix": 16
+     "create":"return (new SRACrypto(4))",
+     "bitLength": 512,
+     "radix": 16
    },
    "rootPeers": {
-      "bitcoin":[
-         {"address":"18H1HYoNGVW11X8xhQmPNCuZ5rbd4pJaF3"},
-         {"address":"1DKKp72YvUzWWSF9fR3qErg4EkH9uAvH6s"},
-         {"address":"136vTdtTvoNkxuYVQHBU8g4b38o6MZNHJQ"}
-      ],
-      "test3":[
-         {"address":"n22LEtuzgniSXeMBoUjgpqkDm6Nf7SEMi4"},
-         {"address":"mpeC1sTb7titSPgraQu6YATfz4LanUPfFv"},
-         {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
-      ]
+     "bitcoin":[
+        {"address":"18H1HYoNGVW11X8xhQmPNCuZ5rbd4pJaF3"},
+        {"address":"1DKKp72YvUzWWSF9fR3qErg4EkH9uAvH6s"},
+        {"address":"136vTdtTvoNkxuYVQHBU8g4b38o6MZNHJQ"}
+     ],
+     "test3":[
+        {"address":"n22LEtuzgniSXeMBoUjgpqkDm6Nf7SEMi4"},
+        {"address":"mpeC1sTb7titSPgraQu6YATfz4LanUPfFv"},
+        {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
+     ]
    },
    "lobbyDefaults": {
-      "announceTimeout": 20
+     "announceTimeout": 20
    },
    "cards":[
          {"name":"Ace of Spades","shortname":"A♠","suit":"spades","colour":"black","value":1,"highvalue":14,"imageURI":"./assets/cards/AS.svg"},

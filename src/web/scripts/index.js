@@ -2,6 +2,8 @@
 * @file Main file responsible for starting up the web (client) portion of
 * CypherPoker.JS. Also provides functionality for dynamic loading of additional
 * scripts and JSON data.
+*
+* @version 0.4.1
 */
 
 /**
@@ -73,6 +75,7 @@ const _require = [
    {"url":"./scripts/libs/Polyfills.js"},
    {"url":"./scripts/libs/EventDispatcher.js"},
    {"url":"./scripts/libs/EventPromise.js"},
+   {"url":"./scripts/libs/SDB.js"},
    {"url":"./scripts/libs/RPC.js"},
    {"url":"./scripts/libs/transports/WSSClient.js"},
    {"url":"./scripts/libs/transports/WebRTCClient.js"},
@@ -90,32 +93,42 @@ const _require = [
    {"url":"./scripts/CypherPokerAnalyzer.js"},
    {"url":"./scripts/CypherPokerUI.js",
       "onload": () => {
-         //game UI to be contained in the #game element
-         var gameElement = document.querySelector("#game");
-         ui = new CypherPokerUI(gameElement);
+         var promise = new Promise((resolve, reject) => {
+            //game UI to be contained in the #game element
+            var gameElement = document.querySelector("#game");
+            ui = new CypherPokerUI(gameElement);
+            ui.initialize();
+            resolve(true);
+         })
+         return (promise);
       }
    },
    {"url":"./scripts/CypherPoker.js",
       "onload": () => {
-         ui.showDialog ("Loading game settings...");
-         //EventDispatcher and EventPromise must already exist here!
-         loadJSON(_settingsURL).onEventPromise("load").then(promise => {
-            if (promise.target.response != null) {
-               cypherpoker = new CypherPoker(promise.target.response);
-               ui.cypherpoker = cypherpoker; //attach the cypherpoker instance to the UI
-               var urlParams = parseURLParameters(document.location);
-               var startOptions = new Object();
-               startOptions.urlParams = urlParams;
-               cypherpoker.start(startOptions).then(result => {
-                  console.log ("CypherPoker.JS instance fully started and connected.");
-               }).catch(err => {
-                  ui.showDialog(err.message);
-                  console.error(err.stack);
-               });
-            } else {
-               alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
-               throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
-            }
+         var promise = new Promise((resolve, reject) => {
+            ui.showDialog ("Loading game settings...");
+            //EventDispatcher and EventPromise must already exist here!
+            loadJSON(_settingsURL).onEventPromise("load").then(promise => {
+               if (promise.target.response != null) {
+                  cypherpoker = new CypherPoker(promise.target.response);
+                  ui.cypherpoker = cypherpoker; //attach the cypherpoker instance to the UI
+                  var urlParams = parseURLParameters(document.location);
+                  var startOptions = new Object();
+                  startOptions.urlParams = urlParams;
+                  cypherpoker.start(startOptions).then(result => {
+                     console.log ("CypherPoker.JS instance fully started and connected.");
+                     resolve(true);
+                  }).catch(err => {
+                     ui.showDialog(err.message);
+                     console.error(err.stack);
+                     reject(false);
+                  });
+               } else {
+                  alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
+                  throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
+                  reject(false);
+               }
+            });
          });
       }
    }
@@ -165,8 +178,9 @@ function loadJavaScript(scriptURL) {
 *
 * @param {Event} event A standard DOM event object.
 * @private
+* @async
 */
-function onLoadJavaScript(event) {
+async function onLoadJavaScript(event) {
    var loadedObj = _require.shift(); //important! -- remove current element from array
    var loadedURL = loadedObj.url;
    var loadedTimeStamp = new Date(event.timeStamp);
@@ -177,7 +191,7 @@ function onLoadJavaScript(event) {
       console.log (`All scripts loaded in ${loadedTimeStamp.getSeconds()}s ${loadedTimeStamp.getMilliseconds()}ms`);
    }
    if (typeof loadedObj["onload"] == "function") {
-      loadedObj.onload();
+      await loadedObj.onload();
    }
 }
 
@@ -209,28 +223,62 @@ function loadJSON(jsonURL) {
 * @param {String} command The command to send to the main process via IPC.
 * @param {*} [data=null] Any accompanying data to include with the <code>command</code>.
 * If omitted or <code>null</code>, an empty object is created.
+* @param {Boolean} [async=false] Sends the request asynchronously, immediately
+* returning a promise instead of the synchronous response object. Synchronous requests
+* <code>async=false</code> will block the main thread.
 *
-* @return {Object} A reply object is immediately returned if the desktop IPC
-* interface is available otherwise <code>null</code> is returned.
+* @return {Object|Promise} A reply object is immediately returned if the desktop IPC
+* interface is available otherwise <code>null</code> is returned. If <code>async=true</code>,
+* a promise is returned instead that resolves with the reply object or rejects with an error.
+* The behaiour of the promise matches the behaviour of the synchronous reply.
 */
-function IPCSend (command, data=null) {
-   if (isDesktop()) {
-      var request = new Object();
-      request.command = command;
-      if (data == null) {
-         data = new Object();
-      }
-      request.data = data;
-      request.data.ipcID = ipcID;
-      try {
-         return (ipcRenderer.sendSync("ipc-main", request));
-      } catch (err) {
-         console.error (err.stack);
-      }
+function IPCSend (command, data=null, async=false) {
+   if (async == true) {
+      var promise = new Promise((resolve, reject) => {
+         if (isDesktop()) {
+            var request = new Object();
+            request.command = command;
+            if (data == null) {
+               data = new Object();
+            }
+            request.async = true;
+            request.data = data;
+            request.data.ipcID = ipcID;
+            var responseID = command + ipcID;
+            try {
+               ipcRenderer.once(responseID, (senderObj, replyObj) => {
+                  resolve(replyObj);
+               });
+               ipcRenderer.send("ipc-main", request);
+            } catch (err) {
+               reject (err);
+            }
+         } else {
+            resolve (null);
+         }
+      });
+      return (promise);
    } else {
-      return (null);
+      if (isDesktop()) {
+         var request = new Object();
+         request.command = command;
+         if (data == null) {
+            data = new Object();
+         }
+         request.async = false;
+         request.data = data;
+         request.data.ipcID = ipcID;
+         try {
+            return (ipcRenderer.sendSync("ipc-main", request));
+         } catch (err) {
+            console.error (err.stack);
+         }
+      } else {
+         return (null);
+      }
    }
 }
+
 
 /**
 * Invoked when an interprocess message is asynchronously received

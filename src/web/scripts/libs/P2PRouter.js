@@ -388,7 +388,7 @@ class P2PRouter extends EventDispatcher {
    * @param {Object} connectInfo An object containing information about the
    * rendezvous/fallback server to connect to. The object must contain at least a
    * <code>type</code> property.
-   * @param {String} connectInfo.type Specifies the type of connection defined
+   * @param {String} connectInfo.transport Specifies the type of transport defined
    * by the <code>connectInfo</code> object. This parameter is case-sensitive.
    * Valid types include:<br/>
    * <ul>
@@ -401,11 +401,11 @@ class P2PRouter extends EventDispatcher {
       if (connectionInfo == null) {
          throw (new Error("No connection info object provided."));
       }
-      if (typeof(connectionInfo.type) != "string") {
-         throw (new Error("The connection info \"type\" property must be a string."));
+      if (typeof(connectionInfo.transport) != "string") {
+         throw (new Error("The connection info \"transport\" property must be a string."));
       }
       var connectData = new Object();
-      switch (connectionInfo.type) {
+      switch (connectionInfo.transport) {
          case "wss":
             try {
                connectData.options = P2PRouter.supportedTransports.options;
@@ -419,7 +419,7 @@ class P2PRouter extends EventDispatcher {
             return (result);
             break;
          default:
-            throw (new Error("Unrecognized connection type \""+connectInfo.type+"\""));
+            throw (new Error("Unrecognized transport type \""+connectInfo.transport+"\""));
             break;
       }
    }
@@ -673,7 +673,7 @@ class P2PRouter extends EventDispatcher {
                var resolveFunc = this.peerConnections[privateID].connectPromise[transportType].resolve;
                if (typeof(resolveFunc) == "function") {
                   var resolveObj = new Object();
-                  resolveObj.type = transportType;
+                  resolveObj.transportType = transportType;
                   resolveObj.peerConnectionObject = this.peerConnections[privateID];
                   resolveFunc(resolveObj);
                }
@@ -683,7 +683,7 @@ class P2PRouter extends EventDispatcher {
                var rejectFunc = this.peerConnections[privateID].connectPromise[transportType].resolve;
                if (typeof(rejectFunc) == "function") {
                   var rejectObj = new Error("Connection failed.");
-                  rejectObj.type = transportType;
+                  rejectObj.transportType = transportType;
                   rejectObj.peerConnectionObject = this.peerConnections[privateID];
                   rejectFunc(rejectObj);
                }
@@ -889,7 +889,7 @@ class P2PRouter extends EventDispatcher {
          var transportObj = this.getPreferredTransport(privateID, preferred);
          if (transportObj != null) {
             var transport = transportObj.transport;
-            var type = transportObj.type;
+            var type = transportObj.transportType;
             if (groups[type] == undefined) {
                groups[type] = new Object();
                groups[type].recipients = new Array();
@@ -1032,7 +1032,7 @@ class P2PRouter extends EventDispatcher {
          if (status[transportType] == "open") {
             var returnObj = new Object();
             returnObj.transport = this.peerConnections[privateID].transport[transportType];
-            returnObj.type = transportType;
+            returnObj.transportType = transportType;
             return (returnObj);
          }
       }
@@ -1319,7 +1319,7 @@ class P2PRouter extends EventDispatcher {
    */
    onPeerConnectTimeout(privateID, transportType, reject, context) {
       console.error ("Attempt to establish peer connection using \""+transportType+"\" transport to \""+privateID+"\" has timed out.");
-      console.error ("Using fallback transport \""+context.getPreferredTransport(privateID).type+"\".");
+      console.error ("Using fallback transport \""+context.getPreferredTransport(privateID).transportType+"\".");
       context.peerConnections[privateID].connectTimeout[transportType] = null;
       context.setConnectionStatus(privateID, "failed", transportType);
    }

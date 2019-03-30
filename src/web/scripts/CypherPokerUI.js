@@ -77,11 +77,19 @@ class CypherPokerUI {
       this._protoGameElement = protoElement;
       this.lobbyActive = false;
       window.__closing = false;
-      this.loadTemplates().then(complete => {
-         window.addEventListener("beforeunload", this.onWindowClose);
-         window.addEventListener("click", this.onWindowClick);
-         this._ready = true;
-      })
+   }
+
+   /**
+   * Intializes the UI by loading defined templates and setting
+   * the [ready]{@link CypherPokerUI#ready} flag to <code>true</code>.
+   *
+   * @async
+   */
+   async initialize() {
+      var complete =  await this.loadTemplates();
+      window.addEventListener("beforeunload", this.onWindowClose);
+      window.addEventListener("click", this.onWindowClick);
+      this._ready = true;
    }
 
    /**
@@ -478,6 +486,30 @@ class CypherPokerUI {
    }
 
    /**
+   * Returns all of the selected radio button or checkbox elements contained in a specified
+   * container.
+   *
+   * @param {HTMLElement} containerElement The container element that contains
+   * the radio button or checkbox <code><input></code> nodes to check.
+   *
+   * @return {Array} Indexed list of all selected / checked radio buttons or checkboxes
+   * (<code>HTMLElement</code> objects). Note that radio buttons with the same
+   * <code>name</code> property are treated by the browser as a group and
+   * will only allow one selection among them.
+   */
+   getGroupSelections(containerElement) {
+      var radioButtons = containerElement.querySelectorAll("input");
+      var returnButtons = new Array();
+      for (var count=0; count < radioButtons.length; count++) {
+         var radioButton = radioButtons[count];
+         if (radioButton.checked) {
+            returnButtons.push(radioButton);
+         }
+      }
+      return (returnButtons);
+   }
+
+   /**
    * Adds game event listeners and callbacks to user interface elements defined in
    * {@link CypherPokerUI#gameUISelectors} and contained in a clone of the {@link CypherPokerUI#protoGameElement}
    * element.
@@ -690,6 +722,13 @@ class CypherPokerUI {
             cypherpoker.connectivityManager.populateAPIConnectionInputs();
             cypherpoker.connectivityManager.populateConnectionsList("p2p");
             cypherpoker.connectivityManager.populateP2PConnectionInputs();
+            var serverTableElement = manageElement.querySelector("#serverTableDivider");
+            if (isDesktop()) {
+               this.show(serverTableElement);
+               cypherpoker.connectivityManager.populateGatewaysList();
+            } else {
+               this.hide(serverTableElement);
+            }
             this.toggleShow(manageElement);
             break;
          case "manageAccount":

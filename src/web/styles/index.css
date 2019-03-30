@@ -1,6 +1,7 @@
 @import url('./controls/button.css');
 @import url('./controls/select.css');
 @import url('./controls/input.css');
+@import url('./controls/textarea.css');
 @import url('./controls/slideSwitch.css');
 @import url('./controls/dropdownMenu.css');
 
@@ -97,8 +98,65 @@ body {
    color: #FF0000;
 }
 
+
+.connectSDBLabel {
+   position: relative;
+   top: -30px;
+}
+
+.connectSDB {
+   width: 350px;
+   height: 40px;
+   position: relative;
+   top: 19px;
+}
+
+#enableServerAccessCB {
+   margin-left: 10px;
+}
+
+#connectSDBButton {
+   position: relative;
+   top: -30px;
+}
+
 .connectivityTableContainer {
    width:100%;
+}
+
+#serverSDBTypeRadioGroup {
+   margin-top: 15px;
+}
+
+#copyServerSDBToClipboardButton {
+   position:relative;
+   top: -30px;
+}
+
+.serverSDBLabel {
+   position: relative;
+   top: -30px;
+}
+
+.serverSDB {
+   width: 350px;
+   height: 40px;
+   position: relative;
+   top: 19px;
+}
+
+#sdbConnect {
+   height: 150px;
+}
+
+#apiTableDivider {
+   width:50%;
+   height: 150px;
+}
+
+#p2pTableDivider {
+   width:50%;
+   height: 150px;
 }
 
 .accountsContainer {

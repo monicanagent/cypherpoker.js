@@ -759,7 +759,7 @@ function callAccountDatabase(method, message) {
                   requestObj.method = method;
                   requestObj.params = new Object();
                   requestObj.params.message = message;
-                  hostEnv.database.sqlite3.adapter.invoke(requestObj).then(result => {
+                  hostEnv.database.sqlite3.vm.invoke(requestObj).then(result => {
                      resolve(result); //any JSON-RPC response is valid
                   }).catch (err => {
                      reject(err);

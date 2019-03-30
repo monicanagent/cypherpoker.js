@@ -179,7 +179,7 @@ class APIRouter extends EventDispatcher {
    * @param {Object} connectInfo An object containing information about the API
    * server to connect to. The object must contain at least a <code>type</code>
    * property.
-   * @param {String} connectInfo.type Specifies the type of connection defined
+   * @param {String} connectInfo.transport Specifies the type of transport defined
    * by the <code>connectInfo</code> object. This parameter is case-sensitive.
    * Valid types include "ws" or "wss" for WebSocket Sessions, and "webrtc" for
    * WebRTC connections.
@@ -192,10 +192,10 @@ class APIRouter extends EventDispatcher {
       if (connectionInfo == null) {
          throw (new Error("No connection info object provided."));
       }
-      if (typeof(connectionInfo.type) != "string") {
-         throw (new Error("The connection info \"type\" property must be a string."));
+      if (typeof(connectionInfo.transport) != "string") {
+         throw (new Error("The connection info \"transport\" property must be a string."));
       }
-      switch (connectionInfo.type) {
+      switch (connectionInfo.transport) {
          case "wss":
             this.connection = new WSSClient(connectionInfo.url);
             try {
@@ -211,7 +211,7 @@ class APIRouter extends EventDispatcher {
          case "webrtc":
             break;
          default:
-            throw (new Error("Unrecognized connection type \""+connectInfo.type+"\""));
+            throw (new Error("Unrecognized connection type \""+connectInfo.transport+"\""));
             break;
       }
    }

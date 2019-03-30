@@ -23,7 +23,10 @@ Sliding switch control to replace checkbox.
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: #0A0A00;
+  border-width: 1px;
+  border-style: solid;
+  border-color: yellow;
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -34,14 +37,14 @@ Sliding switch control to replace checkbox.
   height: 13px;
   width: 13px;
   left: 2px;
-  bottom: 2px;
-  background-color: white;
+  bottom: 1px;
+  background-color: yellow;
   -webkit-transition: .4s;
   transition: .4s;
 }
 
 input:checked + .slider {
-  background-color: #2196F3;
+  background-color: yellow;
 }
 
 input:focus + .slider {
@@ -52,6 +55,8 @@ input:checked + .slider:before {
   -webkit-transform: translateX(13px);
   -ms-transform: translateX(13px);
   transform: translateX(13px);
+  transition: background-color 1s;
+  background-color: black;
 }
 
 .slider.round {

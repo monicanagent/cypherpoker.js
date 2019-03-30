@@ -231,7 +231,13 @@ class CypherPoker extends EventDispatcher {
       if (options != null) {
          try {
             if (options.urlParams != undefined) {
-               this.processURLParams(options.urlParams);
+               try {
+                  this.processURLParams(options.urlParams);
+               } catch (err) {
+                  var errStr = String(err);
+                  errStr = errStr.split("\n").join("<br/>");
+                  ui.showDialog("There was an error processing URL parameters:<br/>"+errStr);
+               }
             }
          } catch (err) {
             //this should not be fatal
@@ -252,19 +258,48 @@ class CypherPoker extends EventDispatcher {
    /**
    * @param {URLSearchParams} urlParams Options supplied as parsed URL parameters
    * to apply to the [settings]{@link CypherPoker#settings} object.
-   * */
-   processURLParams(urlParams) {
-      if (urlParams.has("p2p.url") == true) {
-         this.settings.p2p.connectInfo.url = urlParams.get("p2p.url");
-      }
-      if (urlParams.has("p2p.type") == true) {
-         this.settings.p2p.connectInfo.type = urlParams.get("p2p.type");
-      }
-      if (urlParams.has("api.url") == true) {
-         this.settings.api.connectInfo.url = urlParams.get("api.url");
-      }
-      if (urlParams.has("api.type") == true) {
-         this.settings.api.connectInfo.type = urlParams.get("api.type");
+   *
+   * @async
+   */
+   async processURLParams(urlParams) {
+      try {
+         if (urlParams.has("p2p.url") == true) {
+            this.settings.p2p.connectInfo.url = urlParams.get("p2p.url");
+         }
+         if (urlParams.has("p2p.type") == true) {
+            this.settings.p2p.connectInfo.type = urlParams.get("p2p.type");
+         }
+         if (urlParams.has("api.url") == true) {
+            this.settings.api.connectInfo.url = urlParams.get("api.url");
+         }
+         if (urlParams.has("api.type") == true) {
+            this.settings.api.connectInfo.type = urlParams.get("api.type");
+         }
+         //SDB will overwrite any other settings specified
+         if (urlParams.has("sdb") == true) {
+            var sdb = new SDB();
+            await sdb.decode(urlParams.get("sdb"));
+            for (var count=0; count < sdb.data.length; count++) {
+               var entityObj = sdb.data[count];
+               if (entityObj.url == undefined) {
+                  entityObj.url = entityObj.protocol + "://" +entityObj.host;
+               }
+               if (entityObj.port != undefined) {
+                  entityObj.url += ":" + String(entityObj.port);
+               }
+               if (entityObj.entity == "api") {
+                  this.settings.api.connectInfo = entityObj;
+                  this.settings.api.connectInfo.create = "return (new APIRouter())";
+               } else if (entityObj.entity == "p2p") {
+                  this.settings.p2p.connectInfo = entityObj;
+                  this.settings.p2p.connectInfo.create = "return (new P2PRouter())";
+               } else {
+                  //not currenly supported
+               }
+            }
+         }
+      } catch (err) {
+         console.error (err);
       }
    }
 

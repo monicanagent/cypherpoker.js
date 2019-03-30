@@ -72,10 +72,12 @@ const appTitle = appName+" v"+appVersion;
 * @property {Function} electronEnv.server.onInit=createClient The callback function to be
 * invoked by the loaded server when it has fully initialized. This function typically opens
 * the first/main user interface window.
+* @property {Function} electronEnv.server.vm=null A reference to the virtual machine / context
+* in which the server is executing.
 * @property {Object} electronEnv.database Contains settings for the database adapters that
 * can be started using the {@link startDatabase} function. Each adapter's settings vary
 * but each has at least a <code>script</code> path that specifies the adapter's script and
-* an <code>adapter</code> reference that points to the virtual machine instance hosting the
+* an <code>vm</code> reference that points to the virtual machine instance hosting the
 * running <code>script</code>.
 * @property {Number} electronEnv.host=this A reference to the main Electron
 * process used to launch the server and client.
@@ -89,8 +91,8 @@ var electronEnv = {
       version:appVersion,
       name:appName,
       title:appTitle,
-      width:1024,
-      height:768
+      width:1100,
+      height:800
    },
    server: {
       exposed_objects: {
@@ -106,11 +108,12 @@ var electronEnv = {
         process:process,
         startDatabase:startDatabase
      },
-     onInit:createClient
+     onInit:createClient,
+     vm:null
    },
    database: {
     sqlite3: {
-      adapter: null,
+      vm: null,
       script: "./adapters/sqlite3.js",
       bin: "./bin/sqlite/%os%/%bin%"
     }
@@ -153,7 +156,7 @@ async function startDatabase(dbAdapter) {
      displayErrors: true,
      filename: scriptPath
    });
-   adapterData.adapter = context;
+   adapterData.vm = context;
    try {
       var result = await context.initialize(adapterData);
       return (true);
@@ -179,6 +182,7 @@ async function createServer() {
    var vmContext = new Object();
    vmContext = Object.assign(electronEnv.server.exposed_objects, vmContext);
    var context = vm.createContext(vmContext);
+   electronEnv.server.vm = context;
    vm.runInContext(serverScript, context, {
      displayErrors: true,
      filename: scriptPath
@@ -231,8 +235,9 @@ async function createClient(script="index.html", windowName=appTitle, openDevToo
 * a <code>command</string> to process by the handler.
 *
 * @private
+* @async
 */
-function onIPCMessage (event, request) {
+async function onIPCMessage (event, request) {
    var response = new Object();
    //be sure not to include any circular references in the response
    //since it will be stringified before being returned...
@@ -257,6 +262,10 @@ function onIPCMessage (event, request) {
             response.data.message = "Couldn't find matching window.webContents reference for ipcID \""+request.data.ipcID+"\".";
          }
          break;
+      case "get-config-by-path":
+         response.type = "get-config-by-path";
+         response.data = getConfigByPath(request.data.path);
+         break;
       case "new-window":
          response.type = "new-window";
          response.message = "ok";
@@ -280,6 +289,73 @@ function onIPCMessage (event, request) {
             createClient();
          }
          break;
+      case "get-gateways":
+         response.type = "get-gateways";
+         response.data = new Array();
+         var enabledGateways = electronEnv.server.vm.gateways.gateways;
+         for (var count=0; count < enabledGateways.length; count++) {
+            var gatewayObj = enabledGateways[count];
+            var returnObj = new Object();
+            returnObj.name = gatewayObj.gateway.constructor.name; //name is class property
+            returnObj.configName = gatewayObj.configName;
+            returnObj.config = gatewayObj.config;
+            returnObj.started = gatewayObj.gateway.started;
+            response.data.push(returnObj);
+         }
+         break;
+      case "configure-gateway":
+         response.type = "configure-gateway";
+         response.data = "not yet implemented";
+         //TODO: implement
+         break;
+      case "enable-gateway":
+         response.type = "enable-gateway";
+         response.data = "not yet implemented";
+         //TODO: implement
+         break;
+      case "disable-gateway":
+         response.type = "disable-gateway";
+         response.data = "not yet implemented";
+         //TODO: implement
+         break;
+      case "start-gateway":
+         response.type = "start-gateway";
+         response.data = "error";
+         var gatewayData = request.data.gateway;
+         var enabledGateways = electronEnv.server.vm.gateways.gateways;
+         for (var count=0; count < enabledGateways.length; count++) {
+            var gatewayObj = enabledGateways[count];
+            if (gatewayData.configName == gatewayObj.configName) {
+               var result = await gatewayObj.gateway.start();
+               response.data = "ok";
+            }
+         }
+         break;
+      case "stop-gateway":
+         response.type = "stop-gateway";
+         response.data = "error";
+         var enabledGateways = electronEnv.server.vm.gateways.gateways;
+         for (var count=0; count < enabledGateways.length; count++) {
+            var gatewayObj = enabledGateways[count];
+            if (request.data.configName == gatewayObj.configName) {
+               var result = await gatewayObj.gateway.stop();
+               response.data = "ok";
+            }
+         }
+         break;
+      case "get-gateway-sdb":
+         response.type = "start-gateway";
+         response.data = new Object();
+         var gatewayData = request.data.gateway;
+         var enabledGateways = electronEnv.server.vm.gateways.gateways;
+         for (var count=0; count < enabledGateways.length; count++) {
+            var gatewayObj = enabledGateways[count];
+            if (gatewayData.configName == gatewayObj.configName) {
+               response.data.sdb = await gatewayObj.gateway.getSDB(request.data.format, request.data.entityTypes);
+               break;
+            }
+         }
+         break;
       case "toggle-devtools":
          response.type = "toggle-devtools";
          response.message = "ok";
@@ -299,11 +375,11 @@ function onIPCMessage (event, request) {
       case "database-info":
          for (var db in electronEnv.database) {
             response[db] = new Object();
-            response[db].version = electronEnv.database[db].adapter.binVersion;
-            var dbFilePath = electronEnv.database[db].adapter.initData.dbFilePath;
+            response[db].version = electronEnv.database[db].vm.binVersion;
+            var dbFilePath = electronEnv.database[db].vm.initData.dbFilePath;
             response[db].dbFilePath = dbFilePath;
-            response[db].dbMaxMB = electronEnv.database[db].adapter.dbMaxMB;
-            response[db].dbSizeMB = electronEnv.database[db].adapter.getFileSize(dbFilePath, "MB");
+            response[db].dbMaxMB = electronEnv.database[db].vm.dbMaxMB;
+            response[db].dbSizeMB = electronEnv.database[db].vm.getFileSize(dbFilePath, "MB");
          }
          break;
       default:
@@ -313,9 +389,12 @@ function onIPCMessage (event, request) {
          response.data.message = "Unrecognized IPC request command \""+request.command+"\"";
          break;
    }
-   event.returnValue = response; //respond immediately
-   //...or respond asynchronously:
-   //event.sender.send(request.ipcID, response);
+   if (request.async == false) {
+      event.returnValue = response; //respond immediately
+   } else {
+      var responseID = request.command + request.data.ipcID;
+      event.sender.send(responseID, response); //respond asynchronously
+   }
 }
 
 /**

@@ -19,11 +19,19 @@
                "port":8090
             },
             "http": {
-               "enabled":true,
+               "enabled":false,
                "port":8080
             },
             "webrtc": {
                "enabled": true
+            }
+         },
+         "gateways": {
+            "SSHTunnel": {
+               "enable": true,
+               "start": false,
+               "openPorts": ["CP.API.RPC.wss.port"],
+               "path": "./gateways/SSHTunnel.js"
             }
          },
          "database":{
