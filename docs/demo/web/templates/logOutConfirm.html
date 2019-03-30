@@ -10,6 +10,40 @@
       Are you sure you want to log out?<br/><br/>
       <button id="yesButton" onclick="ui.onLogOutButtonClick(true)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
    </div>
+   <div id="lobbyAPIChange" hidden="true">
+      Changing connections will cancel any current game creation or join requests.<br/>
+      Are you sure you want to change connections?<br/><br/>
+      <button id="yesButton" onclick="cypherpoker.connectivityManager.confirmConnectAPI(false, true)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
+   </div>
+   <div id="gameAPIChange" hidden="true">
+      You're currently in a game.<br/>
+      Changing API connections will cause you to time out and forfeit the buy-in!<br/>
+      Are you sure you want to change connections?<br/><br/>
+      <button id="yesButton" onclick="cypherpoker.connectivityManager.confirmConnectAPI(true, false)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
+   </div>
+   <div id="lobbyP2PChange" hidden="true">
+      Changing connections will cancel any current game creation or join requests.<br/>
+      Are you sure you want to change connections?<br/><br/>
+      <button id="yesButton" onclick="cypherpoker.connectivityManager.confirmConnectP2P(false, true)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
+   </div>
+   <div id="gameP2PChange" hidden="true">
+      You're currently in a game.<br/>
+      Changing API connections will cause you to time out and forfeit the buy-in!<br/>
+      Are you sure you want to change connections?<br/><br/>
+      <button id="yesButton" onclick="cypherpoker.connectivityManager.confirmConnectP2P(true, false)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
+   </div>
+   <div id="gameSDBChange" hidden="true">
+      You're currently in a game.<br/>
+      Changing connections will cause you to time out and forfeit the buy-in!<br/>
+      Are you sure you want to change connections?<br/><br/>
+      <button id="yesButton" onclick="cypherpoker.connectivityManager.confirmConnectSDB(true, false)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
+   </div>
+   <div id="lobbySDBChange" hidden="true">
+      You're currently in a game.<br/>
+      Changing connections will cause you to time out and forfeit the buy-in!<br/>
+      Are you sure you want to change connections?<br/><br/>
+      <button id="yesButton" onclick="cypherpoker.connectivityManager.confirmConnectSDB(true, false)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>
+   </div>
    <div id="standard" hidden="true">
       Are you sure you want to log out?<br/><br/>
       <button id="yesButton" onclick="ui.onLogOutButtonClick(true)">YES</button>&nbsp;&nbsp;<button id="yesButton" onclick="ui.onLogOutButtonClick(false)">NO</button>

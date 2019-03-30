@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.4.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -77,11 +77,19 @@ class CypherPokerUI {
       this._protoGameElement = protoElement;
       this.lobbyActive = false;
       window.__closing = false;
-      this.loadTemplates().then(complete => {
-         window.addEventListener("beforeunload", this.onWindowClose);
-         window.addEventListener("click", this.onWindowClick);
-         this._ready = true;
-      })
+   }
+
+   /**
+   * Intializes the UI by loading defined templates and setting
+   * the [ready]{@link CypherPokerUI#ready} flag to <code>true</code>.
+   *
+   * @async
+   */
+   async initialize() {
+      var complete =  await this.loadTemplates();
+      window.addEventListener("beforeunload", this.onWindowClose);
+      window.addEventListener("click", this.onWindowClick);
+      this._ready = true;
    }
 
    /**
@@ -159,8 +167,8 @@ class CypherPokerUI {
    /**
    * @property {Boolean} autoDeal=true If true, cards are automatically dealt when
    * betting is done and it's our turn to deal. If <code>false</code>, the
-   * {@link CypherPokerGame#dealCards} function of the {@link CypherPokerUI#game}
-   * reference will need to be invoked manually.
+   * [CypherPokerGame.dealCards]{@link CypherPokerGame#dealCards} function of the
+   * [game]{@link CypherPokerUI#game} reference will need to be invoked manually.
    */
    get autoDeal() {
       if (this._autoDeal == undefined) {
@@ -192,7 +200,7 @@ class CypherPokerUI {
 
    /**
    * @property {Array} gameElements An indexed array of all game container elements
-   * cloned from the {@link CypherPokerUI#protoGameElement} object.
+   * cloned from the [protoGameElement]{@link CypherPokerUI#protoGameElement} object.
    */
    get gameElements() {
       if (this._gameElements == undefined) {
@@ -219,14 +227,30 @@ class CypherPokerUI {
       if ((this._cypherpoker == undefined) || (this._cypherpoker == null)) {
          this._cypherpoker = cpSet;
          this.addCypherPokerHandlers();
-         if (this._cypherpoker.connected) {
-            this.showDialog("Connected to peer-to-peer network.");
-            this.hideDialog(3000);
+         if (this._cypherpoker.apiConnected) {
+            var msg = "Connected to API services provider.<br/>";
+            if (this._cypherpoker.p2pConnected) {
+               msg += "Connected to peer-to-peer network.";
+            } else {
+               msg += "Connection to peer-to-peer network not established.";
+            }
+            this.showDialog(msg);
+            this.hideDialog(5000);
             this.updateAccountsUI();
          } else {
             this._cypherpoker.addEventListener("start", event => {
-               this.showDialog("Connected to peer-to-peer network.");
-               this.hideDialog(3000);
+               if (this._cypherpoker.apiConnected) {
+                  var msg = "Connected to API services provider.<br/>";
+               } else {
+                  msg = "Connection to API services provider not established.<br/>";
+               }
+               if (this._cypherpoker.p2pConnected) {
+                  msg += "Connected to peer-to-peer network.";
+               } else {
+                  msg += "Connection to peer-to-peer network not established.";
+               }
+               this.showDialog(msg);
+               this.hideDialog(5000);
                this.updateAccountsUI();
             }, this);
          }
@@ -258,8 +282,8 @@ class CypherPokerUI {
    }
 
    /**
-   * Returns a successfully loaded HTML template by its name from the {@link CypherPokerUI#templates}
-   * array.
+   * Returns a successfully loaded HTML template by its name from the
+   * [templates]{@link CypherPokerUI#templates} array.
    *
    * @param {String} name The HTML template name to reterieve, as specified in the associated
    * templates JSON data.
@@ -321,15 +345,14 @@ class CypherPokerUI {
    /**
    * Loads and parses HTML templates for the application, then adds them to their
    * specified targets within the main page HTML. Every successfully loaded template
-   * can be accessed via the {@link CypherPokerUI#templates} array or the
-   * {@link CypherPokerUI#getTemplate} function.
+   * can be accessed via the [templates]{@link CypherPokerUI#templates} array or the
+   * [getTemplate]{@link CypherPokerUI#getTemplate} function.
    *
    * Note that templates are appended to their specified targets in the order listed.
    *
    * @param {String} [indexURL="./templates/index.json"] The URL of the JSON file containing
    * the list of templates to load.
    *
-   * @private
    * @async
    */
    async loadTemplates(indexURL="./templates/index.json") {
@@ -421,7 +444,7 @@ class CypherPokerUI {
    * @param {String} htmlURL The URL of the HTML template file to load.
    * @return {HTMLDocument} A HTMLDocument object containing the loaded HTML
    * document. Any meta tags found in the main body are automatically parsed
-   * using the {@link CypherPokerUI#parseTemplateTags} function.
+   * using the [parseTemplateTags]{@link CypherPokerUI#parseTemplateTags} function.
    *
    * @private
    * @async
@@ -463,9 +486,33 @@ class CypherPokerUI {
    }
 
    /**
+   * Returns all of the selected radio button or checkbox elements contained in a specified
+   * container.
+   *
+   * @param {HTMLElement} containerElement The container element that contains
+   * the radio button or checkbox <code><input></code> nodes to check.
+   *
+   * @return {Array} Indexed list of all selected / checked radio buttons or checkboxes
+   * (<code>HTMLElement</code> objects). Note that radio buttons with the same
+   * <code>name</code> property are treated by the browser as a group and
+   * will only allow one selection among them.
+   */
+   getGroupSelections(containerElement) {
+      var radioButtons = containerElement.querySelectorAll("input");
+      var returnButtons = new Array();
+      for (var count=0; count < radioButtons.length; count++) {
+         var radioButton = radioButtons[count];
+         if (radioButton.checked) {
+            returnButtons.push(radioButton);
+         }
+      }
+      return (returnButtons);
+   }
+
+   /**
    * Adds game event listeners and callbacks to user interface elements defined in
-   * {@link CypherPokerUI#gameUISelectors} and contained in a clone of the {@link CypherPokerUI#protoGameElement}
-   * element.
+   * [gameUISelectors]{@link CypherPokerUI#gameUISelectors} and contained in a clone of the
+   * [protoGameElement]{@link CypherPokerUI#protoGameElement} element.
    *
    * @param {HTMLElement} gameElement The cloned game element to which to add handlers to.
    * @param {CypherPokerGame} gameRef A reference to the game instance associated with the
@@ -603,7 +650,7 @@ class CypherPokerUI {
 
    /**
    * Adds event listeners and callbacks to the {@link CypherPoker} instance assigned to
-   * the {@link CypherPokerUI#cypherpoker} property.
+   * the [cypherpoker]{@link CypherPokerUI#cypherpoker} property.
    */
    addCypherPokerHandlers() {
       this.cypherpoker.addEventListener("newgame", this.onNewGame, this);
@@ -669,9 +716,29 @@ class CypherPokerUI {
                }
             }
             break;
+         case "manageConnections":
+            var manageElement = this.getTemplateByName("connectivityManage").elements[0];
+            cypherpoker.connectivityManager.populateConnectionsList("api");
+            cypherpoker.connectivityManager.populateAPIConnectionInputs();
+            cypherpoker.connectivityManager.populateConnectionsList("p2p");
+            cypherpoker.connectivityManager.populateP2PConnectionInputs();
+            var serverTableElement = manageElement.querySelector("#serverTableDivider");
+            if (isDesktop()) {
+               this.show(serverTableElement);
+               cypherpoker.connectivityManager.populateGatewaysList();
+            } else {
+               this.hide(serverTableElement);
+            }
+            this.toggleShow(manageElement);
+            break;
          case "manageAccount":
             if (this.selectedAccount == null) {
-               this.showDialog ("You must login to the account (\"USE ACCOUNT\") you want to manage.");
+               if (this.cypherpoker.apiConnected == false) {
+                  var msg = "You must connect to an API services provider in order to manage accounts";
+               } else {
+                  msg = "You must login to the account (\"USE ACCOUNT\") you want to manage."
+               }
+               this.showDialog (msg);
                this.hideDialog(5000);
                return;
             }
@@ -691,6 +758,7 @@ class CypherPokerUI {
                manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
                loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
                minerFeeInput.value = this.selectedAccount.fees.cashout;
+               this.cypherpoker.saveAccounts();
             }).catch(error => {
                manageElement.querySelector("#accountBalance").innerHTML = "unavailable";
                loginElement.querySelector("#accountBalance").innerHTML = "unavailable";
@@ -700,6 +768,13 @@ class CypherPokerUI {
             });
             break;
          case "gameLobby":
+            if (this.cypherpoker.apiConnected == false) {
+               var msg = "You must connect to an API services provider<br/>";
+               msg += "in order to access to the lobby.";
+               this.showDialog(msg);
+               this.hideDialog(5000);
+               return;
+            }
             if (this.lobbyActive) {
                var confirmElement = this.getTemplateByName("lobbyConfirm").elements[0];
                this.hide(confirmElement.querySelector("#gameActive"));
@@ -852,6 +927,7 @@ class CypherPokerUI {
       var confirmElement = this.getTemplateByName("logOutConfirm").elements[0];
       this.hide(confirmElement.querySelector("#lobbyActive"));
       this.hide(confirmElement.querySelector("#gameActive"));
+      this.hide(confirmElement.querySelector("#gameAPIChange"));
       this.hide(confirmElement.querySelector("#standard"));
       this.hide(confirmElement);
       this.hideDialog();
@@ -959,6 +1035,12 @@ class CypherPokerUI {
             element = this.getTemplateByName("lobby").elements[0];
             this.lobbyActive = true;
             this.show(element);
+            if (this.cypherpoker.p2pConnected == false) {
+               var msg = "Peer-to-peer networking is not available.<br/>";
+               msg += "You won't be able to create or join tables until you're connected.";
+               this.showDialog(msg);
+               this.hideDialog(6000);
+            }
             break;
          case "select_account":
             var element = this.getTemplateByName("accountLogin").elements[0];
@@ -977,6 +1059,7 @@ class CypherPokerUI {
                manageElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
                loginElement.querySelector("#accountBalance").innerHTML =  satoshiAmount+ " satoshis";
                minerFeeInput.value = account.fees.cashout;
+               this.cypherpoker.saveAccounts();
             }).catch(error => {
                manageElement.querySelector("#accountBalance").innerHTML = "unavailable";
                loginElement.querySelector("#accountBalance").innerHTML = "unavailable";
@@ -1132,6 +1215,13 @@ class CypherPokerUI {
    async onLobbyButtonClick(buttonType, subType=null) {
       switch (buttonType) {
          case "create_game":
+            if (this.cypherpoker.p2pConnected == false) {
+               var msg = "Peer-to-peer networking is not available.<br/>";
+               msg += "You can't create or advertise a table until you're connected.";
+               this.showDialog(msg);
+               this.hideDialog(6000);
+               return;
+            }
             var element = this.getTemplateByName("lobby").elements[0];
             var createGameElement = element.querySelector("#createGame");
             var joinGameElement = element.querySelector("#joinGame");
@@ -1611,7 +1701,11 @@ class CypherPokerUI {
       ui.updateJoinedTableStatus(metaTags, true);
       ui.cypherpoker.removeEventListener("tableready", ui.onTableReady);
       ui.cypherpoker.addEventListener("tableready", ui.onTableReady, ui);
-      ui.cypherpoker.joinTable(table);
+      ui.cypherpoker.joinTable(table).catch (err => {
+         ui.showDialog("Table join request has timed out.");
+         ui.hideDialog(4000);
+         ui.onLobbyButtonClick("cancel_game");
+      });
    }
 
    /**
@@ -1836,7 +1930,6 @@ class CypherPokerUI {
          console.error(err);
       }
       var nextDealerPID = event.contract.game.getNextPlayer(event.contract.game.getDealer().privateID).privateID;
-      //if (event.contract.game.getDealer().privateID == event.contract.game.ownPID) {
       if (nextDealerPID == event.contract.game.ownPID) {
          //if we want to auto-restart we should do that below
          this.enable(event.contract.game.DOMElement.querySelector(this.gameUISelectors.newHandButton));
@@ -1930,7 +2023,6 @@ class CypherPokerUI {
          this.enable(game.DOMElement.querySelector(this.gameUISelectors.betButton));
          this.enable(game.DOMElement.querySelector(this.gameUISelectors.foldButton));
       }
-
       this.updateTotalBet(game);
    }
 
@@ -1978,7 +2070,6 @@ class CypherPokerUI {
       this.disable(game.DOMElement.querySelector(this.gameUISelectors.betButton));
       this.disable(game.DOMElement.querySelector(this.gameUISelectors.foldButton));
       var nextDealerPID = game.getNextPlayer(game.getDealer().privateID).privateID;
-      //if (game.getDealer().privateID == game.ownPID) {
       if (nextDealerPID == game.ownPID) {
          //if we want to auto-restart we should do that below
          this.enable(game.DOMElement.querySelector(this.gameUISelectors.newHandButton));
@@ -2118,6 +2209,10 @@ class CypherPokerUI {
          setTimeout(context.updateAccountsUI, 500, context);
          return;
       }
+      if (context.cypherpoker.apiConnected == false) {
+         //API connection required in order to update accounts
+         return;
+      }
       if (context.cypherpoker.accounts.length == 0) {
          context.show(context.getTemplateByName("firstRun").elements[0]);
          context.showDialog();
@@ -2159,9 +2254,20 @@ class CypherPokerUI {
    }
 
    /**
+   * Clears any entries in the accounts list in the user interface. Note that this
+   * function does not affect the [CypherPoker#accounts]{@link CypherPoker#accounts} array.
+   *
+   */
+   clearAccountsUI() {
+      var loginElement = this.getTemplateByName("accountLogin").elements[0];
+      var accountsList = loginElement.querySelector("#currentAccounts");
+      accountsList.innerHTML = "";
+   }
+
+   /**
    * Removes all the "join table" buttons and any event listeners currently in the
-   * lobby. This function does <b>not</b> update any {@link CypherPoker#joinedTables}
-   * or {@link CypherPoker#announcedTables}.
+   * lobby. This function does <b>not</b> update any [CypherPoker.joinedTables]{@link CypherPoker#joinedTables}
+   * or [CypherPoker.announcedTables]{@link CypherPoker#announcedTables}.
    *
    * @private
    */
@@ -2274,51 +2380,91 @@ class CypherPokerUI {
    * Disables a specific HTML element by adding a <code>disabled="true"</code>
    * attribute to it.
    *
-   * @param {HTMLElement} elementRef A reference to the object to disable.
+   * @param {HTMLElement|String} elementRef A reference to the object  or
+   * a selector to query the document with.
    */
    disable(elementRef) {
-      elementRef.setAttribute("disabled", true);
+      if (typeof(elementRef) == "string") {
+         document.querySelector(elementRef).setAttribute("disabled", true);
+      } else {
+         elementRef.setAttribute("disabled", true);
+      }
    }
 
    /**
    * Enables a specific HTML element by removing the <code>disabled</code>
    * attribute from it.
    *
-   * @param {HTMLElement} elementRef A reference to the object to enable.
+   * @param {HTMLElement|String} elementRef A reference to the object  or
+   * a selector to query the document with.
    */
    enable(elementRef) {
-      elementRef.removeAttribute("disabled");
+      if (typeof(elementRef) == "string") {
+         document.querySelector(elementRef).removeAttribute("disabled");
+      } else {
+         elementRef.removeAttribute("disabled");
+      }
    }
 
    /**
    * Hides a specific HTML element by adding a <code>hidden="true"</code>
    * attribute to it.
    *
-   * @param {HTMLElement} elementRef A reference to the object to hide.
+   * @param {HTMLElement|String} elementRef A reference to the object  or
+   * a selector to query the document with.
    */
    hide(elementRef) {
-      elementRef.setAttribute("hidden", true);
+      if (typeof(elementRef) == "string") {
+         document.querySelector(elementRef).setAttribute("hidden", true);
+      } else {
+         elementRef.setAttribute("hidden", true);
+      }
    }
 
    /**
    * Shows a specific HTML element by removing the <code>hidden</code>
    * attribute from it.
    *
-   * @param {HTMLElement} elementRef A reference to the object to show.
+   * @param {HTMLElement|String} elementRef A reference to the object  or
+   * a selector to query the document with.
    */
    show(elementRef) {
-      elementRef.removeAttribute("hidden");
+      if (typeof(elementRef) == "string") {
+         document.querySelector(elementRef).removeAttribute("hidden");
+      } else {
+         elementRef.removeAttribute("hidden");
+      }
+   }
+
+   /**
+   * Toggles the visibility of a specific HTML element.
+   *
+   * @param {HTMLElement|String} elementRef A reference to the object  or
+   * a selector to query the document with.
+   */
+   toggleShow(elementRef) {
+      if (this.isHidden(elementRef)) {
+         this.show(elementRef);
+      } else {
+         this.hide(elementRef);
+      }
    }
 
    /**
    * Checks if a specified element is hidden.
    *
-   * @param {HTMLElement} elementRef A reference to the element to check.
+   * @param {HTMLElement|String} elementRef A reference to the object  or
+   * a selector to query the document with.
    *
    * @return {Boolean} True if the element is hidden, false if it's visible
    */
    isHidden(elementRef) {
-      var attr = elementRef.getAttribute("hidden");
+      if (typeof(elementRef) == "string") {
+         var attr = document.querySelector(elementRef).getAttribute("hidden");
+      } else {
+         attr = elementRef.getAttribute("hidden");
+      }
+
       if ((attr == null) || ((attr == ""))) {
          return (false);
       } else {
@@ -2327,7 +2473,7 @@ class CypherPokerUI {
    }
 
    /**
-   * Hides the main dialog, as defined in {@link CypherPokerUI#UISelectors}<code>.dialog</code>,
+   * Hides the main dialog, as defined in [UISelectors]{@link CypherPokerUI#UISelectors}<code>.dialog</code>,
    * with an optional delay.
    *
    * @param {Number} [delay=0] The number of milliseconds to delay before closing the

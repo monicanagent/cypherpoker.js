@@ -1,7 +1,7 @@
 /**
 * @file Information management for an individual CypherPoker.JS player.
 *
-* @version 0.2.3
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -174,7 +174,7 @@ class CypherPokerPlayer extends EventDispatcher {
 
    /**
    * @property {BigInteger} balance="0" The current in-game balance. Note that
-   * this is different than the {@link CypherPokerAccount#balance} property
+   * this is different than the [CypherPokerAccount.balance]{@link CypherPokerAccount#balance} property
    * which reflects the total balance for the account.
    */
    set balance(balanceSet) {
@@ -259,7 +259,7 @@ class CypherPokerPlayer extends EventDispatcher {
    * @param {Boolean} [includeKeychain=false] If true, the keychain will be included
    * with the returned data, otherwise if will be omitted.
    * @param {Boolean} [includeAccountPassword=false] If true, the password stored in
-   * the {@link CypherPokerPlayer#account} reference will be included in the
+   * the [account]{@link CypherPokerPlayer#account} reference will be included in the
    * returned data, if available.
    *
    * @return {Object} The condensed data object containing copies of this instance's
@@ -287,7 +287,6 @@ class CypherPokerPlayer extends EventDispatcher {
       if (includeKeychain) {
          returnObj.keychain = Array.from(this.keychain);
       }
-      delete returnObj.onEventPromise;
       return (returnObj);
    }
 
@@ -314,7 +313,7 @@ class CypherPokerPlayer extends EventDispatcher {
    }
 
    /**
-   * Irrevocably resets the {@link CypherPokerPlayer#keychain} array (to an
+   * Irrevocably resets the [keychain]{@link CypherPokerPlayer#keychain} array (to an
    * empty array).
    */
    resetKeychain() {

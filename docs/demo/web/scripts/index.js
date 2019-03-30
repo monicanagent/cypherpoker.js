@@ -2,13 +2,15 @@
 * @file Main file responsible for starting up the web (client) portion of
 * CypherPoker.JS. Also provides functionality for dynamic loading of additional
 * scripts and JSON data.
+*
+* @version 0.4.1
 */
 
 /**
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle}.
 */
-var appVersion = "0.4.0";
+var appVersion = "0.4.1";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle}.
@@ -70,13 +72,16 @@ var ipcID = null;
 * @private
 */
 const _require = [
-   {"url":"./scripts/libs/platform.js"},
    {"url":"./scripts/libs/Polyfills.js"},
    {"url":"./scripts/libs/EventDispatcher.js"},
    {"url":"./scripts/libs/EventPromise.js"},
+   {"url":"./scripts/libs/SDB.js"},
    {"url":"./scripts/libs/RPC.js"},
-   {"url":"./scripts/libs/WSS.js"},
-   {"url":"./scripts/libs/WebRTCClient.js"},
+   {"url":"./scripts/libs/transports/WSSClient.js"},
+   {"url":"./scripts/libs/transports/WebRTCClient.js"},
+   {"url":"./scripts/libs/APIRouter.js"},
+   {"url":"./scripts/libs/P2PRouter.js"},
+   {"url":"./scripts/libs/ConnectivityManager.js"},
    {"url":"./scripts/libs/WorkerHost.js"},
    {"url":"./scripts/libs/SRACrypto.js"},
    {"url":"./scripts/libs/BigInteger.min.js"},
@@ -88,42 +93,64 @@ const _require = [
    {"url":"./scripts/CypherPokerAnalyzer.js"},
    {"url":"./scripts/CypherPokerUI.js",
       "onload": () => {
-         //game UI to be contained in the #game element
-         var gameElement = document.querySelector("#game");
-         ui = new CypherPokerUI(gameElement);
+         var promise = new Promise((resolve, reject) => {
+            //game UI to be contained in the #game element
+            var gameElement = document.querySelector("#game");
+            ui = new CypherPokerUI(gameElement);
+            ui.initialize();
+            resolve(true);
+         })
+         return (promise);
       }
    },
    {"url":"./scripts/CypherPoker.js",
       "onload": () => {
-
-         //Temporary WebRTC test code starts:
-         //var rtc = new WebRTCClient();
-         //var promise = rtc.onEventPromise("icecandidate").then (event => {
-         //   console.log ("description:\n"+JSON.stringify(event.description));
-         //});
-         //rtc.createPeerConnection();
-         //Temporary WebRTC test code ends.
-
-         ui.showDialog ("Loading game settings...");
-         //EventDispatcher and EventPromise must already exist here!
-         loadJSON(_settingsURL).onEventPromise("load").then(promise => {
-            if (promise.target.response != null) {
-               cypherpoker = new CypherPoker(promise.target.response);
-               ui.cypherpoker = cypherpoker; //connect the instance to the UI
-               cypherpoker.start().then(result => {
-                  console.log ("CypherPoker.JS instance fully started and connected.");
-               }).catch(err => {
-                  ui.showDialog(err.message);
-                  console.error(err.stack);
-               });
-            } else {
-               alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
-               throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
-            }
+         var promise = new Promise((resolve, reject) => {
+            ui.showDialog ("Loading game settings...");
+            //EventDispatcher and EventPromise must already exist here!
+            loadJSON(_settingsURL).onEventPromise("load").then(promise => {
+               if (promise.target.response != null) {
+                  cypherpoker = new CypherPoker(promise.target.response);
+                  ui.cypherpoker = cypherpoker; //attach the cypherpoker instance to the UI
+                  var urlParams = parseURLParameters(document.location);
+                  var startOptions = new Object();
+                  startOptions.urlParams = urlParams;
+                  cypherpoker.start(startOptions).then(result => {
+                     console.log ("CypherPoker.JS instance fully started and connected.");
+                     resolve(true);
+                  }).catch(err => {
+                     ui.showDialog(err.message);
+                     console.error(err.stack);
+                     reject(false);
+                  });
+               } else {
+                  alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
+                  throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
+                  reject(false);
+               }
+            });
          });
       }
    }
 ]
+
+/**
+* Parses a supplied URL string that may contain parameters (e.g. document.location),
+* and returns an object with the parameters parsed to name-value pairs. Any URL-encoded
+* properties are decoded to native representations prior to being parsed.
+*
+* @param {String} urlString The URL string, either absolute or relative, to parse.
+*
+* @return {URLSearchParams} A [URLSearchParams]{@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
+* instance containing the parsed name-value pairs found in the <code>urlString</code>.
+*
+* @see {@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
+*/
+function parseURLParameters(urlString) {
+   var decodedURL = decodeURI(urlString);
+   var urlObj = new URL(decodedURL);
+   return (urlObj.searchParams);
+}
 
 /**
 * Loads an external JavaScript file by adding a <script> tag to the
@@ -151,8 +178,9 @@ function loadJavaScript(scriptURL) {
 *
 * @param {Event} event A standard DOM event object.
 * @private
+* @async
 */
-function onLoadJavaScript(event) {
+async function onLoadJavaScript(event) {
    var loadedObj = _require.shift(); //important! -- remove current element from array
    var loadedURL = loadedObj.url;
    var loadedTimeStamp = new Date(event.timeStamp);
@@ -163,7 +191,7 @@ function onLoadJavaScript(event) {
       console.log (`All scripts loaded in ${loadedTimeStamp.getSeconds()}s ${loadedTimeStamp.getMilliseconds()}ms`);
    }
    if (typeof loadedObj["onload"] == "function") {
-      loadedObj.onload();
+      await loadedObj.onload();
    }
 }
 
@@ -193,21 +221,64 @@ function loadJSON(jsonURL) {
 * running within a desktop (Electron) environment.
 *
 * @param {String} command The command to send to the main process via IPC.
-* @param {*} data Any accompanying data to include with the <code>command</code>
+* @param {*} [data=null] Any accompanying data to include with the <code>command</code>.
+* If omitted or <code>null</code>, an empty object is created.
+* @param {Boolean} [async=false] Sends the request asynchronously, immediately
+* returning a promise instead of the synchronous response object. Synchronous requests
+* <code>async=false</code> will block the main thread.
 *
-* @return {Object} A reply object is immediately returned if the desktop IPC
-* interface is available otherwise <code>null</code> is returned.
+* @return {Object|Promise} A reply object is immediately returned if the desktop IPC
+* interface is available otherwise <code>null</code> is returned. If <code>async=true</code>,
+* a promise is returned instead that resolves with the reply object or rejects with an error.
+* The behaiour of the promise matches the behaviour of the synchronous reply.
 */
-function IPCSend (command, data) {
-   if (isDesktop()) {
-      var request = new Object();
-      request.command = command;
-      request.data = data;
-      return (ipcRenderer.sendSync("ipc-main", request));
+function IPCSend (command, data=null, async=false) {
+   if (async == true) {
+      var promise = new Promise((resolve, reject) => {
+         if (isDesktop()) {
+            var request = new Object();
+            request.command = command;
+            if (data == null) {
+               data = new Object();
+            }
+            request.async = true;
+            request.data = data;
+            request.data.ipcID = ipcID;
+            var responseID = command + ipcID;
+            try {
+               ipcRenderer.once(responseID, (senderObj, replyObj) => {
+                  resolve(replyObj);
+               });
+               ipcRenderer.send("ipc-main", request);
+            } catch (err) {
+               reject (err);
+            }
+         } else {
+            resolve (null);
+         }
+      });
+      return (promise);
    } else {
-      return (null);
+      if (isDesktop()) {
+         var request = new Object();
+         request.command = command;
+         if (data == null) {
+            data = new Object();
+         }
+         request.async = false;
+         request.data = data;
+         request.data.ipcID = ipcID;
+         try {
+            return (ipcRenderer.sendSync("ipc-main", request));
+         } catch (err) {
+            console.error (err.stack);
+         }
+      } else {
+         return (null);
+      }
    }
 }
+
 
 /**
 * Invoked when an interprocess message is asynchronously received
@@ -241,6 +312,30 @@ function onIPCMessage(event, request) {
    event.returnValue = response; //respond immediately
    //...or respond asynchronously:
    //event.sender.send(request.ipcID, response);
+}
+
+/**
+* Invoked when a key, or key combination, is pressed on the keyboard.
+*
+* @param {Event} event The event being dispatched.
+* @param {Object} request The request object. It must contain at least
+* a <code>command</string> to process by the handler.
+*
+* @private
+*/
+function onKeyPress(event) {
+   const key = event.key;
+   var alt = event.altKey;
+   var ctrl = event.ctrlKey;
+   var shift = event.shiftKey;
+   if (isDesktop()) {
+      //matches Dev Tools toogle keyboard shortcut in standard browser
+      if ((ctrl == true) && (alt == false) && (shift == true) && ((key == "i") || (key == "I"))) {
+         //toggle Dev Tools on all open windows:
+         // IPCSend("toggle-devtools", {all:true});
+         IPCSend("toggle-devtools");
+      }
+   }
 }
 
 /**
@@ -280,6 +375,8 @@ onload = function () {
       ipcRenderer = null;
       hostEnv = null;
       ipcID = null;
+   } finally {
+      window.addEventListener('keydown', onKeyPress);
    }
    document.title = appTitle;
    loadJavaScript (_require[0].url);

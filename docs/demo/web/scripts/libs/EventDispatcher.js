@@ -1,7 +1,7 @@
 /**
 * @file Extensible class intended to (nearly) mimic standard DOM event dispatchers.
 *
-* @version 0.2.0
+* @version 0.4.1
 */
 /**
 * @class Extend this class to enable standard event dispatcher functionality
@@ -88,6 +88,8 @@ class EventDispatcher {
    }
 
    dispatchEvent (evt) {
+       Object.defineProperty(evt, "target", {writable: true});
+       evt.target = this; //typically this is null in custom event instances
        var listeners = Array.from(this.getListeners(evt.type));
        for (var i= 0; i < listeners.length; i++) {
          if (listeners[i].context != null) {

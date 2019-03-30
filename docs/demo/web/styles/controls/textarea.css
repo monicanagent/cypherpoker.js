@@ -1,0 +1,11 @@
+/*
+
+Textarea input.
+
+*/
+textarea {
+   font-family: 'Exo 2', sans-serif;
+   color: yellow;
+   background-color: #000000;
+   border-color: yellow;
+}

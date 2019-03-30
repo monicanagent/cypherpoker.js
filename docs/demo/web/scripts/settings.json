@@ -1,7 +1,21 @@
 {
    "p2p":{
-      "create":"return (new WSS())",
-      "connectURL":"wss://cpserver-aogofqhzpu.now.sh/"
+      "connectInfo":{
+         "create":"return (new P2PRouter())",
+         "transport":"wss",
+         "url":"wss://cypherpokerjs-servicesserver-ombaushdwy.now.sh"
+      },
+      "transports": {
+         "preferred":["webrtc","wss","ortc"],
+         "quickConnect":true
+      }
+   },
+   "api":{
+      "connectInfo":{
+         "create":"return (new APIRouter())",
+         "transport":"wss",
+         "url":"wss://cypherpokerjs-servicesserver-ombaushdwy.now.sh"
+      }
    },
    "crypto":{
       "create":"return (new SRACrypto(4))",

@@ -2,7 +2,7 @@
 * @file Monitors and analyzes a CypherPoker game (hand) for cryptographic correctness
 * and ranks the completed hands of the game to determine the winner.
 *
-* @version 0.2.3
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -699,7 +699,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
          for (count = 0; count < dealArray.length; count++) {
             var currentDeal = dealArray[count];
             if ((currentDeal == undefined) || (currentDeal == null)) {
-               //not a deal history object (probably inherited onEventPromise)
+               //not a deal history object
                break;
             }
             if (count > 0) {
@@ -898,7 +898,7 @@ class CypherPokerAnalyzer extends EventDispatcher {
       var winningHands = new Array();
       for (var privateID in playersObj) {
          var player = this.getPlayer(privateID);
-         //private ID may actually be some other object property (e.g. onEventPromise)
+         //private ID may actually be some other object property
          if (player != null) {
             if (player.hasFolded == false) {
                var fullCards = playersObj[privateID].concat(cardsObj.public);

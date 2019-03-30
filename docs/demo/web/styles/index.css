@@ -1,3 +1,10 @@
+@import url('./controls/button.css');
+@import url('./controls/select.css');
+@import url('./controls/input.css');
+@import url('./controls/textarea.css');
+@import url('./controls/slideSwitch.css');
+@import url('./controls/dropdownMenu.css');
+
 /* cyrillic */
 @font-face {
   font-family: 'Prosto One';
@@ -58,89 +65,6 @@ body {
   margin: 0;
 }
 
-select {
-   font-family: 'Exo 2', sans-serif;
-   color: #ffffff;
-   background-color: #000000;
-   border-radius: 10px 0px 0px 10px;
-   padding: 5px 5px 5px 5px;
-}
-
-input {
-   font-family: 'Exo 2', sans-serif;
-   color: #ffffff;
-   background-color: #000000;
-   padding: 5px 5px 5px 5px;
-}
-
-button {
-   cursor: pointer;
-   font-family: 'Exo 2', sans-serif;
-   color: #ffff00;
-   background-color: #0A0A0A;
-   border-width: 1px;
-   border-radius: 0px 10px 10px 0px;
-   padding: 5px 5px 5px 5px;
-}
-
-.dropdownMenuButton {
-  background-color: #ffff00;
-  color: #000000;
-  border-width: 2px;
-  border-color: #000000;
-  border-radius: 0px 0px 0px 0px;
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.dropdownMenuButton:hover, .dropdownMenuButton:focus {
-   background-color: #000000;
-   color: #ffff00;
-   border-width: 2px;
-   border-color: #ffff00;
-}
-
-.dropdownMenuContainer {
-  position: relative;
-  display: inline-block;
-  z-index: 10000;
-}
-
-.dropdownMenuContent {
-  display: none;
-  position: absolute;
-  border-width: 2px;
-  border-color: #ffff00;
-  background-color: #000000;
-  color: #ffff00;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1;
-  border-style: inset;
-}
-
-.dropdownMenuContent a {
-  color: #000000;
-  background-color: #ffff00;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-  border-width: 2px;
-  border-color: #ffff00;
-}
-
-.dropdownMenuContent a:hover {
-   color: #ffff00;
-   background-color: #000000;
-   border-width: 2px;
-   border-color: #ffff00;
-}
-
-.showDropdownMenu {
-   display:block;
-}
-
 .helpContent {
    text-align: center;
 }
@@ -172,6 +96,67 @@ button {
 
 .dialogContent > #noButton {
    color: #FF0000;
+}
+
+
+.connectSDBLabel {
+   position: relative;
+   top: -30px;
+}
+
+.connectSDB {
+   width: 350px;
+   height: 40px;
+   position: relative;
+   top: 19px;
+}
+
+#enableServerAccessCB {
+   margin-left: 10px;
+}
+
+#connectSDBButton {
+   position: relative;
+   top: -30px;
+}
+
+.connectivityTableContainer {
+   width:100%;
+}
+
+#serverSDBTypeRadioGroup {
+   margin-top: 15px;
+}
+
+#copyServerSDBToClipboardButton {
+   position:relative;
+   top: -30px;
+}
+
+.serverSDBLabel {
+   position: relative;
+   top: -30px;
+}
+
+.serverSDB {
+   width: 350px;
+   height: 40px;
+   position: relative;
+   top: 19px;
+}
+
+#sdbConnect {
+   height: 150px;
+}
+
+#apiTableDivider {
+   width:50%;
+   height: 150px;
+}
+
+#p2pTableDivider {
+   width:50%;
+   height: 150px;
 }
 
 .accountsContainer {
@@ -255,6 +240,11 @@ button {
    font-family: 'Exo 2', sans-serif;
    border-width: 1px;
    border-radius: 10px 10px 10px 10px;
+}
+
+.manualConnectionDataInput {
+   width:300px;
+   height:100px;
 }
 
 .gameContainer > .publicCardsContainer {

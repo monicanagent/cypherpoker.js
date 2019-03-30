@@ -1,7 +1,7 @@
 /**
 * @file Contains information and functionality associated with a single managed account.
 *
-* @version 0.4.0
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -92,6 +92,23 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
+   * @property {Array} domains Each element in this indexed array is a domain,
+   * URL, API, or other service identifier with which this account is associated.
+   * Using this account with other domains / services will most likely result in
+   * an "account not found" error.
+   */
+   set domains(domainsSet) {
+      this._domains = domainsSet;
+   }
+
+   get domains() {
+      if (this._domains == undefined) {
+         this._domains = new Array();
+      }
+      return (this._domains);
+   }
+
+   /**
    * @property {BigInteger} balance="0" The current total account balance. Note that
    * this is different than the {@link CypherPokerPlayer#balance} property
    * which reflects the player balance for a single game (e.g. buy-in).
@@ -162,15 +179,15 @@ class CypherPokerAccount extends EventDispatcher {
       returnObj.type = this.type;
       returnObj.network = this.network;
       returnObj.balance = this.balance.toString(10);
+      returnObj.domains = this.domains;
       if (includePassword) {
          returnObj.password = this.password;
       }
-      delete returnObj.onEventPromise;
       return (returnObj);
    }
 
    /**
-   * Creates a new account by calling the "CP_Account"/"new" RPC service using
+   * Creates a new account by calling the <code>CP_Account/new</code> RPC service using
    * the properties of this instance.
    *
    * @return {Promise} The promise resolves with a <code>true</code> value
@@ -196,7 +213,7 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
-   * Updates this account's properties by calling the "CP_Account"/"info" RPC service.
+   * Updates this account's properties by calling the <code>CP_Account/info</code> RPC service.
    *
    * @return {Promise} The promise resolves with a <code>true</code> value
    * if the account was succcessfully updated. An <code>Error</code> object
@@ -299,7 +316,7 @@ class CypherPokerAccount extends EventDispatcher {
    */
    async transfer(amount, toAccount) {
       if ((this.password == "") || (this.password == null)) {
-         throw(new Error("Account password not set"));
+         throw(new Error("Account password not set."));
       }
       var params = new Object();
       params.address = this.address;
@@ -342,16 +359,15 @@ class CypherPokerAccount extends EventDispatcher {
       for (var item in params) {
          sendObj[item] = params[item];
       }
-      delete sendObj.onEventPromise;
       sendObj.action = action;
-      sendObj.user_token = this.cypherpoker.p2p.userToken;
-      sendObj.server_token = this.cypherpoker.p2p.serverToken;
+      sendObj.user_token = this.cypherpoker.api.userToken;
+      sendObj.server_token = this.cypherpoker.api.serverToken;
       var requestID = "CP" + String(Math.random()).split(".")[1];
-      var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.p2p.webSocket, false, requestID);
+      var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.api, false, requestID);
       var result = JSON.parse(rpc_result.data);
       //since messages over web sockets are asynchronous the next immediate message may not be ours so:
       while (requestID != result.id) {
-         rpc_result = await this.cypherpoker.p2p.webSocket.onEventPromise("message");
+         rpc_result = await this.cypherpoker.api.rawConnection.onEventPromise("message");
          result = JSON.parse(rpc_result.data);
          //we could include a max wait limit here
       }

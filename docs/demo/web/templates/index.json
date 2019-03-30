@@ -21,6 +21,13 @@
       "hidden":false
    },
    {
+      "url":"./templates/connectivityManage.html",
+      "name":"connectivityManage",
+      "target":"#connectivity",
+      "append":true,
+      "hidden":true
+   },
+   {
       "url":"./templates/accountCreate.html",
       "name":"accountCreate",
       "target":"#accounts",
