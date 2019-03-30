@@ -34,8 +34,8 @@
 *  bigInt:bigInt,<br/>
 *  bitcoin:bitcoin,<br/>
 *  secp256k1:secp256k1,<br/>
-*  sendResult:sendResult,<br/>
-*  sendError:sendError,<br/>
+*  sendResult:{@link sendResult},<br/>
+*  sendError:{@link sendError},<br/>
 *  buildJSONRPC:{@link buildJSONRPC},<br/>
 *  paramExists:{@link paramExists},<br/>
 *  JSONRPC_ERRORS:{@link JSONRPC_ERRORS}

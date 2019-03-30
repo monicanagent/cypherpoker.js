@@ -17,7 +17,7 @@
 *    "p2p":{
 *      "connectInfo":{
 *          "create":"return (new P2PRouter())",
-*         "type":"wss",
+*          "type":"wss",
 *          "url":"ws://127.0.0.1:8090"
 *      },
 *      "transports": {
@@ -28,7 +28,7 @@
 *   "api":{
 *      "connectInfo":{
 *         "create":"return (new APIRouter())",
-*        "type":"wss",
+*         "type":"wss",
 *         "url":"ws://127.0.0.1:8090"
 *      }
 *   },
@@ -313,10 +313,9 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * @property {Object} p2p=null Reference to a peer-to-peer networking interface
-   * supporting the property <code>privateID</code> and functions <code>connect(serverURL)</code>,
-   * <code>broadcast(message)</code>, and <code>direct(message, [recipient,recipient...])</code>.
-   * For example, {@link P2PRouter}
+   * @property {Object} p2p=null Reference to a peer-to-peer networking interface.
+   * This is a direct reference to [ConnectivityManager.p2p]{@link ConnectivityManager#p2p} unless
+   * {@link ConnectivityManager} hasn't been instantiated.
    */
    get p2p() {
       if (this.connectivityManager == null) {
@@ -331,7 +330,8 @@ class CypherPoker extends EventDispatcher {
 
    /**
    * @property {Object} api=null Reference to a networking interface over which RPC API functions
-   * are invoked. This <i>may</i> be the same interface as [p2p]{@link CypherPoker#p2p}.
+   * are invoked. This is a direct reference to [ConnectivityManager.api]{@link ConnectivityManager#api} unless
+   * {@link ConnectivityManager} hasn't been instantiated.
    */
    get api() {
       if (this.connectivityManager == null) {
@@ -345,8 +345,9 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * @property {Boolean} apiConnected=false True if the instance is connected to the
-   * API services provider and ready to accept requests.
+   * @property {Boolean} apiConnected=false Returns the
+   * [ConnectivityManager.apiConnected]{@link ConnectivityManager#apiConnected} value
+   * unless {@link ConnectivityManager} hasn't been instantiated yet.
    * @readonly
    */
    get apiConnected() {
@@ -357,8 +358,9 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * @property {Boolean} p2pConnected=false True if the instance is connected to the peer-to-peer
-   * network and ready to accept requests.
+   * @property {Boolean} p2pConnected=false Returns the
+   * [ConnectivityManager.p2pConnected]{@link ConnectivityManager#p2pConnected} value
+   * unless {@link ConnectivityManager} hasn't been instantiated yet.
    * @readonly
    */
    get p2pConnected() {
@@ -524,8 +526,6 @@ class CypherPoker extends EventDispatcher {
    * matching the single identitier will be restored. If this parameter is an array,
    * accounts matching any element will be restored. If null is supplied, all
    * accounts will be restored.
-   *
-   * @private
    */
    restoreAccounts(domains) {
       var storage = window.localStorage;
@@ -580,8 +580,8 @@ class CypherPoker extends EventDispatcher {
    }
 
    /**
-   * Saves the internal [accounts]{@link CypherPoker#accounts} array to the
-   * browser's <code>localStorage</code>.
+   * Saves the internal [accounts]{@link CypherPoker#accounts} array and
+   * any non-domain accounts to the browser's <code>localStorage</code>.
    */
    saveAccounts() {
       var storage = window.localStorage;

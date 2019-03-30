@@ -21,7 +21,7 @@
 *  setTimeout:setTimeout,<br/>
 *  clearTimeout:clearTimeout,<br/>
 *  process:process,<br/>
-* startDatabase: startDatabase
+* startDatabase: {@link startDatabase}
 * }
 */
 
@@ -61,9 +61,9 @@ const appTitle = appName+" v"+appVersion;
 * @property {Object} electronEnv.client Contains references and information
 * about the web/browser client portion of the application. This information is made
 * available to any child windows created by the main process.
-* @property {Number} electronEnv.client.width=1024 The initial width of the main
+* @property {Number} electronEnv.client.width=1100 The initial width of the main
 * Electron {@link BrowserWindow} object.
-* @property {Number} electronEnv.client.height=768 The initial height of the main
+* @property {Number} electronEnv.client.height=800 The initial height of the main
 * Electron {@link BrowserWindow} object.
 * @property {Object} electronEnv.server Contains references and information
 * about the server portion of the application.

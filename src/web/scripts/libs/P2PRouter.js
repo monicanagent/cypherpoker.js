@@ -18,7 +18,7 @@ class P2PRouter extends EventDispatcher {
    * @type {Event}
    * @property {Object} data A native JSON-RPC 2.0 result or notification object.
    * @property {String} transportType The transport type through which the message
-   * was received. This should match one of the {@link PeerConnectionObject#options}.
+   * was received. This should match one of the <code>PeerConnectionObject.options</code>.
    * @property {Object} transport A reference to the transport interface that initially
    * handled the receipt of the message.
    */
@@ -30,7 +30,7 @@ class P2PRouter extends EventDispatcher {
    * @type {Event}
    * @property {Object} data A native JSON-RPC 2.0 result or notification object.
    * @property {String} transportType The transport type through which the message
-   * was received. This should match one of the {@link PeerConnectionObject#options}.
+   * was received. This should match one of the <code>PeerConnectionObject.options</code>.
    * @property {Object} transport A reference to the transport interface that initially
    * handled the receipt of the message.
    */
@@ -41,7 +41,7 @@ class P2PRouter extends EventDispatcher {
    * @type {Event}
    * @property {Object} data A native JSON-RPC 2.0 result or notification object.
    * @property {String} transportType The transport type on which the new connection was
-   * established. This should match one of the {@link PeerConnectionObject#options}.
+   * established. This should match one of the <code>PeerConnectionObject.options</code>.
    * @property {Object} transport A reference to the transport interface on which the
    * new connection was established.
    */
@@ -60,7 +60,7 @@ class P2PRouter extends EventDispatcher {
    * @type {Event}
    * @property {Object} data A native JSON-RPC 2.0 result or notification object.
    * @property {String} transportType The transport type on which the connection was
-   * previously active established. This should match one of the {@link PeerConnectionObject#options}.
+   * previously active established. This should match one of the <code>PeerConnectionObject.options</code>.
    * @property {Object} transport A reference to the transport interface on which the
    * connection was previously active
    */

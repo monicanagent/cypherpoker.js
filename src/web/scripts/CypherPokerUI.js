@@ -167,8 +167,8 @@ class CypherPokerUI {
    /**
    * @property {Boolean} autoDeal=true If true, cards are automatically dealt when
    * betting is done and it's our turn to deal. If <code>false</code>, the
-   * {@link CypherPokerGame#dealCards} function of the {@link CypherPokerUI#game}
-   * reference will need to be invoked manually.
+   * [CypherPokerGame.dealCards]{@link CypherPokerGame#dealCards} function of the
+   * [game]{@link CypherPokerUI#game} reference will need to be invoked manually.
    */
    get autoDeal() {
       if (this._autoDeal == undefined) {
@@ -200,7 +200,7 @@ class CypherPokerUI {
 
    /**
    * @property {Array} gameElements An indexed array of all game container elements
-   * cloned from the {@link CypherPokerUI#protoGameElement} object.
+   * cloned from the [protoGameElement]{@link CypherPokerUI#protoGameElement} object.
    */
    get gameElements() {
       if (this._gameElements == undefined) {
@@ -282,8 +282,8 @@ class CypherPokerUI {
    }
 
    /**
-   * Returns a successfully loaded HTML template by its name from the {@link CypherPokerUI#templates}
-   * array.
+   * Returns a successfully loaded HTML template by its name from the
+   * [templates]{@link CypherPokerUI#templates} array.
    *
    * @param {String} name The HTML template name to reterieve, as specified in the associated
    * templates JSON data.
@@ -345,8 +345,8 @@ class CypherPokerUI {
    /**
    * Loads and parses HTML templates for the application, then adds them to their
    * specified targets within the main page HTML. Every successfully loaded template
-   * can be accessed via the {@link CypherPokerUI#templates} array or the
-   * {@link CypherPokerUI#getTemplate} function.
+   * can be accessed via the [templates]{@link CypherPokerUI#templates} array or the
+   * [getTemplate]{@link CypherPokerUI#getTemplate} function.
    *
    * Note that templates are appended to their specified targets in the order listed.
    *
@@ -444,7 +444,7 @@ class CypherPokerUI {
    * @param {String} htmlURL The URL of the HTML template file to load.
    * @return {HTMLDocument} A HTMLDocument object containing the loaded HTML
    * document. Any meta tags found in the main body are automatically parsed
-   * using the {@link CypherPokerUI#parseTemplateTags} function.
+   * using the [parseTemplateTags]{@link CypherPokerUI#parseTemplateTags} function.
    *
    * @private
    * @async
@@ -511,8 +511,8 @@ class CypherPokerUI {
 
    /**
    * Adds game event listeners and callbacks to user interface elements defined in
-   * {@link CypherPokerUI#gameUISelectors} and contained in a clone of the {@link CypherPokerUI#protoGameElement}
-   * element.
+   * [gameUISelectors]{@link CypherPokerUI#gameUISelectors} and contained in a clone of the
+   * [protoGameElement]{@link CypherPokerUI#protoGameElement} element.
    *
    * @param {HTMLElement} gameElement The cloned game element to which to add handlers to.
    * @param {CypherPokerGame} gameRef A reference to the game instance associated with the
@@ -650,7 +650,7 @@ class CypherPokerUI {
 
    /**
    * Adds event listeners and callbacks to the {@link CypherPoker} instance assigned to
-   * the {@link CypherPokerUI#cypherpoker} property.
+   * the [cypherpoker]{@link CypherPokerUI#cypherpoker} property.
    */
    addCypherPokerHandlers() {
       this.cypherpoker.addEventListener("newgame", this.onNewGame, this);
@@ -2266,8 +2266,8 @@ class CypherPokerUI {
 
    /**
    * Removes all the "join table" buttons and any event listeners currently in the
-   * lobby. This function does <b>not</b> update any {@link CypherPoker#joinedTables}
-   * or {@link CypherPoker#announcedTables}.
+   * lobby. This function does <b>not</b> update any [CypherPoker.joinedTables]{@link CypherPoker#joinedTables}
+   * or [CypherPoker.announcedTables]{@link CypherPoker#announcedTables}.
    *
    * @private
    */
@@ -2473,7 +2473,7 @@ class CypherPokerUI {
    }
 
    /**
-   * Hides the main dialog, as defined in {@link CypherPokerUI#UISelectors}<code>.dialog</code>,
+   * Hides the main dialog, as defined in [UISelectors]{@link CypherPokerUI#UISelectors}<code>.dialog</code>,
    * with an optional delay.
    *
    * @param {Number} [delay=0] The number of milliseconds to delay before closing the

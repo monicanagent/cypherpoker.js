@@ -67,9 +67,8 @@ class ConnectivityManager extends EventDispatcher {
    }
 
    /**
-   * @property {Object} p2p=null Reference to a peer-to-peer networking interface
-   * supporting the property <code>privateID</code> and functions <code>connect(serverURL)</code>,
-   * <code>broadcast(message)</code>, and <code>direct(message, [recipient,recipient...])</code>.
+   * @property {Object} p2p=null Reference to a peer-to-peer multi-network routing interface
+   * supporting a dynamic private ID, direct send (single or multi), and broadcast functionality.
    * For example, {@link P2PRouter}
    */
    get p2p() {
@@ -84,8 +83,8 @@ class ConnectivityManager extends EventDispatcher {
    }
 
    /**
-   * @property {Object} api=null Reference to a networking interface over which RPC API functions
-   * are invoked. This <i>may</i> be the same interface as [p2p]{@link CypherPoker#p2p}.
+   * @property {Object} api=null Reference to a multi-network routing interface over which RPC API functions
+   * are invoked For example, {@link APIRouter}.
    */
    get api() {
       if (this._api == undefined) {
@@ -166,7 +165,7 @@ class ConnectivityManager extends EventDispatcher {
 
    /**
    * Populates the list of enabled gateways in the server portion of the
-   * connctivity management interface,
+   * connectivity management interface,
    */
    populateGatewaysList() {
       if (isDesktop() == false) {
@@ -192,8 +191,8 @@ class ConnectivityManager extends EventDispatcher {
 
    /**
    * Creates and starts the [api]{@link CypherPoker#api} and [p2p]{@link CypherPoker#p2p}
-   * connections by calling [connectAPI]{@link CypherPoker#connectAPI} and
-   * [connectP2P]{@link CypherPoker#connectP2P}.
+   * connections by calling [connectAPI]{@link ConnectivityManager#connectAPI} and
+   * [connectP2P]{@link ConnectivityManager#connectP2P}.
    *
    * @param {Boolean} [apiFatalFail=false] If true, a connection failure to the API
    * services server is considered fatal and will throw an exception, otherwise only
@@ -275,8 +274,11 @@ class ConnectivityManager extends EventDispatcher {
 
    /**
    * Establishes connection(s) using information from a Services Descriptor Bundle.
+   * This may result in new [api]{@link ConnectivityManager#api} and/or [p2p]{@link ConnectivityManager#p2p}
+   * instances being created and connected. Related <code>connectInfo</code> objects in the
+   * [settings]{@link CypherPoker#settings} object are updated accordingly.
    *
-   * @param {String|Array} sdb Either Base85 / Ascii85 or Base64 encoded string, or
+   * @param {String|Array} sdb Either Base85 / Ascii85 (including <code>-s</code> variant), or Base64 encoded string, or
    * a native JavaScript array containing SDB entities.
    * @param {String} [entityType="*"] The type of SDB entity to connect to, if
    * contained in the <code>sdb</code>. Valid types are "api" or "p2p". If "*"
@@ -560,8 +562,8 @@ class ConnectivityManager extends EventDispatcher {
    }
 
    /**
-   * Populates the server-generated SDB when server connectivity is enabled, or when
-   * the SDB format or options change.
+   * Populates the server-generated SDB <code>textarea</code> element in the user interface when server
+   * connectivity is enabled, or when the SDB format or options change.
    *
    * @param {Object} gatewayObj Object containing information about the gateway such
    * as would be added in during {@link populateGatewaysList}.
@@ -616,7 +618,8 @@ class ConnectivityManager extends EventDispatcher {
    }
 
    /**
-   * Copies the current contents of the server-generated SDB to the system clipboard.
+   * Copies the current contents of the server-generated SDB <code>textarea</code> element
+   * to the system clipboard.
    */
    serverSDBToClipboard() {
       var manageElement = ui.getTemplateByName("connectivityManage").elements[0];
@@ -875,8 +878,8 @@ class ConnectivityManager extends EventDispatcher {
    }
 
    /**
-   * Populates the API connection input fields (url and create script), using the Currently
-   * selected option in the API connections list (HTML <code>select</code> element).
+   * Populates the API connection input fields (url and create script) in the user interface,
+   * using the currently selected option in the API connections list (HTML <code>select</code> element).
    */
    populateAPIConnectionInputs() {
       var manageElement = ui.getTemplateByName("connectivityManage").elements[0];
@@ -923,7 +926,7 @@ class ConnectivityManager extends EventDispatcher {
    /**
    * Trigerred after [onConnectUsingSDBClick]{@link ConnectivityManager#onConnectUsingSDBClick} either
    * directly or as a result of a confirmation by the plyer. New connection(s) is/are
-   *by processing the SDB, closing any current connections, and establishing new ones.
+   * determined from the SDB, closing any current connections, and establishing new ones.
    *
    * @param {Boolean} [gameActive=false] If true, any existing games are destroyed
    * prior to establishing the new connection.
@@ -1053,8 +1056,8 @@ class ConnectivityManager extends EventDispatcher {
    }
 
    /**
-   * Populates the P2P connection input fields (url and create script), using the Currently
-   * selected option in the P2P connections list (HTML <code>select</code> element).
+   * Populates the P2P connection input fields (url and create script) in the user interface,
+   * using the currently selected option in the P2P connections list (HTML <code>select</code> element).
    */
    populateP2PConnectionInputs() {
       var manageElement = ui.getTemplateByName("connectivityManage").elements[0];

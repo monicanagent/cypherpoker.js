@@ -187,7 +187,7 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
-   * Creates a new account by calling the "CP_Account"/"new" RPC service using
+   * Creates a new account by calling the <code>CP_Account/new</code> RPC service using
    * the properties of this instance.
    *
    * @return {Promise} The promise resolves with a <code>true</code> value
@@ -213,7 +213,7 @@ class CypherPokerAccount extends EventDispatcher {
    }
 
    /**
-   * Updates this account's properties by calling the "CP_Account"/"info" RPC service.
+   * Updates this account's properties by calling the <code>CP_Account/info</code> RPC service.
    *
    * @return {Promise} The promise resolves with a <code>true</code> value
    * if the account was succcessfully updated. An <code>Error</code> object

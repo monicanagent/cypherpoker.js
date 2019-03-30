@@ -1,7 +1,7 @@
 /**
 * @file A CypherPoker.JS implementation of Texas Hold'em poker for 2+ players.
 *
-* @version 0.3.0
+* @version 0.4.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -256,11 +256,11 @@ class CypherPokerGame extends EventDispatcher {
    * @param {Object} [playerInfo=null] Contains additional information
    * about us to share with the table.
    * @param {String} [ContractClass="CypherPokerContract"] The (smart) contract interface
-   * to use with this game (available through the {@link CypherPokerGame#contract} property).
+   * to use with this game (available through the [contract]{@link CypherPokerGame#contract} property).
    * If <code>null</code>, no contract interface is used.
    */
    constructor(cypherpokerRef, tableObj, playerInfo=null, ContractClass="CypherPokerContract") {
-      super();      
+      super();
       try {
          //attempt to create dummy instance to ensure that class is available
          var temp = new CypherPokerPlayer("");
@@ -313,7 +313,7 @@ class CypherPokerGame extends EventDispatcher {
    /**
    * @property {Boolean} autoBlinds=true If true, the required blind amount for
    * the table are posted automatically if we're playing as a blind, otherwise
-   * the blind amount will need to be posted via the {@link CypherPokerGame#placeBet} function.
+   * the blind amount will need to be posted via the [placeBet]{@link CypherPokerGame#placeBet} function.
    */
    set autoBlinds (abSet) {
       this._autoBlinds = abSet;
@@ -328,8 +328,8 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Assigns player roles to the {@link CypherPokerPlayer} instances in the
-   * {@link CypherPokerGame#players} array, such as dealer, big blind, and
-   * small blind. The {@link CypherPokerGame#players} array must be complete
+   * [players]{@link CypherPokerGame#players} array, such as dealer, big blind, and
+   * small blind. The [players]{@link CypherPokerGame#players} array must be complete
    * for the game prior to invoking this function.
    *
    * @param {String} [dealerPID=null] The private ID of the dealer. The next
@@ -366,11 +366,11 @@ class CypherPokerGame extends EventDispatcher {
    /**
    * Resets the betting states of all players associated with this game instance.
    *
-   * @param {Boolean} [resetBet=false] If true, the {@link CypherPokerPlayer#totalBet} amount
+   * @param {Boolean} [resetBet=false] If true, the [CypherPokerPlayer.totalBet]{@link CypherPokerPlayer#totalBet} amount
    * is set to 0.
-   * @param {Boolean} [resetHasBet=false] If true, the {@link CypherPokerPlayer#hasBet} flag is
+   * @param {Boolean} [resetHasBet=false] If true, the [CypherPokerPlayer.hasBet]{@link CypherPokerPlayer#hasBet} flag is
    * set to false.
-   * @param {Boolean} [resetHasFolded=false] If true, the {@link CypherPokerPlayer#hasFolded} flag
+   * @param {Boolean} [resetHasFolded=false] If true, the [ CypherPokerPlayer.hasFolded]{@link CypherPokerPlayer#hasFolded} flag
    * is set to false.
    */
    resetPlayerStates(resetBet=false, resetHasBet=false, resetHasFolded=false) {
@@ -486,7 +486,7 @@ class CypherPokerGame extends EventDispatcher {
    * @property {Object} gameParams Game-related parameters.
    * @property {String} gameParams.prime The current prime modulus value for
    * the game. Previous prime values are stored in {@link keypair}
-   * instances in the {@link CypherPokerPlayer#keychain} array.
+   * instances in the [CypherPokerPlayer.keychain]{@link CypherPokerPlayer#keychain} array.
    * @readonly
    */
    get gameParams() {
@@ -557,7 +557,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * @property {Array} messageQueue Peer-to-peer message events that have been
-   * queued while {@link CypherPokerGame#gameEnding} is <code>true</code>.
+   * queued while [gameEnding]{@link CypherPokerGame#gameEnding} is <code>true</code>.
    * Message events are stored in order of age of receipt with the most
    * recent events appearing last.
    */
@@ -663,7 +663,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * @property {Boolean} canBet If true, we can place a bet, check/call, or fold
-   * via the {@link CypherPokerGame#placeBet} function.
+   * via the [placeBet]{@link CypherPokerGame#placeBet} function.
    */
    get canBet() {
       if (this.bettingDone == true) {
@@ -850,7 +850,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * @property {Boolean} canDeal If true, we can initiate the next round of card
-   * dealing (private or public), via the {@link CypherPokerGame#dealCards} function.
+   * dealing (private or public), via the [dealCards]{@link CypherPokerGame#dealCards} function.
    */
    get canDeal() {
       if (this.gameStarted == false) {
@@ -897,15 +897,15 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns a condensed array containing the copied properties of the
-   * {@link CypherPokerGame#players} array. Use the object returned by
+   * [players]{@link CypherPokerGame#players} array. Use the object returned by
    * this function with <code>JSON.stringify</code> instead of using
-   * {@link CypherPokerGame#players} directly in order to prevent circular
+   * [players]{@link CypherPokerGame#players} directly in order to prevent circular
    * reference errors.
    *
-   * @param {Boolean} [includeKeychains=false] If true, the {@link CypherPokerPlayer#keychain}
+   * @param {Boolean} [includeKeychains=false] If true, the [CypherPokerPlayer.keychain]{@link CypherPokerPlayer#keychain}
    * array of each player will be included in the returned object.
-   * @param {Boolean} [includePasswords=false] If true, the {@link CypherPokerAccount#password}
-   * property of each {@link CypherPokerPlayer#account} reference will be included
+   * @param {Boolean} [includePasswords=false] If true, the [CypherPokerAccount.password]{@link CypherPokerAccount#password}
+   * property of each [CypherPokerPlayer.account]{@link CypherPokerPlayer#account} reference will be included
    * with the returned object.
    *
    * @return {Object} The condensed players array associated with this game instance.
@@ -921,9 +921,9 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns a condensed object containing the copied properties of the
-   * {@link CypherPokerGame#cardDecks} object. Use the object returned by
+   * [cardDecks]{@link CypherPokerGame#cardDecks} object. Use the object returned by
    * this function with <code>JSON.stringify</code> instead of using
-   * {@link CypherPokerGame#cardDecks} directly in order to prevent circular
+   * [cardDecks]{@link CypherPokerGame#cardDecks} directly in order to prevent circular
    * reference errors.
    *
    * @return {Object} The condensed cardDecks object associated with this game instance.
@@ -939,9 +939,9 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns a condensed object containing the copied properties of the
-   * {@link CypherPokerGame#table} object. Use the object returned by
+   * [table]{@link CypherPokerGame#table} object. Use the object returned by
    * this function with <code>JSON.stringify</code> instead of using
-   * {@link CypherPokerGame#table} directly in order to prevent circular
+   * [table]{@link CypherPokerGame#table} directly in order to prevent circular
    * reference errors.
    *
    * @return {Object} The condensed table object associated with this game instance.
@@ -1001,7 +1001,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns the {@link CypherPokerPlayer} that appears <i>after</i> a specified
-   * player in the {@link CypherPokerGame#players} array.
+   * player in the [players]{@link CypherPokerGame#players} array.
    *
    * @param {String} privateID The private ID of the player preceding the
    * player to return.
@@ -1021,7 +1021,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns the {@link CypherPokerPlayer} that appears <i>before</i> a specified
-   * player in the {@link CypherPokerGame#players} array.
+   * player in the [players]{@link CypherPokerGame#players} array.
    *
    * @param {String} privateID The private ID of the player following the
    * player to return.
@@ -1045,7 +1045,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns the {@link CypherPokerPlayer} that is currently flagged as the dealer
-   * in the {@link CypherPokerGame#players} array.
+   * in the [players]{@link CypherPokerGame#players} array.
    *
    * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} instance that
    * is flagged as a dealer. <code>null</code> is returned if no dealer is flagged.
@@ -1061,7 +1061,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns the {@link CypherPokerPlayer} that is currently flagged as the big blind
-   * in the {@link CypherPokerGame#players} array.
+   * in the [players]{@link CypherPokerGame#players} array.
    *
    * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} instance that
    * is flagged as a big blind. <code>null</code> is returned if no big blind
@@ -1078,7 +1078,7 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Returns the {@link CypherPokerPlayer} that is currently flagged as the small blind
-   * in the {@link CypherPokerGame#players} array.
+   * in the [players]{@link CypherPokerGame#players} array.
    *
    * @return {CypherPokerPlayer} The {@link CypherPokerPlayer} instance that
    * is flagged as a small blind. <code>null</code> is returned if no small
@@ -1094,7 +1094,7 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * Processes any queued message events found in the {@link CypherPokerGame#messageQueue}.
+   * Processes any queued message events found in the [messageQueue]{@link CypherPokerGame#messageQueue}.
    *
    * @async
    * @private
@@ -1118,7 +1118,7 @@ class CypherPokerGame extends EventDispatcher {
    * the message's <code>payload</code> property.
    * @param {Array} [privateIDs=null] The private ID(s) of the target(s) / recipient(s).
    * If <code>null</code>, the list of recipients comes from the associated
-   * {@link CypherPokerGame#table}.<code>joinedPID</code> array.
+   * [table]{@link CypherPokerGame#table}.<code>joinedPID</code> array.
    */
    sendToPlayers(messageType, payload=null, privateIDs=null) {
       this.debug("sendToPlayers(\""+messageType+"\", "+payload+", "+privateIDs+")");
@@ -1158,7 +1158,7 @@ class CypherPokerGame extends EventDispatcher {
    *
    * @param {Array} [privateIDs=null] The private ID(s) of the target(s) / recipient(s).
    * If <code>null</code>, the list of recipients comes from the associated
-   * {@link CypherPokerGame#table}.<code>joinedPID</code> array.
+   * [table]{@link CypherPokerGame#table}.<code>joinedPID</code> array.
    *
    * @private
    */
@@ -1169,16 +1169,17 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * Sends game parameters, stored in the {@link CypherPokerGame#gameParams} object,
-   * to all players associated with this game, and sets the {@link CypherPokerGame#gameStarted}
-   * flag to <code>true</code>. Only the dealer (table owner) can send game paramaters
-   * at the start of a new game ({@link CypherPokerGame#gameStarted} == false).
+   * Sends game parameters, stored in the [gameParams]{@link CypherPokerGame#gameParams} object,
+   * to all players associated with this game, and sets the
+   * [gameStarted]{@link CypherPokerGame#gameStarted} flag to <code>true</code>.
+   * Only the dealer (table owner) can send game paramaters at the start of a new game
+   * ([gameStarted]{@link CypherPokerGame#gameStarted}<code>==false</code>).
    *
    * @param {Boolean} [newGame=true] If true, new game parameters are
-   * created or set (e.g. from {@link CypherPoker#settings}, prior to
+   * created or set (e.g. from [CypherPoker.settings]{@link CypherPoker#settings}, prior to
    * sending them to other players.
-   * @return {Promise} When resolved, a {@link CypherPokerGame#event:gameparams} event is returned. A rejection
-   * may occur if required data is missing from the {@link CypherPoker#settings} object when
+   * @return {Promise} When resolved, a [gameparams]{@link CypherPokerGame#event:gameparams} event is returned. A rejection
+   * may occur if required data is missing from the [CypherPoker.settings]{@link CypherPoker#settings} object when
    * creating new game parameters
    * @fires CypherPokerGame#gameparams
    * @async
@@ -1218,11 +1219,11 @@ class CypherPokerGame extends EventDispatcher {
    * the next index.
    *
    * @param {Boolean} [storeKeypair=true] If true, the newly generated {@link keypair}
-   * is automatically stored to the {@link CypherPokerPlayer#keychain} array, otherwise
+   * is automatically stored to the [CypherPokerPlayer.keychain]{@link CypherPokerPlayer#keychain} array, otherwise
    * it's only returned.
    *
-   * @return {Promise} The resolved promise will return the generated <code>keypair</code> property
-   * or reject with an error if the {@link CypherPokerGame#gameParams} object doesn't
+   * @return {Promise} The resolved promise will return the generated @link keypair} property
+   * or reject with an error if the [gameParams]{@link CypherPokerGame#gameParams} object doesn't
    * contain a valid <code>prime</code> number value.
    * @fires CypherPokerGame#gamekeypair
    * @async
@@ -1258,11 +1259,11 @@ class CypherPokerGame extends EventDispatcher {
    * Generates a new card deck and sends it to the other players. This function
    * throws an error if we're not the dealer, the game hasn't started, the
    * prime number for the game hasn't been generated, or a deck already exists.
-   * The generated deck is stored in the {@link CypherPokerGame#cardDecks}<code>.faceup</code>
+   * The generated deck is stored in the [cardDecks]{@link CypherPokerGame#cardDecks}<code>.faceup</code>
    * array.
    *
    * @returns {Promise} A resolved promise returns an array of {@link CypherPokerCard}
-   * instances. A rejected promise returns an {@link Error} object.
+   * instances. A rejected promise returns an <code>Error</code> object.
    * @fires CypherPokerGame#gamedeck
    * @async
    * @private
@@ -1296,17 +1297,17 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * Encrypts and shuffles the a card deck stored in the {@link CypherPokerGame#cardDecks}<code>.faceup</code>
+   * Encrypts and shuffles the a card deck stored in the [cardDecks]{@link CypherPokerGame#cardDecks}<code>.faceup</code>
    * array, and sends the result to the table's players to continue.
    * The game must be started and a valid {@link keypair} must be present in our
-   * {@link CypherPokerPlayer#keychain} array.
+   * [CypherPokerPlayer.keychain]{@link CypherPokerPlayer#keychain} array.
    *
    * @param {Array} [cardDeck=null] Indexed array of strings representing plaintext/face-up or
-   * partially encrypted cards. If <code>null</code>, the values from the {@link CypherPokerGame#cardDecks}<code>.faceup</code>
-   * array are used.
+   * partially encrypted cards. If <code>null</code>, the values from the
+   * [cardDecks]{@link CypherPokerGame#cardDecks}<code>.faceup</code> array are used.
    *
    * @returns {Promise} A resolved promise returns an array of strings representing the
-   * encrypted and shuffled cards. A rejected promise returns an {@link Error} object.
+   * encrypted and shuffled cards. A rejected promise returns an <code>Error</code> object.
    *
    * @fires CypherPokerGame#gamecardsencrypt
    * @async
@@ -1357,9 +1358,9 @@ class CypherPokerGame extends EventDispatcher {
    * about the cards to decrypt and / or store.
    * @param {Array} payload.selected Strings representing the encrypted cards to decrypt.
    * @param {Array} payload.facedown Face-down cards remaining in the active deck.
-   * This array will be copied to the {@link CypherPokerGame#cardDecks}<code>.facedown</code> array.
+   * This array will be copied to the [cardDecks]{@link CypherPokerGame#cardDecks}<code>.facedown</code> array.
    * @param {Array} payload.dealt An array of face-down cards that have been dealt so far.
-   * This array will be copied to the {@link CypherPokerGame#cardDecks}<code>.dealt</code>
+   * This array will be copied to the [cardDecks]{@link CypherPokerGame#cardDecks}<code>.dealt</code>
    * array.
    * @param {String} payload.sourcePID The private ID of the player that made the initial card
    * selection.
@@ -1372,7 +1373,7 @@ class CypherPokerGame extends EventDispatcher {
    * strings of the input card selections, an array of face-up {@link CypherPokerCard}
    * instances if we've performed the final decryption on the input, or <code>null</code>
    * if the <code>payload</code> is not intended for us. A rejected promise
-   * returns an {@link Error} object.
+   * returns an <code>Error</code> object.
    * @async
    * @private
    * @todo Add additional verifications to ensure selection is valid for player and game state.
@@ -1493,8 +1494,8 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * Returns a {@link CypherPokerCard} instance from the {@link CypherPokerGame#cardDecks}<code>.faceup</code>
-   * array based on its mapping.
+   * Returns a {@link CypherPokerCard} instance from the
+   * [cardDecks]{@link CypherPokerGame#cardDecks}<code>.faceup</code> array based on its mapping.
    *
    * @param {String} mapping The card mapping (quadratic residue value), of the card to retrieve.
    *
@@ -1556,7 +1557,7 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * Checks if a game associated with a specific {@link CypherPoker#TableObject} instance
+   * Checks if a game associated with a specific [TableObject]{@link CypherPoker#TableObject} instance
    * is registered with the parent {@link CypherPoker} instance.
    *
    * @param {CypherPoker#TableObject} tableObj The associated table to check for.
@@ -1858,15 +1859,15 @@ class CypherPokerGame extends EventDispatcher {
 
    /**
    * Deals cards by removing random selections from the
-   * {@link CypherPokerGame#cardDecks}<code>.facedown</code> array, adding them
-   * them the {@link CypherPokerGame#cardDecks}<code>.dealt</code> array,
+   * [cardDecks]{@link CypherPokerGame#cardDecks}<code>.facedown</code> array, adding them
+   * them the [cardDecks]{@link CypherPokerGame#cardDecks}<code>.dealt</code> array,
    * sending the resulting arrays to the table, and requesting a decryption for
    * the selections.
    *
    * @param {Number} [numCards=0] The number of cards to select. If this
    * value is less than 1, the required cards are automatically determined using our
    * {@link CypherPokerPlayer}<code>.dealtCards</code> array or the
-   * {@link CypherPokerGame#cardDecks}<code>.public</code> array, depending on
+   * [cardDecks]{@link CypherPokerGame#cardDecks}<code>.public</code> array, depending on
    * the current game state.
    *
    * @return {Promise} The promise resolves with an array of selected face-down or
@@ -2266,7 +2267,7 @@ class CypherPokerGame extends EventDispatcher {
    }
 
    /**
-   * Event listener invoked when the associated {@link CypherPokerGame#analyzer}
+   * Event listener invoked when the associated [analyzer]{@link CypherPokerGame#analyzer}
    * dispatched a "scored" event.
    *
    * @param {CypherPokerEvent#event:scored} event An event object.

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: libs/Gateways.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: libs/Gateways.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Manages connection gateways that can be used by clients, peers, and other servers to connect to this one.
+*
+* @version 0.4.1
+* @author Patrick Bay
+* @copyright MIT License
+*/
+
+/**
+* @class Handles implementations of the {@link Gateway} class for CypherPoker.JS
+*/
+module.exports = class Gateways {
+
+   /**
+   * Creates a new instance.
+   *
+   * @param {Object} serverRef A reference to the exposed server objects available to gateways.
+   * @param {Object} [configData=null] The configuration data (usually part of a global config),
+   * specifying the gateways to be managed by this instance. If omitted or &lt;code>null&lt;/code>,
+   * a valid configuration object must be provided to either the [initialize]{@link Gateways#initialize}
+   * or [loadGateways]{@link Gateways#loadGateways} functions.*
+   */
+   constructor(serverRef, configData=null) {
+      this._server = serverRef;
+      this._gatewaysConfig = configData;
+   }
+
+   /**
+   * Initializes the instance by loading gateways, setting any initial references
+   * and properties, etc.
+   *
+   * @param {Object} [configData=null] The configuration data (usually part of a global config),
+   * specifying the gateways to be managed by this instance.If omitted or &lt;code>null&lt;/code>,
+   * a valid configuration object must be provided to the [loadGateways]{@link Gateways#loadGateways}
+   * function.
+   *
+   * @async
+   */
+   async initialize(configData=null) {
+      if (configData == null) {
+         configData = this.gatewaysConfig;
+      } else {
+         this._gatewaysConfig = configData;
+      }
+      if (configData == null) {
+         throw (new Error("Gateways configuration data invalid."));
+      }
+      var result = await this.loadGateways(this.gatewaysConfig);
+   }
+
+   /**
+   * @property {Object} server A reference to the exposed server objects available to
+   * gateways.
+   */
+   get server() {
+      if (this._server == undefined) {
+         this._server = null;
+      }
+      return (this._server);
+   }
+
+   /**
+   * @property {Object} gatewaysConfig The gateways configuration data supplied
+   * to the instance in the constructor.
+   */
+   get gatewaysConfig() {
+      if (this._gatewaysConfig == undefined) {
+         this._gatewaysConfig = null;
+      }
+      return (this._gatewaysConfig);
+   }
+
+   /**
+   * @property {Array} gateways Indexed array of objects containing gateway
+   * instances. Each element contains a &lt;code>config&lt;/code> object reference from the
+   * [gatewaysConfig{@link Gateways#gatewaysConfig}] data, the gateway
+   * &lt;code>configName&lt;/code> as specified by the in the [gatewaysConfig{@link Gateways#gatewaysConfig}]
+   * data, and a &lt;code>gateway&lt;/code> reference to the instance. Instances in this
+   * array may not necessarily be enabled / active.
+   *
+   * @readonly
+   */
+   get gateways() {
+      if (this._gateways == undefined) {
+         this._gateways = new Array();
+      }
+      return (this._gateways);
+   }
+
+   /**
+   * @property {Object} availableGateways Contains child objects containing references
+   * to available gateways that can be instantiated. Each child object contains a
+   * &lt;code>config&lt;/code> object reference from the [gatewaysConfig{@link Gateways#gatewaysConfig}]
+   * data, the gateway &lt;code>name&lt;/code> as specified by the in the [gatewaysConfig{@link Gateways#gatewaysConfig}]
+   * data, and a &lt;code>gateway&lt;/code> reference to the class that can be
+   * used to create an instance.
+   *
+   * @readonly
+   */
+   get availableGateways() {
+      if (this._availableGateways == undefined) {
+         this._availableGateways = new Object();
+      }
+      return (this._availableGateways);
+   }
+
+   /**
+   * Returns a gateway reference by it's global configuration name (as opposed
+   *  to the [name]{@link Gateway#name) property of the class).
+   *
+   * @param {String} configName The name of the gateway as specified in the
+   * global configuration.
+   * @param {Boolean} [enabled=false] If true, the gateway must exist in the
+   * [gateways]{@link Gateways#gateways} array, otherwise it must exist in the
+   * [availableGateways]{@link Gateways#availableGateways} object.
+   *
+   * @return {Gateway} A {@link Gateway}-type object, either a class (if &lt;code>enabled=false&lt;/code>),
+   * or class instance (if &lt;code>enabled=true&lt;/code>). If no matching gateway can be found
+   * &lt;code>null&lt;/code> is returned.
+   */
+   getGatewayByConfigName (configName, enabled=false) {
+   }
+
+   /**
+   * Loads and registers gateways specified by a configuration.
+   *
+   * @param {Object} [configData=null] The configuration data to use to load
+   * gateways. If &lt;code>null&lt;/code> or not supplied, the instance's
+   * [gatewaysConfig]{@link Gateways#gatewaysConfig} is used. If both or
+   * not valild, an error is thrown.
+   *
+   * @async
+   */
+   async loadGateways(configData=null) {
+      if ((configData == null) &amp;&amp; (this.gatewaysConfig == null)) {
+         throw (new Error("Gateways configuration data invalid."));
+      }
+      if (configData == null) {
+         configData = this.gatewaysConfig;
+      }
+      for (var configName in configData) {
+         var gatewayConfig = configData[configName];
+         var scriptPath = gatewayConfig.path;
+         console.log ("Loading "+configName+" gateway: "+scriptPath)
+         var gatewayClassObj = new Object();
+         gatewayClassObj.gateway = require(scriptPath);
+         gatewayClassObj.config = gatewayConfig;
+         gatewayClassObj.configName = configName;
+         this.availableGateways[gatewayClassObj.gateway.name] = gatewayClassObj;
+         console.log (gatewayClassObj.gateway.name+" gateway loaded.");
+         if (gatewayConfig.enable == true) {
+            //enable / create the instance
+            var gatewayInstObj = new Object();
+            gatewayInstObj.gateway = new gatewayClassObj.gateway(this.server, gatewayConfig);
+            gatewayInstObj.config = gatewayConfig;
+            gatewayInstObj.configName = configName;
+            this.gateways.push(gatewayInstObj);
+            console.log ("\""+gatewayClassObj.gateway.name+"\" gateway enabled.");
+         }
+         if ((gatewayConfig.start == true) &amp;&amp; (gatewayConfig.enable == true)) {
+            //start the instance
+            var result =await  gatewayInstObj.gateway.start();
+            if (gatewayInstObj.gateway.started == true) {
+               console.log ("\""+gatewayInstObj.gateway.name+"\" gateway started.");
+            }
+         }
+      }
+      return (true);
+   }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:53:27 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

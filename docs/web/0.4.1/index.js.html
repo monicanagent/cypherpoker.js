@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: index.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: index.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Main file responsible for starting up the web (client) portion of
+* CypherPoker.JS. Also provides functionality for dynamic loading of additional
+* scripts and JSON data.
+*
+* @version 0.4.1
+*/
+
+/**
+* @property {String} appVersion The version of the application. This information
+* is appended to the {@link appTitle}.
+*/
+var appVersion = "0.4.1";
+/**
+* @property {String} appName The name of the application. This information
+* is prepended to the {@link appTitle}.
+*/
+var appName = "CypherPoker.JS";
+/**
+* @property {String} appTitle The title of the application as it should appear in
+* the main browser window / tab and any new windows / tabs. If running as a desktop
+* (Electron) application, this is the name that appears on all child windows of
+* the main process.
+*/
+var appTitle = appName+" v"+appVersion;
+/**
+* @property {String} _settingsURL="./scripts/settings.json" The URL of the main
+* settings JSON file.
+* @private
+*/
+const _settingsURL = "./scripts/settings.json";
+/**
+* @property {Boolean} _useCache=false Will force script-based loads to bypass
+* local browser caches if false.
+* @private
+*/
+const _useCache = false;
+/**
+* @property {CypherPoker} cypherpoker=null A reference to the main CypherPoker.JS instance.
+* @private
+*/
+var cypherpoker = null;
+/**
+* @property {CypherPokerUI} ui=null A reference to the CypherPokerUI instance
+* @private
+*/
+var ui = null;
+/**
+* @property {Object} hostEnv=null Contains settings and references supplied by
+* a non-browser host environment such as Electron. When running as a standard web
+* page in a browser this value should remain null.
+*/
+var hostEnv = null;
+/**
+* @property {Object} ipcRenderer=null A reference to the &lt;code>ipcRenderer&lt;/code>
+* object of the host desktop (Electron) environment. If this script is running
+* within a standard web browser this reference will remain &lt;code>null&lt;/code>.
+*/
+var ipcRenderer = null;
+/**
+* @property {String} ipcID=null an interprocess communication ID used to
+* identify this window (child process) to the main process. If not running
+* in a desktop (Electron) environment, this value will remain &lt;code>null&lt;/code>.
+*/
+var ipcID = null;
+/**
+* @property {Array} _require Indexed array of required external scripts,
+* in the order that they must be loaded in.
+* @property {String} _require.url The URL of the external script to load.
+* @property {Function} [_require.onload] A function reference to invoke
+* when the script is finished loading.
+* @private
+*/
+const _require = [
+   {"url":"./scripts/libs/Polyfills.js"},
+   {"url":"./scripts/libs/EventDispatcher.js"},
+   {"url":"./scripts/libs/EventPromise.js"},
+   {"url":"./scripts/libs/SDB.js"},
+   {"url":"./scripts/libs/RPC.js"},
+   {"url":"./scripts/libs/transports/WSSClient.js"},
+   {"url":"./scripts/libs/transports/WebRTCClient.js"},
+   {"url":"./scripts/libs/APIRouter.js"},
+   {"url":"./scripts/libs/P2PRouter.js"},
+   {"url":"./scripts/libs/ConnectivityManager.js"},
+   {"url":"./scripts/libs/WorkerHost.js"},
+   {"url":"./scripts/libs/SRACrypto.js"},
+   {"url":"./scripts/libs/BigInteger.min.js"},
+   {"url":"./scripts/CypherPokerGame.js"},
+   {"url":"./scripts/CypherPokerPlayer.js"},
+   {"url":"./scripts/CypherPokerAccount.js"},
+   {"url":"./scripts/CypherPokerCard.js"},
+   {"url":"./scripts/CypherPokerContract.js"},
+   {"url":"./scripts/CypherPokerAnalyzer.js"},
+   {"url":"./scripts/CypherPokerUI.js",
+      "onload": () => {
+         var promise = new Promise((resolve, reject) => {
+            //game UI to be contained in the #game element
+            var gameElement = document.querySelector("#game");
+            ui = new CypherPokerUI(gameElement);
+            ui.initialize();
+            resolve(true);
+         })
+         return (promise);
+      }
+   },
+   {"url":"./scripts/CypherPoker.js",
+      "onload": () => {
+         var promise = new Promise((resolve, reject) => {
+            ui.showDialog ("Loading game settings...");
+            //EventDispatcher and EventPromise must already exist here!
+            loadJSON(_settingsURL).onEventPromise("load").then(promise => {
+               if (promise.target.response != null) {
+                  cypherpoker = new CypherPoker(promise.target.response);
+                  ui.cypherpoker = cypherpoker; //attach the cypherpoker instance to the UI
+                  var urlParams = parseURLParameters(document.location);
+                  var startOptions = new Object();
+                  startOptions.urlParams = urlParams;
+                  cypherpoker.start(startOptions).then(result => {
+                     console.log ("CypherPoker.JS instance fully started and connected.");
+                     resolve(true);
+                  }).catch(err => {
+                     ui.showDialog(err.message);
+                     console.error(err.stack);
+                     reject(false);
+                  });
+               } else {
+                  alert (`Settings data (${_settingsURL}) not loaded or parsed.`);
+                  throw (new Error(`Settings data (${_settingsURL}) not loaded or parsed.`));
+                  reject(false);
+               }
+            });
+         });
+      }
+   }
+]
+
+/**
+* Parses a supplied URL string that may contain parameters (e.g. document.location),
+* and returns an object with the parameters parsed to name-value pairs. Any URL-encoded
+* properties are decoded to native representations prior to being parsed.
+*
+* @param {String} urlString The URL string, either absolute or relative, to parse.
+*
+* @return {URLSearchParams} A [URLSearchParams]{@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
+* instance containing the parsed name-value pairs found in the &lt;code>urlString&lt;/code>.
+*
+* @see {@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams}
+*/
+function parseURLParameters(urlString) {
+   var decodedURL = decodeURI(urlString);
+   var urlObj = new URL(decodedURL);
+   return (urlObj.searchParams);
+}
+
+/**
+* Loads an external JavaScript file by adding a &lt;script> tag to the
+* DOM's &lt;head> tag.
+*
+* @param {String} scriptURL The URL of the script to load and parse.
+* @private
+*/
+function loadJavaScript(scriptURL) {
+   var script = document.createElement("script");
+   script.setAttribute("type", "text/javascript");
+   script.setAttribute("language", "text/JavaScript");
+   if (_useCache == false) {
+      //force script load (ignore cache)
+      scriptURL = scriptURL + "?" + String(Math.random()).split("0.")[1];
+   }
+   script.setAttribute("src", scriptURL);
+   script.addEventListener ("load", onLoadJavaScript);
+   document.getElementsByTagName("head")[0].appendChild(script);
+}
+
+/**
+* Event handler invoked when an external JavaScript file has completed loading.
+* The next file in the {@link _requires} array is automatically loaded.
+*
+* @param {Event} event A standard DOM event object.
+* @private
+* @async
+*/
+async function onLoadJavaScript(event) {
+   var loadedObj = _require.shift(); //important! -- remove current element from array
+   var loadedURL = loadedObj.url;
+   var loadedTimeStamp = new Date(event.timeStamp);
+   console.log (`"${loadedURL}" loaded at ${loadedTimeStamp.getSeconds()}s ${loadedTimeStamp.getMilliseconds()}ms`);
+   if (_require.length > 0) {
+      loadJavaScript (_require[0].url);
+   } else {
+      console.log (`All scripts loaded in ${loadedTimeStamp.getSeconds()}s ${loadedTimeStamp.getMilliseconds()}ms`);
+   }
+   if (typeof loadedObj["onload"] == "function") {
+      await loadedObj.onload();
+   }
+}
+
+/**
+* Loads an external JSON data file using XMLHTTPRequest.
+*
+* @param {String} jsonURL The URL of the JSON data file to load and parse.
+*
+* @return {XMLHTTPRequest} The XHR instance used to load the data.
+* @private
+*/
+function loadJSON(jsonURL) {
+   var xhr = new XMLHttpRequest();
+   if (_useCache == false) {
+      //force new data load
+      jsonURL = jsonURL + "?" + String(Math.random()).split("0.")[1];
+   }
+   xhr.open("GET", jsonURL);
+   xhr.overrideMimeType("application/json");
+   xhr.responseType = "json";
+   xhr.send();
+   return (xhr);
+}
+
+/**
+* Sends an IPC command to the main Electron process if this script is
+* running within a desktop (Electron) environment.
+*
+* @param {String} command The command to send to the main process via IPC.
+* @param {*} [data=null] Any accompanying data to include with the &lt;code>command&lt;/code>.
+* If omitted or &lt;code>null&lt;/code>, an empty object is created.
+* @param {Boolean} [async=false] Sends the request asynchronously, immediately
+* returning a promise instead of the synchronous response object. Synchronous requests
+* &lt;code>async=false&lt;/code> will block the main thread.
+*
+* @return {Object|Promise} A reply object is immediately returned if the desktop IPC
+* interface is available otherwise &lt;code>null&lt;/code> is returned. If &lt;code>async=true&lt;/code>,
+* a promise is returned instead that resolves with the reply object or rejects with an error.
+* The behaiour of the promise matches the behaviour of the synchronous reply.
+*/
+function IPCSend (command, data=null, async=false) {
+   if (async == true) {
+      var promise = new Promise((resolve, reject) => {
+         if (isDesktop()) {
+            var request = new Object();
+            request.command = command;
+            if (data == null) {
+               data = new Object();
+            }
+            request.async = true;
+            request.data = data;
+            request.data.ipcID = ipcID;
+            var responseID = command + ipcID;
+            try {
+               ipcRenderer.once(responseID, (senderObj, replyObj) => {
+                  resolve(replyObj);
+               });
+               ipcRenderer.send("ipc-main", request);
+            } catch (err) {
+               reject (err);
+            }
+         } else {
+            resolve (null);
+         }
+      });
+      return (promise);
+   } else {
+      if (isDesktop()) {
+         var request = new Object();
+         request.command = command;
+         if (data == null) {
+            data = new Object();
+         }
+         request.async = false;
+         request.data = data;
+         request.data.ipcID = ipcID;
+         try {
+            return (ipcRenderer.sendSync("ipc-main", request));
+         } catch (err) {
+            console.error (err.stack);
+         }
+      } else {
+         return (null);
+      }
+   }
+}
+
+
+/**
+* Invoked when an interprocess message is asynchronously received
+* from the main process on the "ipc-main" channel. The synchronous IPC response
+* will be an object with at least a response &lt;code>type&lt;/code> string and some
+* &lt;code>data&lt;/code>. If this script is not running in a desktop (Electron)
+* host environemnt this handler will never be invoked.
+*
+* @param {Event} event The event being dispatched.
+* @param {Object} request The request object. It must contain at least
+* a &lt;code>command&lt;/string> to process by the handler.
+*
+* @private
+*/
+function onIPCMessage(event, request) {
+   var response = new Object();
+   if (request.ipcID != ipcID) {
+      //not for this window / child process
+      return;
+   }
+   //be sure not to include any circular references in the response
+   //since it will be stringified before being returned...
+   switch (request.command) {
+      default:
+         response.type = "error";
+         response.data = new Object();
+         response.data.code = -1;
+         response.data.message = "Unrecognized IPC request command \""+request.command+"\"";
+         break;
+   }
+   event.returnValue = response; //respond immediately
+   //...or respond asynchronously:
+   //event.sender.send(request.ipcID, response);
+}
+
+/**
+* Invoked when a key, or key combination, is pressed on the keyboard.
+*
+* @param {Event} event The event being dispatched.
+* @param {Object} request The request object. It must contain at least
+* a &lt;code>command&lt;/string> to process by the handler.
+*
+* @private
+*/
+function onKeyPress(event) {
+   const key = event.key;
+   var alt = event.altKey;
+   var ctrl = event.ctrlKey;
+   var shift = event.shiftKey;
+   if (isDesktop()) {
+      //matches Dev Tools toogle keyboard shortcut in standard browser
+      if ((ctrl == true) &amp;&amp; (alt == false) &amp;&amp; (shift == true) &amp;&amp; ((key == "i") || (key == "I"))) {
+         //toggle Dev Tools on all open windows:
+         // IPCSend("toggle-devtools", {all:true});
+         IPCSend("toggle-devtools");
+      }
+   }
+}
+
+/**
+* Tests whether or not the host environment is a desktop (Electron) one.
+*
+* @return {Boolean} True if the host environment is a desktop (Electron) one
+* otherwise it's a standard web (browser) host environment.
+*/
+function isDesktop() {
+   if ((ipcRenderer != null) &amp;&amp; (ipcID != null)) {
+      return (true);
+   }
+   return (false);
+}
+
+/**
+* Main page load handler; invokes {@link loadJavaScript} with the first
+* JavaScript file found in the {@link _requires} array.
+* @private
+*/
+onload = function () {
+   try {
+      //try initializing through Electron IPC
+      ipcRenderer = require("electron").ipcRenderer;
+      ipcRenderer.on("ipc-main", onIPCMessage); //set IPC message handler
+      ipcID = String(Math.random()).split("0.")[1];
+      var initData = new Object();
+      initData.ipcID = ipcID;
+      hostEnv = IPCSend("init", initData).data;
+      appVersion = hostEnv.version;
+      appName = hostEnv.name;
+      appTitle = hostEnv.title;
+      console.log ("Desktop (Electron) host environment detected.");
+   } catch (err) {
+      //probably running in standard browser
+      console.log ("Browser (web) host environment detected.");
+      ipcRenderer = null;
+      hostEnv = null;
+      ipcID = null;
+   } finally {
+      window.addEventListener('keydown', onKeyPress);
+   }
+   document.title = appTitle;
+   loadJavaScript (_require[0].url);
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:46:49 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

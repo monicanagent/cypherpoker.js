@@ -1,6 +1,5 @@
 /**
-* @file A virtual smart contract implementation using a WebSocket Session
-* service as a TTP host.
+* @file A virtual smart contract implementation using the API interface.
 *
 * @version 0.4.1
 * @author Patrick Bay
@@ -9,8 +8,8 @@
 
 /**
 * @class A virtual smart contract interface for an associated {@link CypherPokerGame}
-* instance. Communicates with a WebSocket Session TTP service instead of directly
-* with a smart contract front-end.
+* instance. Communicates with an API interface directly rather than being routed
+* through {@link CypherPokerGame} communication functions.
 *
 * @extends EventDispatcher
 */

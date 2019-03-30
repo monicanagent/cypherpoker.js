@@ -1,7 +1,7 @@
 /**
 * @file A post-install script for CypherPoker.JS desktop to patch installed modules for
 * compatibility with Electron, apply any required file permissions, and configure the application.
-* @version 0.0.2
+* @version 0.4.1
 */
 const fs = require("fs");
 const { exec } = require('child_process');

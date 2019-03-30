@@ -1,7 +1,7 @@
 /**
 * @file A SQLite 3 adapter for data storage and retrieval in CypherPoker.JS
 *
-* @version 0.0.1
+* @version 0.4.1
 * @author Patrick Bay
 * @copyright MIT License
 */
