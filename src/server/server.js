@@ -859,6 +859,7 @@ async function startHTTPServer() {
    }
 }
 
+
 /**
 * Attempts to start the JSON-RPC 2.0 WebSocket server using the default {@link rpc_options}. The {@link onStartWSServer} function is invoked when
 * the server is successfully started.
@@ -869,10 +870,10 @@ function startWSServer() {
    } else {
    	console.log (`Starting JSON-RPC 2.0 WebSocket server on port ${rpc_options.ws_port}...`);
    	try {
-       ws_server = new websocket.Server({ port: rpc_options.ws_port });
-       ws_server.on("listening", onStartWSServer);
-       ws_server.on("connection", onWSConnection);
-       ws_ping_intervalID = setInterval(ping, ws_ping_interval);
+         ws_server = new websocket.Server({ port: rpc_options.ws_port });
+         ws_server.on("listening", onStartWSServer);
+         ws_server.on("connection", onWSConnection);
+         ws_ping_intervalID = setInterval(ping, ws_ping_interval);
    	} catch (err) {
    		console.error (err);
    	}
@@ -932,7 +933,8 @@ function handleWSRequest(requestData) {
 }
 
 /**
-* Handles data received through the HTTP endpoint and invokes {@link processRPCRequest} when a full request is received.
+* Handles data received through the HTTP endpoint and invokes {@link processRPCRequest} when a full request is received via a POST
+* method. This endpoint may also used to call functionailty through GET requests.
 *
 * @param {Object} requestObj HTTP request object <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">https://nodejs.org/api/http.html#http_class_http_incomingmessage</a>
 * @param {Object} responseObj HTTP response object <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">https://nodejs.org/api/http.html#http_class_http_serverresponse</a>
@@ -955,7 +957,10 @@ function handleHTTPRequest(requestObj, responseObj){
          sessionObj.serverResponse = responseObj;
 			processRPCRequest(requestData, sessionObj);
 		});
-	 }
+   } else if (requestObj.method == 'GET') {
+      //process GET request
+      //responseObj.send("HTTP response...");
+   }
 }
 
 /**
@@ -1210,7 +1215,8 @@ loadConfig().then (configObj => {
    rpc_options.exposed_gateway_objects.hostEnv = hostEnv;
    rpc_options.exposed_gateway_objects.config = config;
    if (hostEnv.embedded == true) {
-      Gateways = require(hostEnv.dir.server + "./libs/Gateways.js");
+      var gatewaysClass = path.resolve(hostEnv.dir.server + "./libs/Gateways.js");
+      Gateways = require(gatewaysClass);
    } else {
       Gateways = require("./libs/Gateways.js");
    }
