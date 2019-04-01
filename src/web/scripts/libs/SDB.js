@@ -2007,7 +2007,7 @@ module.exports = Array.isArray || function (arr) {
 /**
 * @file Services Descriptor Bundle encoding and decoding library.
 *
-* @version 0.1.7
+* @version 0.2.0
 * @author Patrick Bay (Monican Agent)
 * @copyright MIT License
 */
@@ -2032,7 +2032,7 @@ class SDB {
    * used with coded binary data.
    */
    static get version() {
-      return (0);
+      return (1);
    }
 
    /**
@@ -2078,6 +2078,7 @@ class SDB {
                switch (entityObj[dataType]) {
                   case "http": break;
                   case "wss": break;
+                  case "wsst": break;
                   case "webrtc": break;
                   default:
                      return ("\""+entityObj[dataType]+"\" is not a recognized transport.");
@@ -2667,6 +2668,9 @@ class SDB {
                   returnObj.value = "wss";
                   break;
                case 2:
+                  returnObj.value = "wsst";
+                  break;
+               case 3:
                   returnObj.value = "webrtc";
                   break;
                default:
@@ -2747,6 +2751,7 @@ class SDB {
             break;
          case 6:
             //parameters
+            returnObj.name = "parameters";
             dataLength = entityBuffer.readUInt8(offset + 1) << 16;
             dataLength = dataLength | (entityBuffer.readUInt8(offset + 2) << 8);
             dataLength = dataLength | entityBuffer.readUInt8(offset + 3);
@@ -2754,7 +2759,7 @@ class SDB {
             sliceStart = typeHeaderSize + offset;
             sliceEnd = dataLength + typeHeaderSize + offset;
             entityData = entityBuffer.slice(sliceStart, sliceEnd);
-            returnObj.value = entityData;
+            returnObj.value = entityData.toString("utf8");
             returnObj.offset = offset + dataLength + typeHeaderSize;
             break;
          case 7:
@@ -2960,8 +2965,11 @@ class SDB {
                case "wss":
                   encData.push(1);
                   break;
-               case "webrtc":
+               case "wsst":
                   encData.push(2);
+                  break;
+               case "webrtc":
+                  encData.push(3);
                   break;
                default:
                   break;
@@ -3201,6 +3209,7 @@ class SDB {
       return (false);
    }
 }
+
 
 
 window.SDB = SDB;
