@@ -3,7 +3,7 @@
       "connectInfo":{
          "create":"return (new P2PRouter())",
          "transport":"wss",
-         "url":"wss://cypherpokerjs-servicesserver-qvjedizlza.now.sh"
+         "url":"wss://cypherpokerjs-servicesserver-zehxipjszu.now.sh"
       },
       "transports": {
          "preferred":["webrtc","wss","ortc"],
@@ -14,7 +14,7 @@
       "connectInfo":{
          "create":"return (new APIRouter())",
          "transport":"wss",
-         "url":"wss://cypherpokerjs-servicesserver-qvjedizlza.now.sh"
+         "url":"wss://cypherpokerjs-servicesserver-zehxipjszu.now.sh"
       }
    },
    "crypto":{
