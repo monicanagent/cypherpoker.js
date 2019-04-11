@@ -6,6 +6,9 @@
 /**
 * @class Transparently routes messages to/from available API communication interfaces.
 * @extends EventDispatcher
+* @see {@link WSSClient}
+* @see {@link WSSTunnel}
+* @see {@link WebRTCClient}
 */
 class APIRouter extends EventDispatcher {
 
@@ -33,6 +36,21 @@ class APIRouter extends EventDispatcher {
    * was received.
    * @property {Object} transport A reference to the transport interface that initially
    * handled the receipt of the message.
+   */
+   /**
+   * The private ID for the API connection has changed.
+   *
+   * @event APIRouter#peerpid
+   * @type {Event}
+   * @property {String} oldPrivateID The previous private ID for the API connection.
+   * @property {String} newPrivateID The new private ID for the API connection.
+   */
+   /**
+   * The API connection has closed unexpectedly (the server terminated the connection
+   * wihout warning.)
+   *
+   * @event APIRouter#close
+   * @type {Event}
    */
 
    /**
@@ -73,10 +91,12 @@ class APIRouter extends EventDispatcher {
       this._connection.removeEventListener("message", this.onMessage);
       this._connection.removeEventListener("update", this.onUpdate);
       this._connection.removeEventListener("peerpid", this.onPeerPIDUpdate);
+      this._connection.removeEventListener("close", this.onConnectionClose);
       //add new listeners
       this._connection.addEventListener("message", this.onMessage, this);
       this._connection.addEventListener("update", this.onUpdate, this);
       this._connection.addEventListener("peerpid", this.onPeerPIDUpdate, this);
+      this._connection.addEventListener("close", this.onConnectionClose, this);
    }
 
    /**
@@ -151,26 +171,19 @@ class APIRouter extends EventDispatcher {
    }
 
    /**
-   * Sends an API request using the {@link connection}.
+   * Sends an API request using the [connection]{@link APIRouter#connection}.
    *
    * @param {Object} requestObj The JSON-RPC 2.0 request to send.
+   * @param {String|Number} [responseMsgID=null] The message ID if the response to
+   * match before the returned promise resolves. If null, the first returned
+   * response will resolve, even if it's not the expected response.
    *
-   * @return {Promise} An asynchronous promise that will resolve with the JSON-RPC 2.0
-   * API response.
+   * @return {Promise} An asynchronous promise that will resolve with a JSON-RPC 2.0
+   * response. if <code>responseMsgID</code> is specified, only the response with the
+   * matching JSON-RPC id property will cause the promise to resolve,
    */
-   request(requestObj) {
-      var promise = this.rawConnection.onEventPromise("message");
-      //send API request via WSS
-      if (this.connection.readyState != this.connection.OPEN) {
-        //socket not yet connected
-        this.rawConnection.onEventPromise("open").then((event) => {
-          this.rawConnection.send(JSON.stringify(requestObj));
-        });
-     } else {
-        //socket already open
-        this.rawConnection.send(JSON.stringify(requestObj));
-     }
-     return (promise);
+   request(requestObj, responseMsgID=null) {
+     return (this.connection.request(requestObj, responseMsgID));
    }
 
    /**
@@ -181,8 +194,8 @@ class APIRouter extends EventDispatcher {
    * property.
    * @param {String} connectInfo.transport Specifies the type of transport defined
    * by the <code>connectInfo</code> object. This parameter is case-sensitive.
-   * Valid types include "ws" or "wss" for WebSocket Sessions, and "webrtc" for
-   * WebRTC connections.
+   * Valid types include "ws" or "wss" for WebSocket Sessions, "wsst" for WebSocket Sessions
+   * tunnels, and "webrtc" for WebRTC connections.
    *
    * @throws {Error} Thrown when the specified server could not be
    * contacted or if there is a problem with the <code>connectioInfo</code>
@@ -208,7 +221,22 @@ class APIRouter extends EventDispatcher {
             }
             return (result);
             break;
+         case "wsst":
+            this.connection = new WSSTunnel(connectionInfo.url);
+            try {
+               var connectData = new Object();
+               connectData.options = P2PRouter.supportedTransports.options; //P2PRouter advertised as connection options
+               connectData.tunnelParams = JSON.parse(connectionInfo.parameters);
+               var result = await this.connection.connect(connectionInfo.url, false, connectData);
+            } catch (err) {
+               console.error(err);
+               this.connection.destroy();
+               this.connection = null;
+            }
+            return (result);
+            break;
          case "webrtc":
+            console.error("WebRTC API invocation not supported in current version.");
             break;
          default:
             throw (new Error("Unrecognized connection type \""+connectInfo.transport+"\""));
@@ -299,6 +327,21 @@ class APIRouter extends EventDispatcher {
    }
 
    /**
+   * Event listener invoked when the [connection]{@link APIRouter#connection}
+   * dispatches a "close" event.
+   *
+   * @param {Object} eventObj A "close" event.
+   *
+   * @fires APIRouter#close
+   * @async
+   */
+   async onConnectionClose(eventObj) {
+      this.destroy();
+      var newEvent = new Event("close");
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
    * Prepares the instance for destruction by closing any open transports,
    * removing references and event listeners, and otherwise cleaning up.
    *
@@ -307,6 +350,9 @@ class APIRouter extends EventDispatcher {
    async destroy() {
       if (this.connection != null) {
          this.connection.removeEventListener("message", this.onMessage);
+         this.connection.removeEventListener("update", this.onUpdate);
+         this.connection.removeEventListener("peerpid", this.onPeerPIDUpdate);
+         this.connection.disconnect();
          this._connection = null;
       }
    }

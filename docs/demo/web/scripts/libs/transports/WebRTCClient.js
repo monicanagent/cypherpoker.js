@@ -440,6 +440,21 @@ class WebRTCClient extends EventDispatcher {
       this.router.send(message, [this.peerPID]);
    }
 
+   /**
+   * Sends an API request using the [dataChannel]{@link WebRTCClient#dataChannel}.
+   * <b>NOT YET IMPLEMENTED</b>
+   *
+   * @param {Object} requestObj The JSON-RPC 2.0 request to send.
+   *
+   * @return {Promise} An asynchronous promise that will resolve with the JSON-RPC 2.0
+   * API response.
+   */
+   request(requestObj) {
+      var promise = new Promise((resolve, reject) => {
+         reject (new Error("Function not implemented yet."));
+      })
+      return (promise);
+   }
 
    /**
    * Builds a WebRTCClient signalling message.
@@ -699,6 +714,37 @@ class WebRTCClient extends EventDispatcher {
       } catch (err) {
          console.error(err);
       }
+   }
+
+   /**
+   * Disconnects the WebRTC client connection and removes any event listeners.
+   *
+   * @async
+   */
+   async disconnect() {
+      try {
+         this.router.removeEventListener("message", this.onSignalMessage);
+      } catch (err) {
+      }
+      try {
+         this.dataChannel.removeEventListener("open", this.onChannelOpen);
+         this.dataChannel.removeEventListener("close", this.onChannelClose);
+         this.dataChannel.removeEventListener("message", this.onChannelMessage);
+         delete this.dataChannel._client;
+      } catch (err) {
+      }
+      try {
+         this.peerConnection.removeEventListener("message", this.handleSocketMessage);
+         this.peerConnection.removeEventListener("close", this.handleSocketClose);
+         this.peerConnection.removeEventListener("negotiationneeded", this.onConnectionNegotiate);
+         this.peerConnection.removeEventListener("icecandidate", this.onICECandidate);
+         this.peerConnection.removeEventListener("iceconnectionstatechange", this.onIceConnectionStateChange);
+         this.peerConnection.close();
+         delete this.peerConnection._client;
+         this._peerConnection = null;
+      } catch (err) {
+      }
+      return (true);
    }
 
    toString() {

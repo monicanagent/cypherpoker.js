@@ -42,10 +42,7 @@
 * var cypherpoker = new CypherPoker(settingsObj);
 *
 * @extends EventDispatcher
-* @see {@link P2PRouter}
-* @see {@link APIRouter}
-* @see {@link WSSClient}
-* @see {@link WebRTCClient}
+* @see {@link ConnectivityManager}
 * @see {@link SRACrypto}
 */
 class CypherPoker extends EventDispatcher {
@@ -232,7 +229,7 @@ class CypherPoker extends EventDispatcher {
          try {
             if (options.urlParams != undefined) {
                try {
-                  this.processURLParams(options.urlParams);
+                  await this.processURLParams(options.urlParams);
                } catch (err) {
                   var errStr = String(err);
                   errStr = errStr.split("\n").join("<br/>");
@@ -249,6 +246,7 @@ class CypherPoker extends EventDispatcher {
       //start connections
       this._connectivityManager = new ConnectivityManager(this);
       this.connectivityManager.registerListener("message", "p2p", this.handleP2PMessage, this);
+      this.connectivityManager.registerListener("close", "api", this.onAPIDisconnect, this);
       var result = await this.connectivityManager.startConnections();
       var event = new Event("start");
       this.dispatchEvent(event);
@@ -513,6 +511,28 @@ class CypherPoker extends EventDispatcher {
          this._beaconInterval = 5000;
       }
       return (this._beaconInterval);
+   }
+
+   /**
+   * Invoked by the [ConnectivityManager.api]{@link ConnectivityManager#api} instance when
+   * it dispatches a [close]{@link APIRouter#event:close} event when the API connection
+   * closes unexpectedly (the server closes the connection).
+   *
+   * @param {Object} eventObj A "close" event object
+   *
+   */
+   async onAPIDisconnect(eventObj) {
+      ui.showDialog("The API server at "+this.settings.api.connectInfo.url+" disconnected unexpectedly.");
+      ui.hideDialog(5000);
+      this.clearAccounts();
+      if (ui.lobbyActive == true) {
+         //return to lobby interface
+         ui.onLobbyButtonClick("cancel_game", 'lobby');
+      } else {
+         //just stop any active game advertisements / join requests
+         ui.onLobbyButtonClick("cancel_game");
+      }
+
    }
 
    /**
