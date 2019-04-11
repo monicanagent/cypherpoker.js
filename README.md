@@ -1,10 +1,11 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/9059336/53623709-de91ae80-3bcb-11e9-88ec-e3395fd06152.png"></p>
 <p align="center"><a href="https://github.com/monicanagent/cypherpoker.js/commits/master"><img src="https://img.shields.io/github/last-commit/monicanagent/cypherpoker.js.svg"/></a> <a href="https://github.com/monicanagent/cypherpoker.js/releases"><img src="https://img.shields.io/github/release/monicanagent/cypherpoker.js.svg"/></a> <a href="https://github.com/monicanagent/cypherpoker.js/issues"><img src="https://img.shields.io/github/issues/monicanagent/cypherpoker.js.svg?style=flat-square"/></a></p>
-CypherPoker.JS is an open source implementation of peer to peer cryptographic poker, or Mental Poker, written in JavaScript.
+<p>CypherPoker.JS is a complete, white label, peer-to-peer poker platform that incorporates a flexible and highly customizable web / desktop game client, powerful P2P communication capabilities, account management system with database integration and extensible API services, automated cryptocurrency and wallet functionality, and much more.</p>
 
-It makes extensive use of cutting-edge [browser technologies](https://www.ecma-international.org/ecma-262/8.0/) and desktop ([Node.js](https://nodejs.org/en/) / [Electron](https://electronjs.org/)) runtime environments.
 
-CypherPoker.JS is written by [the same author](https://github.com/monicanagent/) as the [original ActionScript CypherPoker project](https://github.com/monicanagent/cypherpoker) and employs many of the same features including the SRA cryptosystem and game / peer protocols as [described in the original wiki](https://github.com/monicanagent/cypherpoker/wiki).
+<p>The open-source software stack makes extensive use of cutting-edge <a href="https://www.ecma-international.org/ecma-262/8.0/">browser technologies</a> and desktop (<a href="https://nodejs.org/en/">Node.js</a> / <a href="https://electronjs.org/">Electron</a>) runtime environments.</p>
+
+<p>CypherPoker.JS is written by <a href=https://github.com/monicanagent/">the same author</a> as the <a href="https://github.com/monicanagent/cypherpoker">original ActionScript CypherPoker project</a> and employs many of the same features including the SRA cryptosystem and game / peer protocols as <a href="https://github.com/monicanagent/cypherpoker/wiki">described in the original wiki</a>.</p>
 ***
 <p align="center"><img src="https://user-images.githubusercontent.com/9059336/53627116-94152f80-3bd5-11e9-8639-02819305018d.png"/></p>
 
