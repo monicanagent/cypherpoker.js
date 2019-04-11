@@ -7,6 +7,8 @@
 /**
 * @class Manages network connectivity for CypherPoker.JS.
 * @extends EventDispatcher
+* @see {@link APIRouter}
+* @see {@link P2PRouter}
 */
 class ConnectivityManager extends EventDispatcher {
 
@@ -33,10 +35,10 @@ class ConnectivityManager extends EventDispatcher {
    * @property {String} selectors.connectSDB="#connectSDB" Textarea containing SDB to use for establishing connection(s).
    * @property {String} selectors.apiConnectionList="#apiConnectionList" Pulldown selection list of saved API connections.
    * @property {String} selectors.apiConnectionURL="#apiConnectionURL" The URL input field for the API connection.
-   * @property {String} selectors.apiConnectionCreate="#apiConnectionCreate" The API creation JavaScript snippet
+   * @property {String} selectors.apiConnectionCreate="#apiConnectionCreate" The API creation JavaScript snippet input field.
    * @property {String} selectors.p2pConnectionList="#p2pConnectionList" Pulldown selection list of saved P2P connections.
    * @property {String} selectors.p2pConnectionURL="#p2pConnectionURL" The URL input field for the P2P connection.
-   * @property {String} selectors.p2pConnectionCreate="#p2pConnectionCreate" The P2P creation JavaScript snippet
+   * @property {String} selectors.p2pConnectionCreate="#p2pConnectionCreate" The P2P creation JavaScript snippet input field.
    * @property {String} selectors.manualConnectionData="#manualConnectionData" A TextArea input for establishing manual
    * peer to peer connections input field.
    */
@@ -84,7 +86,7 @@ class ConnectivityManager extends EventDispatcher {
 
    /**
    * @property {Object} api=null Reference to a multi-network routing interface over which RPC API functions
-   * are invoked For example, {@link APIRouter}.
+   * are invoked. For example, {@link APIRouter}.
    */
    get api() {
       if (this._api == undefined) {
@@ -346,7 +348,9 @@ class ConnectivityManager extends EventDispatcher {
          var sdbEntity = sdbArr[count];
          switch (sdbEntity.entity) {
             case "api":
-               result = await this.api.destroy();
+               if (this.api != null) {
+                  result = await this.api.destroy();
+               }
                this._api = null;
                this._apiConnected = false;
                sdbEntity.create = cypherpoker.settings.api.connectInfo.create; //copy create property
@@ -354,7 +358,9 @@ class ConnectivityManager extends EventDispatcher {
                connectArr.unshift (sdbEntity); //ensure this is first
                break;
             case "p2p":
-               result = await this.p2p.destroy();
+               if (this.p2p != null) {
+                  result = await this.p2p.destroy();
+               }
                this._p2p = null;
                this._p2pConnected = false;
                sdbEntity.create = cypherpoker.settings.p2p.connectInfo.create; //copy create property
@@ -816,8 +822,8 @@ class ConnectivityManager extends EventDispatcher {
    * is returned if the transport type can't be determined.
    */
    getTransportType(connectionURL) {
-      var urlObj = new URL(connectionURL);
-      var protocol = urlObj.protocol.split(":")[0];
+      var protocol = connectionURL.split(":")[0];
+      protocol = protocol.toLowerCase().trim();
       switch (protocol) {
          case "ws":
             return ("wss");
@@ -825,10 +831,49 @@ class ConnectivityManager extends EventDispatcher {
          case "wss":
             return ("wss");
             break;
+         case "tunnel@ws":
+            return ("wsst");
+            break;
+         case "tunnel@wss":
+            return ("wsst");
+            break;
          default:
             return (null);
             break;
       }
+   }
+
+   /**
+   * Adjusts a URL that contains additional information that would be considered invalid
+   * (such as a "tunnel@" protocol prefix, for example).
+   *
+   * @param {String} connectionURL The URL to adjust.
+   *
+   * @return {String} The adjusted URL.
+   */
+   adjustURL(connectionURL) {
+      var urlSplit = connectionURL.split(":");
+      var protocol = urlSplit[0];
+      var protocolSplit = protocol.split("@");
+      if (protocolSplit.length > 1) {
+         urlSplit.splice(0, 1);
+         var urlRemainder = urlSplit.join(":");
+         connectionURL = protocolSplit[1] + ":" + urlRemainder;
+      }
+      return (connectionURL);
+   }
+
+   /**
+   * Returns the parameters included with a supplied URL.
+   *
+   * @param {String} connectionURL The URL from which to determine the parameters.
+   *
+   * @return {URLSearchParams} The parameters included with the URL
+   */
+   getConnectionParameters(connectionURL) {
+      var decodedURL = decodeURI(connectionURL);
+      var urlObj = new URL(decodedURL);
+      return (urlObj.searchParams);
    }
 
    /**
@@ -1007,8 +1052,9 @@ class ConnectivityManager extends EventDispatcher {
       var url = urlInputElement.value;
       var create = connectionCreateElement.value;
       var connectInfo = new Object();
-      connectInfo.url = url;
+      connectInfo.url = this.adjustURL(url);
       connectInfo.transport = this.getTransportType(url);
+      connectInfo.parameters = this.getConnectionParameters(this.adjustURL(url));
       connectInfo.create = create;
       this.cypherpoker.settings.api.connectInfo = connectInfo;
       this._apiConnected = false; //this must be set after account list is emptied
@@ -1048,8 +1094,9 @@ class ConnectivityManager extends EventDispatcher {
       var url = urlInputElement.value;
       var create = connectionCreateElement.value;
       var connectInfo = new Object();
-      connectInfo.url = url;
+      connectInfo.url = this.adjustURL(url);
       connectInfo.transport = this.getTransportType(url);
+      connectInfo.parameters = this.getConnectionParameters(this.adjustURL(url));
       connectInfo.create = create;
       this.saveConnection(connectInfo, "api");
       this.populateConnectionsList("api", url);
@@ -1134,8 +1181,9 @@ class ConnectivityManager extends EventDispatcher {
       var url = urlInputElement.value;
       var create = connectionCreateElement.value;
       var connectInfo = new Object();
-      connectInfo.url = url;
+      connectInfo.url = this.adjustURL(url);
       connectInfo.transport = this.getTransportType(url);
+      connectInfo.parameters = this.getConnectionParameters(this.adjustURL(url));
       connectInfo.create = create;
       this.cypherpoker.settings.p2p.connectInfo = connectInfo;
       this._p2pConnected = false;
@@ -1175,8 +1223,9 @@ class ConnectivityManager extends EventDispatcher {
       var url = urlInputElement.value;
       var create = connectionCreateElement.value;
       var connectInfo = new Object();
-      connectInfo.url = url;
+      connectInfo.url = this.adjustURL(url);
       connectInfo.transport = this.getTransportType(url);
+      connectInfo.parameters = this.getConnectionParameters(this.adjustURL(url));
       connectInfo.create = create;
       this.saveConnection(connectInfo, "p2p");
       this.populateConnectionsList("p2p", url);

@@ -78,6 +78,7 @@ const _require = [
    {"url":"./scripts/libs/SDB.js"},
    {"url":"./scripts/libs/RPC.js"},
    {"url":"./scripts/libs/transports/WSSClient.js"},
+   {"url":"./scripts/libs/transports/WSSTunnel.js"},
    {"url":"./scripts/libs/transports/WebRTCClient.js"},
    {"url":"./scripts/libs/APIRouter.js"},
    {"url":"./scripts/libs/P2PRouter.js"},

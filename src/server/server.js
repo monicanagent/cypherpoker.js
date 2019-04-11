@@ -172,7 +172,7 @@ const JSONRPC_ERRORS = {
 * @property {Number} api_timelimit=3000 The time limit, in milliseconds, to allow external API functions to execute.
 * @property {Boolean} http_only_handshake=false Defines whether session handshakes are done only through HTTP/HTTPS (true),
 * or if they can be done through the WebSocket server (false).
-* @property {Number} max_ws_per_ip=5 The maximum number of concurrent WebSocket connections to allow from a single IP.
+* @property {Number} max_ws_per_ip=10 The maximum number of concurrent WebSocket connections to allow from a single IP.
 * @property {Exposed_Gateway_Objects} exposed_gateway_objects Internal server references to expose to communication gateways functions. Note that each internal
 * reference may be assigned an alias instead of its actual name.
 */
@@ -210,7 +210,7 @@ var rpc_options = {
   },
   api_timelimit: 3000,
   http_only_handshake: false,
-  max_ws_per_ip:5,
+  max_ws_per_ip:10,
   exposed_gateway_objects: {
      hostEnv:hostEnv,
      config:config,
@@ -475,13 +475,16 @@ function validateJSONRPC (dataObj) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:<br/>
 * "ws" - WebSocket<br/>
 * "wss" - secure WebSocket<br/>
+* "wstunnel" - WebSocket tunnel<br/>
 * "http" - HTTP<br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}
 */
 function processRPCRequest(requestData, sessionObj) {
    var parsed = false;
@@ -537,13 +540,16 @@ function processRPCRequest(requestData, sessionObj) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:<br/>
 * "ws" - WebSocket<br/>
 * "wss" - secure WebSocket<br/>
+* "wstunnel" - WebSocket tunnel<br/>
 * "http" - HTTP<br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {Number} [requestNum=null] The index of the batched request within sessionObj.requestObj to process if the request is a batched request. If null or omitted then the requests is processed as
 * a single request.
 */
@@ -587,13 +593,16 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:<br/>
 * "ws" - WebSocket<br/>
 * "wss" - secure WebSocket<br/>
+* "wstunnel" - WebSocket tunnel<br/>
 * "http" - HTTP<br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {Object} sessionObj.batchResponses An object containing batched responses if the original request was a batched request.
 * @param {*} [data] Any additional relevant data to include in the response.
 */
@@ -628,6 +637,9 @@ function sendError(code, message, sessionObj, data) {
                 break;
               case "wss":
                 break;
+             case "wstunnel":
+               sessionObj.serverResponse.send(JSON.stringify(sessionObj.batchResponses.responses));
+               break;
               default:
                 throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
                 break;
@@ -649,6 +661,9 @@ function sendError(code, message, sessionObj, data) {
            break;
          case "wss":
            break;
+        case "wstunnel":
+          sessionObj.serverResponse.send(JSON.stringify(responseData));
+          break;
          default:
            throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
            break;
@@ -668,13 +683,16 @@ function sendError(code, message, sessionObj, data) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:<br/>
 * "ws" - WebSocket<br/>
 * "wss" - secure WebSocket<br/>
+* "wstunnel" - WebSocket tunnel<br/>
 * "http" - HTTP<br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {Object} sessionObj.batchResponses An object containing batched responses if the original request was a batched request.
 */
 function sendResult(result, sessionObj) {;
@@ -704,6 +722,9 @@ function sendResult(result, sessionObj) {;
                 break;
               case "wss":
                 break;
+             case "wstunnel":
+               sessionObj.serverResponse.send(sessionObj.batchResponses.responses);
+               break;
               default:
                 throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
                 break;
@@ -725,6 +746,9 @@ function sendResult(result, sessionObj) {;
               break;
             case "wss":
               break;
+           case "wstunnel":
+             sessionObj.serverResponse.send(JSON.stringify(responseData));
+             break;
             default:
               throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
               break;

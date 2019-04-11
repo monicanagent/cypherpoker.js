@@ -6,6 +6,9 @@
 /**
 * @class Transparently routes messages to/from available peer-to-peer interfaces.
 * @extends EventDispatcher
+* @see {@link WSSClient}
+* @see {@link WSSTunnel}
+* @see {@link WebRTCClient}
 */
 class P2PRouter extends EventDispatcher {
 
@@ -87,7 +90,7 @@ class P2PRouter extends EventDispatcher {
    * communication, or a connection attempt may have <code>"failed"</code>.
    * @property {Object} transport Contains references to any transports defined in
    * the conectivity <code>options</code>.
-   * @property {Object} transport.wss=null A reference to the WebSocket Sessions transport
+   * @property {Object} transport.wss=null A reference to the WebSocket Sessions / Tunnel transport
    * with which to communicate with the peer.
    * @property {Object} transport.webrtc=null] A reference to the WebRTC transport
    * with which to communicate with the peer.
@@ -105,7 +108,7 @@ class P2PRouter extends EventDispatcher {
    * references that are resolved or rejected when the associated transport is attempting
    * a connection.
    * @property {Object} connectPromise.wss The <code>Promise</code> functions that resolve
-   * or reject when the WebSocket Sessions transport connects or fails to connect.
+   * or reject when the WebSocket Sessions / Tunnel transport connects or fails to connect.
    * @property {Function} connectPromise.wss.resolve=null The <code>Promise.resolve</code>
    * function invoked on a successfull WebSocket Sessions connection.
    * @property {Function} connectPromise.wss.reject=null The <code>Promise.reject</code>
@@ -314,6 +317,9 @@ class P2PRouter extends EventDispatcher {
          case "WSSClient":
             this.updatePeerConnections(["wss"],[this._rendezvous]);
             break;
+         case "WSSTunnel":
+            this.updatePeerConnections(["wss"],[this._rendezvous]);
+            break;
          default:
             break;
       }
@@ -393,7 +399,11 @@ class P2PRouter extends EventDispatcher {
    * Valid types include:<br/>
    * <ul>
    * <li><code>wss</code>: WebSocket Sessions</li>
+   * <li><code>wsst</code>: WebSocket Sessions Tunnel</li>
    * </ul>
+   * @param {Object} [connectInfo.tunnelParams] Tunneling parameters such as a list of
+   * possible endpoints for use with the tunneling connection (if <code>connectInfo.transport="wsst"</code>,
+   * for example).
    * @throws {Error} Thrown when the specified server could not be contacted or
    * if there is a problem with the <code>connectioInfo</code> parameter.
    */
@@ -405,16 +415,29 @@ class P2PRouter extends EventDispatcher {
          throw (new Error("The connection info \"transport\" property must be a string."));
       }
       var connectData = new Object();
+      connectData.options = P2PRouter.supportedTransports.options;
       switch (connectionInfo.transport) {
          case "wss":
             try {
-               connectData.options = P2PRouter.supportedTransports.options;
                this.rendezvous = new WSSClient(connectionInfo.url);
                var result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
                this.updatePeerConnections(["wss"],[this.rendezvous]);
             } catch (err) {
+               this._rendezvous.destroy();
                this._rendezvous = null;
                throw(err);
+            }
+            return (result);
+            break;
+         case "wsst":
+            try {
+               this.rendezvous = new WSSTunnel(connectionInfo.url);
+               connectData.tunnelParams = JSON.parse(connectionInfo.parameters);
+               result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
+               this.updatePeerConnections(["wss"],[this.rendezvous]);
+            } catch (err) {
+               this._rendezvous.destroy();
+               this._rendezvous = null;
             }
             return (result);
             break;
@@ -865,7 +888,7 @@ class P2PRouter extends EventDispatcher {
    *
    * @param {Array} recipients Indexed array of recipient private IDs to group
    * by preferred / available transport.
-   * @param {Array} [preferred=P2PRouter.supportedTransports.preferred}] Indexed array
+   * @param {Array} [preferred=P2PRouter.supportedTransports.preferred] Indexed array
    * of preferred transport ordering to use for creating groups.
    * @param {Boolean} [onlyAvail=true] If true, only private IDs with available
    * transports are returned. If false, a special <code>none</code> transport type
@@ -1115,7 +1138,7 @@ class P2PRouter extends EventDispatcher {
       } else {
          var source = event.target.toString();
          var newEvent = new Event("message");
-         if (source == "WSSClient") {
+         if ((source == "WSSClient") || (source == "WSSTunnel")) {
             newEvent.data = event.data;
             newEvent.data.result.transport = "wss";
             newEvent.transport = event.target;
@@ -1154,7 +1177,7 @@ class P2PRouter extends EventDispatcher {
          var newEvent = new Event("update");
          newEvent.data = event.data;
          newEvent.transport = event.target;
-         if (source == "WSSClient") {
+         if ((source == "WSSClient") || (source == "WSSTunnel")) {
             newEvent.transportType = "wss";
          } else if (source == "WebRTCClient") {
             newEvent.transportType = "webrtc";
@@ -1252,9 +1275,10 @@ class P2PRouter extends EventDispatcher {
       var source = event.target.toString();
       var newEvent = new Event("peerconnect");
       newEvent.transport = event.target;
-      if (source == "WSSClient") {
+      if ((source == "WSSClient") || (source == "WSSTunnel")) {
          console.dir (event.data);
          var privateID = event.data.result.connect;
+         console.log ("A new peer has connected on ("+source+"): "+privateID);
          if ((event.data.result.options == undefined) || (event.data.result.options == null)) {
             //added for pre-v0.4.1 compatibility
             event.data.result.options = {"wss":true,"webrtc":false,"ortc":false};
@@ -1288,7 +1312,7 @@ class P2PRouter extends EventDispatcher {
       var source = event.target.toString();
       var newEvent = new Event("peerdisconnect");
       newEvent.transport = event.target;
-      if (source == "WSSClient") {
+      if ((source == "WSSClient") || (source == "WSSTunnel")) {
          var privateID = event.data.result.disconnect;
          this.setConnectionStatus(privateID, "closed", "wss");
          newEvent.data = event.data;
@@ -1331,6 +1355,7 @@ class P2PRouter extends EventDispatcher {
    * @async
    */
    async destroy() {
+         console.log ("P2PRouter.destroy()");
       if (this.rendezvous != null) {
          this.rendezvous.removeEventListener("message", this.onMessage);
          this.rendezvous.removeEventListener("update", this.onUpdate);

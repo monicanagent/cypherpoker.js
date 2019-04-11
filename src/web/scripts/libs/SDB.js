@@ -2007,7 +2007,7 @@ module.exports = Array.isArray || function (arr) {
 /**
 * @file Services Descriptor Bundle encoding and decoding library.
 *
-* @version 0.2.0
+* @version 0.2.1
 * @author Patrick Bay (Monican Agent)
 * @copyright MIT License
 */
@@ -2726,8 +2726,8 @@ class SDB {
                   break;
                case 2:
                   //named
-                  dataLength = entityBuffer.readUInt8(offset + 1) << 8;
-                  dataLength = dataLength | entityBuffer.readUInt8(offset + 2);
+                  dataLength = entityBuffer.readUInt8(offset + 2) << 8;
+                  dataLength = dataLength | entityBuffer.readUInt8(offset + 3);
                   typeHeaderSize += 2; //2 bytes for dataLength
                   sliceStart = typeHeaderSize + offset;
                   sliceEnd = dataLength + typeHeaderSize + offset;

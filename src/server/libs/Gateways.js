@@ -155,13 +155,13 @@ module.exports = class Gateways {
             gatewayInstObj.config = gatewayConfig;
             gatewayInstObj.configName = configName;
             this.gateways.push(gatewayInstObj);
-            console.log ("\""+gatewayClassObj.gateway.name+"\" gateway enabled.");
+            console.log (gatewayClassObj.gateway.name+" gateway enabled.");
          }
          if ((gatewayConfig.start == true) && (gatewayConfig.enable == true)) {
             //start the instance
             var result =await  gatewayInstObj.gateway.start();
             if (gatewayInstObj.gateway.started == true) {
-               console.log ("\""+gatewayInstObj.gateway.name+"\" gateway started.");
+               console.log (gatewayInstObj.gateway.name+" gateway started.");
             }
          }
       }

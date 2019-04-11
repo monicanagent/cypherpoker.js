@@ -224,6 +224,8 @@ class WSSClient extends EventDispatcher {
    * (<code>false</code>) <a href="https://webrtc.org/">WebRTC</a> is supported by the client.
    * @param {Boolean} [connectData.options.ortc=false] Denotes whether (<code>true</code>) or not
    * (<code>false</code>) <a href="https://ortc.org/">ORTC</a> is support by the client.
+   * @param {Boolean} [connectData.listeners=true] If false, socket listeners will not be added
+   * by this instance (for example, if this class has been extended).
    *
    * @throws {Error} Thrown when a valid handshake / socket server address was
    * not supplied, or the connection could not be established.
@@ -238,6 +240,9 @@ class WSSClient extends EventDispatcher {
       }
       if ((this._hsa == null) || (this._hsa == undefined) || (this._hsa.trim() == "")) {
          throw (new Error("No handshake or socket server address provided."));
+      }
+      if ((connectData.listeners == undefined) || (connectData.listeners == null)) {
+         connectData.listeners = true;
       }
       //the user token can be almost any string; maybe we can improve on this...
       this._userToken = String(Math.random()).split("0.").join("");
@@ -269,18 +274,23 @@ class WSSClient extends EventDispatcher {
             this._serverToken = resultData.result.server_token;
          }
       }
+      var connectObj = new Object();
       if (connectData == null) {
          connectData = new Object();
       }
+      connectObj.options = new Object();
       if ((connectData["options"] == undefined) || (connectData["options"] == null)) {
          //default connection options (as of v0.4.1)
-         connectData.options = new Object();
-         connectData.options.wss = true;
-         connectData.options.webrtc = false;
-         connectData.options.ortc = false;
+         connectObj.options.wss = true;
+         connectObj.options.webrtc = false;
+         connectObj.options.ortc = false;
+      } else {
+         connectObj.options.wss = connectData.options.wss;
+         connectObj.options.webrtc = connectData.options.webrtc;
+         connectObj.options.ortc = connectData.options.ortc;
       }
-      connectData.user_token = this.userToken;
-      connectData.server_token = this.serverToken;
+      connectObj.user_token = this.userToken;
+      connectObj.server_token = this.serverToken;
       if (this.webSocket == null) {
          this._websocket = new WebSocket(this.socketServerAddr);
          this.webSocket.addEventListener("error", event => {
@@ -293,7 +303,7 @@ class WSSClient extends EventDispatcher {
          }
          this.webSocket.session = this;
       }
-      var message_event = await RPC("WSS_Connect", connectData, this.webSocket); //connect the WebSocket
+      var message_event = await RPC("WSS_Connect", connectObj, this.webSocket); //connect the WebSocket
       var rpc_result_obj = JSON.parse(message_event.data);
       if (rpc_result_obj.error != undefined) {
          throw (new Error("Couldn't establish WebSocket Session: ("+rpc_result_obj.error.code+") "+rpc_result_obj.error.message));
@@ -318,8 +328,10 @@ class WSSClient extends EventDispatcher {
             }, this);
          }
       }
-      this.webSocket.addEventListener("message", this.handleSocketMessage);
-      this.webSocket.addEventListener("close", this.handleSocketClose);
+      if (connectData.listeners == true) {
+         this.webSocket.addEventListener("message", this.handleSocketMessage);
+         this.webSocket.addEventListener("close", this.handleSocketClose);
+      }
       return (message_event);
    }
 
@@ -427,6 +439,64 @@ class WSSClient extends EventDispatcher {
    }
 
    /**
+   * Sends a routed JSON-RPC 2.0 request using the [webSocket]{@link WSSClient#webSocket}.
+   *
+   * @param {Object} requestObj The JSON-RPC 2.0 request to send.
+   * @param {String|Number} [responseMsgID=null] The message ID if the response to
+   * match before the returned promise resolves. If null, the first returned
+   * response will resolve, even if it's not the expected response.
+   *
+   * @return {Promise} An asynchronous promise that will resolve with a JSON-RPC 2.0
+   * response. if <code>responseMsgID</code> is specified, only the response with the
+   * matching JSON-RPC id property will cause the promise to resolve,
+   *
+   * @async
+   */
+   async request(requestObj, responseMsgID=null) {
+      if (responseMsgID != null) {
+         var promise = new Promise((resolve, reject) => {
+            this.handleRequestResponse(responseMsgID, resolve, reject);
+         })
+      } else {
+         promise = await this.webSocket.onEventPromise("message");
+      }
+      //send API request via WSS
+      if (this.webSocket.readyState != this.webSocket.OPEN) {
+        //socket not yet connected
+        this.webSocket.onEventPromise("open").then((event) => {
+          this.webSocket.send(JSON.stringify(requestObj));
+        });
+     } else {
+        //socket already open
+        this.webSocket.send(JSON.stringify(requestObj));
+     }
+     return (promise);
+   }
+
+   /**
+   * Handles asynchronous JSON-RPC 2.0 responses made using [request]{@lilnk WSSClient#request}
+   * when a <code>responseMsgID</code> is specified,
+   *
+   * @param {String|Number} expectedResponseID The expected response ID to match from messages
+   * received by the WebSocket.
+   * @param {Function} resolve A promise resolve function to invoke with the response data when
+   * the response ID matches <code>expectedResponseID</code>.
+   * @param {Function} resolve A promise reject function, Not currently used but may in future
+   * be used for timeouts.
+   *
+   * @async
+   */
+   async handleRequestResponse(expectedResponseID, resolve, reject) {
+      var responseID = null;
+      while (responseID != expectedResponseID) {
+         var response = await this.webSocket.onEventPromise("message");
+         var responseObj = JSON.parse(response.data);
+         responseID = responseObj.id;
+      }
+      resolve(response);
+   }
+
+   /**
    * Handles WebSocket message events for the WSS instance. Most events are
    * simply re-broadcast but some such as <code>session</code> messages are
    * handled internally. Listen to "message" events on the WSS's
@@ -510,6 +580,36 @@ class WSSClient extends EventDispatcher {
       var event = new Event("close");
       event._event = event;
       this.session.dispatchEvent(event);
+   }
+
+   /**
+   * Disconnects the client WebSocket and removes any event listeners.
+   *
+   * @param {Number} [code=1000] The disconnection code to close the socket with. Valid
+   * status codesmay be found at {@link https://devdocs.io/dom/closeevent#Status_codes}
+   * @param {String} [reason] The brief, human-readable reason why the socket
+   * is being disconnected.
+   *
+    * @see https://devdocs.io/dom/closeevent#Status_codes
+   * @async
+   */
+   async disconnect(code=1000, reason="Session terminated by client") {
+      try {
+         this.webSocket.removeEventListener("message", this.handleSocketMessage);
+         this.webSocket.removeEventListener("close", this.handleSocketClose);
+         //These listeners should also be removed, but how?
+         /*
+         var errorListeners = this.webSocket.getListeners("error");
+         for (var count = 0; count < errorListeners.length; count++) {
+            this.webSocket.removeEventListener("error", errorListeners[count].listener);
+         }
+         */
+         this.webSocket.close(code, reason);
+         this._webSocket = null;
+      } catch (err) {
+         console.error(err);
+      }
+      return (true);
    }
 
    toString() {

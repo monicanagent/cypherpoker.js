@@ -34,14 +34,14 @@ async function WSS_Handshake (sessionObj) {
          }
       }
    }
-   var server_token = namespace.wss.makeConnectionToken();
+   var server_token = await namespace.wss.makeConnectionToken();
    if ((namespace.wss.connections[connectionID] == undefined) || (namespace.wss.connections[connectionID] == null)) {
       var connectionObj = new Object();
       connectionObj.user_token = requestParams.user_token;
       connectionObj.socket = null; //not yet connected
       connectionObj.last_update = new Date();
       connectionObj.server_token = server_token;
-      connectionObj.clear_token = null;
+      connectionObj.tunnels = new Array();
       namespace.wss.connections[connectionID] = new Array();
       namespace.wss.connections[connectionID].push(connectionObj);
       num_activeconnections++; //new connection just added
@@ -65,7 +65,7 @@ async function WSS_Handshake (sessionObj) {
          connectionObj.socket = null; //not yet connected
          connectionObj.last_update = Date.now();
          connectionObj.server_token = server_token;
-         connectionObj.clear_token = null;
+         connectionObj.tunnels = new Array();
          namespace.wss.connections[connectionID].push(connectionObj);
          responseObj.message = "accept";
          num_activeconnections++; //new connection just added
@@ -77,6 +77,95 @@ async function WSS_Handshake (sessionObj) {
       }
    }
    return (true);
+}
+
+/**
+* Returns a connection object from <code>namespace.wss.connections</code>
+* based on a connection ID.
+*
+* @param {String} connectionID The connection ID for which to retrieve the
+* connection object.
+* @param {String} userToken The user-generated token stored with the specific
+* connection object.
+* @param {String} serverToken The server-generated token stored with the specific
+* connection object.
+*
+* @return {Object} The connection object matching all parameters, or <code>null</code>
+* if no such connection exists. In the unlikely event that more than one matchibng
+* connection object exists, only the first one is returned.
+*/
+function getConnectionByCID(connectionID, userToken, serverToken) {
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
+      return (null);
+   }
+   if ((namespace.wss.connections[connectionID] == undefined) || (namespace.wss.connections[connectionID] == null)) {
+      retrun (null);
+   }
+   var connectionsArr = namespace.wss.connections[connectionID];
+   for (var count=0; count < connectionsArr.length; count++) {
+      var connectionObj = connectionsArr[count];
+      if ((connectionObj.user_token == userToken) && (connectionObj.server_token == serverToken)) {
+         return (connectionObj);
+      }
+   }
+   return (null);
+}
+
+/**
+* Returns a connection object from <code>namespace.wss.connections</code>
+* based on a private ID.
+*
+* @param {String} privateID The private ID for which to retrieve the
+* connection object.
+*
+* @return {Object} The connection object matching the private ID or <code>null</code>
+* if no such connection exists. In the unlikely event that more than one matchibng
+* connection object exists, only the first one is returned.
+*/
+function getConnectionByPID(privateID) {
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
+      return (null);
+   }
+   for (var connectionID in namespace.wss.connections) {
+      var connectionsArr = namespace.wss.connections[connectionID];
+      for (var count=0; count < connectionsArr.length; count++) {
+         var connectionObj = connectionsArr[count];
+         if (connectionObj.private_id == privateID) {
+            return (connectionObj);
+         }
+      }
+   }
+   return (null);
+}
+
+/**
+* Returns a connection object from <code>namespace.wss.connections</code>
+* based on a <code>socket</code> instance.
+*
+* @param {Object} socket The socket reference to find within the <code>namespace.wss.connections</code>
+* object.
+*
+* @return {Object} The connection object matching the socket reference or <code>null</code>
+* if no such connection exists. In the unlikely event that more than one matchibng
+* connection object exists, only the first one is returned.
+*/
+function getConnectionBySocket(socket) {
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
+      return (null);
+   }
+   for (var connectionID in namespace.wss.connections) {
+      var connectionsArr = namespace.wss.connections[connectionID];
+      for (var count=0; count < connectionsArr.length; count++) {
+         var connectionObj = connectionsArr[count];
+         if (connectionObj.socket == socket) {
+            return (connectionObj);
+         }
+      }
+   }
+   return (null);
 }
 
 /**
@@ -109,10 +198,8 @@ function makeConnectionID (sessionObj) {
 * <code>user_token</code> properties (this should be done prior to invoking this function).
 *
 * @return {String} The SHA256 hash of the server token concatenated with a semi-colon
-* and the user token: <code>SHA256(server_token + ":" + user_token)</code>, or just
-* the <code>clear_token</code> if a valid one is found (this can be set via
-* {@link WSS_Update}). <code>null</code> is returned if either of the
-* input parameters is invalid.
+* and the user token: <code>SHA256(server_token + ":" + user_token)</code>. <code>null</code>
+* is returned if either of the input parameters is invalid.
 */
 function makePrivateID (sessionObj) {
    try {
@@ -192,11 +279,17 @@ function getPrivateID(sessionObj) {
 *
 * @return {String} A randomly generated server connection token.
 *
-* @todo Update to use more secure random source(s).
 */
 function makeConnectionToken() {
-   var token = String(Math.random()).split("0.").join("");
-   return (token);
+   var promise = new Promise((resolve, reject) => {
+      crypto.randomBytes(32, (err, buf) => {
+         if (err) {
+            reject (err);
+         }
+         resolve (buf.toString("hex"));
+      });
+   })
+   return (promise);
 }
 
 /**
@@ -271,6 +364,9 @@ if (namespace.wss == undefined) {
 }
 
 namespace.wss.makeConnectionID = makeConnectionID;
+namespace.wss.getConnectionByCID = getConnectionByCID;
+namespace.wss.getConnectionByPID = getConnectionByPID;
+namespace.wss.getConnectionBySocket = getConnectionBySocket;
 namespace.wss.getPrivateID = getPrivateID;
 namespace.wss.makePrivateID = makePrivateID;
 namespace.wss.makeConnectionToken = makeConnectionToken;

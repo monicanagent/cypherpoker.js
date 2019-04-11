@@ -1,6 +1,6 @@
 /**
-* @file Handles asynchronous JSON-RPC 2.0 requests to either a HTTP / HTTPS or
-* WebSocket / Secure WebSocket endpoint. Requires <code>EventPromise</code>
+* @file Handles asynchronous JSON-RPC 2.0 requests to a HTTP / HTTPS,
+* WebSocket / Secure WebSocket, or routed endpoint. Requires {@link EventPromise}
 * to exist in the current execution context.
 *
 * @version 0.4.1
@@ -14,12 +14,11 @@
 var __rpc_request_id = 0;
 
 /**
-* Invokes a RPC request through either a HTTP or WebSocket (or their secure
-* counterparts).
+* Invokes a RPC (API) request through a HTTP, WebSocket, or routed interface.
 *
 * @param {String} method The remote procedure/method/function to invoke.
 * @param {Object} param The parameters to include with the remote method.
-* @param {XMLHttpRequest|WebSocket} transport The transport object to use for
+* @param {XMLHttpRequest|WebSocket|router} transport The transport object to use for
 * for the request. The request is handled automatically based on this object
 * type.
 * @param {Boolean} [generateOnly=false] Flag denoting whether the
@@ -28,12 +27,16 @@ var __rpc_request_id = 0;
 * @param {String|Number} [msgID=null] ID to include with the request.
 * In order to differentiate requests/responses, this value should always
 * be unique. If not provided, an internal integer value is used instead.
+* @param {Boolean} [resolveOnID=true] If true, the returned promise resolves
+* <i>only</i> when a response is received matching the message ID of the request,
+* otherwise the first server response or notification resolves the returned promise.
 *
 * @return {Promise|Object} An asynchorous Promise or JSON-RPC 2.0 object if
 * (generateOnly=true).<br/><br/>
 *
-* The returned Promise will include the RPC result event as the resolution or
-* a rejection if the request could not be processed. Note that the result data
+* The returned Promise will resolve with either the immediate response (if <code>resolveOnID=false</code>)
+* or when the mathing response ID matches the request ID (if <code>resolveOnID=true</code>).
+* It will reject if the request could not be processed. Note that the result data
 * for WebSocket objects is returned as the <i>data</i> property, a string, of
 * the result while for XHR objects the result is the <i>target.response</i>
 * property which is a native (parsed) object.<br/><br/>
@@ -82,13 +85,14 @@ var __rpc_request_id = 0;
 * //promise!
 * let JSONRequest = RPC("Hello", {}, null, true);
 */
-function RPC(method, params, transport, generateOnly=false, msgID=null) {
+function RPC(method, params, transport, generateOnly=false, msgID=null, resolveOnID=true) {
    if ((transport == null) || (transport == undefined)) {
       var transportType = "generate";
   } else {
      if ((transport["response"] != null) && (transport["response"] != undefined)) {
        transportType = "http";
     } else if (transport.toString() == "APIRouter") {
+        //non-API messaging is usually handled by the transport directly
         transportType = "router";
      } else {
        transportType = "websocket";
@@ -101,16 +105,27 @@ function RPC(method, params, transport, generateOnly=false, msgID=null) {
   //https / wss are assumed to have identical interfaces as http / ws (for now)
   switch (transportType) {
     case "http":
+      //response ID will always match request ID when using HTTP/S
       transport.overrideMimeType("application/json-rpc");
       transport.responseType = "json";
       var promise = transport.onEventPromise("load");
       transport.send(JSON.stringify(requestObj));
       break;
     case "router":
-      promise = transport.request(requestObj);
+      if (resolveOnID == true) {
+         promise = transport.request(requestObj, msgID);
+      } else {
+         promise = transport.request(requestObj);
+      }
       break;
     case "websocket":
-      promise = transport.onEventPromise("message");
+      if (resolveOnID == true) {
+         promise = new Promise((resolve, reject) => {
+            handleRPCResponses(transport, "websocket", msgID, resolve, reject);
+         })
+      } else {
+         promise = transport.onEventPromise("message");
+      }
       if (transport.readyState != transport.OPEN) {
          //socket not yet connected
          transport.onEventPromise("open").then((event) => {
@@ -129,6 +144,32 @@ function RPC(method, params, transport, generateOnly=false, msgID=null) {
       break;
   }
   return (promise);
+}
+
+/**
+* Handles asynchronous JSON-RPC 2.0 responses where a response ID must match a request ID before
+* associated promises can be resolved.
+*
+* @param {Object} transport A reference to the network transport handling thr response.
+* @param {String} type The transport type being handled. Supported types include: "websocket"
+* @param {String|Number} expectedResponseID The expected response ID to match from messages
+* received by the <code>transport</code> before resolving.
+* @param {Function} resolve A promise resolve function to invoke with the response data when
+* the response ID matches <code>expectedResponseID</code>
+* @param {Function} reject A promise reject function. Not currently used.
+*
+* @async
+*/
+async function handleRPCResponses(transport, type, expectedResponseID, resolve, reject) {
+   if (type == "websocket") {
+      var responseID = null;
+      while (responseID != expectedResponseID) {
+         var response = await transport.onEventPromise("message");
+         var responseObj = JSON.parse(response.data);
+         responseID = responseObj.id;
+      }
+      resolve(response);
+   }
 }
 
 /**

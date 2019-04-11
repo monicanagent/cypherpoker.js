@@ -27,8 +27,21 @@
             }
          },
          "gateways": {
+            "WSSTunnel": {
+               "enable": false,
+               "start": false,
+               "host": "ws://127.0.0.1:8090",
+               "tunnels": [
+                  {"alias":null, "allow":"*", "socketOptions":null},
+                  {"alias":null, "allow":"*", "socketOptions":null},
+                  {"alias":null, "allow":"*", "socketOptions":null},
+                  {"alias":null, "allow":"*", "socketOptions":null},
+                  {"alias":null, "allow":"*", "socketOptions":null}
+               ],
+               "path": "./gateways/WSSTunnel.js"
+            },
             "SSHTunnel": {
-               "enable": true,
+               "enable": false,
                "start": false,
                "openPorts": ["CP.API.RPC.wss.port"],
                "path": "./gateways/SSHTunnel.js"

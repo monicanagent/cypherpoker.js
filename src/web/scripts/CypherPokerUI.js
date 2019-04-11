@@ -1268,19 +1268,24 @@ class CypherPokerUI {
             this.hide(joinGameElement);
             break;
          case "cancel_game":
-            this.removeAllJoinTableButtons(); //do this first before we clear out the associated table arrays!
-            var joinedTable = this.cypherpoker.joinedTables[0]; //currently just one joined table per application instance
-            this.cypherpoker.leaveJoinedTable(joinedTable); //send table leave notification
-            this.cypherpoker.removeAllTables(true, true); //stop announcing
-            //clear out current game
-            element = this.getTemplateByName("lobby").elements[0];
-            this.updateJoinedTableStatus(null, true);
-            var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+            try {
+               this.removeAllJoinTableButtons(); //do this first before we clear out the associated table arrays!
+               var joinedTable = this.cypherpoker.joinedTables[0]; //currently just one joined table per application instance
+               this.cypherpoker.leaveJoinedTable(joinedTable); //send table leave notification
+               this.cypherpoker.removeAllTables(true, true); //stop announcing
+               //clear out current game
+               element = this.getTemplateByName("lobby").elements[0];
+               this.updateJoinedTableStatus(null, true);
+            } catch (err) {
+            }
             this.cypherpoker.removeAllTables(true, true);
             //restart lobby
-            this.show(lobbyContainer);
-            this.resetLobbyUI(true);
-            this.lobbyActive = true;
+            if (subType == "lobby") {
+               var lobbyContainer = document.querySelector(ui.UISelectors.lobby);
+               this.show(lobbyContainer);
+               this.resetLobbyUI(true);
+               this.lobbyActive = true;
+            }
             this.cypherpoker.captureNewTables = true;
             this.startLobbyCull();
             break;

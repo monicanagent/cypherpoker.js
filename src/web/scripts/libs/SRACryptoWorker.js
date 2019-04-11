@@ -5,10 +5,18 @@
 */
 self.importScripts("BigInteger.min.js"); //very important!
 var useCrypto = false; //use browser's crypto interface?
+var useNative = false; //use native BigInt (https://caniuse.com/#search=BigInt -or- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt#Browser_compatibility)
 try {
    //sometimes crypto is defined but getRandomValues isn't
    if (typeof(crypto.getRandomValues) == "function") {
       useCrypto = true;
+   }
+} catch (err) {
+}
+try {
+   //sometimes crypto is defined but getRandomValues isn't
+   if (typeof(BigInt) == "function") {
+      useNative = true;
    }
 } catch (err) {
 }
@@ -352,6 +360,104 @@ function decrypt (decValue, valueRadix, keypair, keyRadix) {
    }
 }
 
+// Native BigInt functons (not yet implemented above)
+
+/*
+
+function isPrimeNative(n) {
+   n = BigInt(n)
+   if (n % 1n || n < 2n) return false;
+   if (n==leastFactor(n)) return true;
+   return false;
+}
+
+
+
+function leastFactor (n){
+   n = BigInt(n)
+ if (n==0n) return 0n;
+ if (n % 1n || n*n < 2n) return 1n;
+ if (n%2n==0n) return 2n;
+ if (n%3n==0n) return 3n;
+ if (n%5n==0n) return 5n;
+ var m = sqrt(n);
+ for (var i=7n;i<=m;i+=30n) {
+  if (n%i==0n)      return i;
+  if (n%(i+4n)==0n)  return i+4n;
+  if (n%(i+6n)==0n)  return i+6n;
+  if (n%(i+10n)==0n) return i+10n;
+  if (n%(i+12n)==0n) return i+12n;
+  if (n%(i+16n)==0n) return i+16n;
+  if (n%(i+22n)==0n) return i+22n;
+  if (n%(i+24n)==0n) return i+24n;
+ }
+ return n;
+}
+
+function sqrt(value) {
+		if (value < 0n) {
+			throw 'square root of negative numbers is not supported'
+		}
+
+		if (value < 2n) {
+			return value;
+		}
+
+		function newtonIteration(n, x0) {
+			const x1 = ((n / x0) + x0) >> 1n;
+			if (x0 === x1 || x0 === (x1 - 1n)) {
+				return x0;
+			}
+			return newtonIteration(n, x1);
+		}
+
+		return newtonIteration(value, 1n);
+	}
+
+function modInvNative(x, m) {
+   var inverse = xgcdNative(BigInt(x), BigInt(m))[0];
+   if (inverse < BigInt(0)) {
+      inverse = m + inverse;
+   }
+   return (inverse);
+}
+
+function xgcdNative(a, m) {
+  if (m == BigInt(0)) {
+    return ([BigInt(1), BigInt(0), a]);
+  }
+  temp = xgcdNative(m, a % m);
+  var x = temp[BigInt(0)];
+  var y = temp[BigInt(1)];
+  var d = temp[BigInt(2)];
+   return ([y, x-y*(a/m), d]);
+}
+
+function generateRandomPrimeNative(startValue, radix) {
+   var prime = BigInt(startValue);
+   while (isPrimeNative(prime)== false) {
+      prime = prime - 1n;
+   }
+   if (radix == 16) {
+      return ("0x" + prime.toString(radix));
+   } else {
+      return (prime.toString(radix));
+   }
+}
+
+function generateRandomPrimeNative(bitLength, radix) {
+   var bitStr = randomBitStr(bitLength);
+   var prime = BigInt("0b"+bitStr);
+   while (isPrimeNative(prime)== false) {
+      prime = prime - 1n;
+   }
+   if (radix == 16) {
+      return ("0x" + prime.toString(radix));
+   } else {
+      return (prime.toString(radix));
+   }
+}
+*/
 //setup message handler
 onmessage = handleMessage;
 

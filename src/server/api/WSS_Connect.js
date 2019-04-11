@@ -46,10 +46,10 @@ async function WSS_Connect (sessionObj) {
       if (connectionObj.user_token == requestParams.user_token) {
          if (connectionObj.server_token == requestParams.server_token) {
             if (connectionObj.socket == null) {
-               connectionObj.socket = sessionObj.serverResponse; //assign outgoing WebSockket instance
                connectionObj.last_update = new Date();
                connectionObj.private_id = namespace.wss.makePrivateID(sessionObj); //as of v0.4.1
                connectionObj.options = requestParams.options; //as of v0.4.1
+               connectionObj.socket = sessionObj.serverResponse; //assign outgoing WebSockket instance
                connectionObj.socket.addEventListener("close", handleWebSocketClose);
                resultObj.message = "open";
                resultObj.private_id = connectionObj.private_id;
@@ -93,23 +93,27 @@ async function WSS_Connect (sessionObj) {
 * @param {Event} event A standard WebSocket close event.
 */
 function handleWebSocketClose(event) {
-   try{
+   try {
       for (var connectionID in namespace.wss.connections) {
          if ((namespace.wss.connections[connectionID] != undefined) && (namespace.wss.connections[connectionID] != null)) {
             for (var count = 0; count < namespace.wss.connections[connectionID].length; count++) {
                var connectionObj = namespace.wss.connections[connectionID][count];
                if (connectionObj.socket == event.target) {
-                  namespace.wss.connections[connectionID].splice(count, 1);
-                  //notify other peers of new connection -- disconnection session should now be removed
-                  var activeSessions = namespace.wss.allSessions(true);
+                  namespace.wss.connections[connectionID].splice(count, 1); //remove disconnected session
+                  var activeSessions = namespace.wss.allSessions(true); //get all remaining sessions to notify them
                   for (var count2 = 0; count2 < activeSessions.length; count2++) {
                      var messageObj = buildJSONRPC();
                      messageObj.result.type = "session";
                      messageObj.result.disconnect = connectionObj.private_id;
-                     activeSessions[count2].socket.send(JSON.stringify(messageObj));
+                     //readyState == 1 = OPEN
+                     if (activeSessions[count2].socket.readyState == 1) {
+                        activeSessions[count2].socket.send(JSON.stringify(messageObj));
+                     }
                   }
                   if (namespace.wss.connections[connectionID].length == 0) {
+                     //no more connections for IP, clear entire entry
                      namespace.wss.connections[connectionID] = undefined;
+                     delete namespace.wss.connections[connectionID];
                   }
                   return;
                }
