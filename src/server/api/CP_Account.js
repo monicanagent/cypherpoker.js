@@ -964,7 +964,7 @@ async function sendTransaction(fromWallet, toAddress, amount, fees=null, APIType
 function newBTCTx (fromAddress, toAddress, satAmount, satFees, network=null) {
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API.bitcoin;
-      var url = API.url.createTx;
+      var url = API.url.createtx;
       if (network == null) {
          network = API.default.network;
       }
@@ -1080,7 +1080,7 @@ function sendBTCTx(txObject, network=null) {
    */
    var promise = new Promise(function(resolve, reject) {
       var API = config.CP.API.bitcoin;
-      var url = API.url.sendTx;
+      var url = API.url.sendtx;
       if (network == null) {
          network = API.default.network;
       }
