@@ -1673,7 +1673,7 @@ or if they can be done through the WebSocket server (false).</td>
             
                 <td class="default">
                 
-                    5
+                    10
                 
                 </td>
             
@@ -2493,7 +2493,7 @@ may change).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line966">line 966</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line995">line 995</a>
     </li></ul></dd>
     
 
@@ -2648,7 +2648,7 @@ may change).
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line240">line 240</a>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line333">line 333</a>
     </li></ul></dd>
     
 
@@ -3064,7 +3064,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line749">line 749</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line773">line 773</a>
     </li></ul></dd>
     
 
@@ -3959,6 +3959,354 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="connectTunnel"><span class="type-signature">(async) </span>connectTunnel<span class="signature">(connectionObject1, connectionObject2)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Connects two ends of a tunnel by intercepting message sending, receiving, andsocket closure at the WebSocket level.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionObject1</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The object containing a <code>socket</code> reference,<code>private_id</code>, <code>tunnel</code> object, and other information to connectto <code>connectionObject2</code>.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionObject2</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The object containing a <code>socket</code> reference,<code>private_id</code>, <code>tunnel</code> object, and other information to connectto <code>connectionObject1</code>.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line169">line 169</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="disconnectTunnel"><span class="type-signature">(async) </span>disconnectTunnel<span class="signature">(connectionObject, remain<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Disconnects a single tunnel end, optionally keeping it open for a futureconnection.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">The connection object containing a <code>socket</code>reference, <code>private_id</code>, <code>tunnel</code> information object,<code>user_token</code>, <code>server_token</code>, and other informationfor the tunneled connection.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>remain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">If false, the connection will no longer be availablefor a new connection. A client connection should almost never remain butan endpoint may.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line225">line 225</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5011,6 +5359,680 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
 
     
+    <h4 class="name" id="getConnectionByAlias"><span class="type-signature"></span>getConnectionByAlias<span class="signature">(alias)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a connection object from <code>namespace.wss.connections</code>based on a tunnel alias.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>alias</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The tunnel alias for which to retrieve theconnection object.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line137">line 137</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The connection object matching the tunnel alias or <code>null</code>if no such connection exists. In the unlikely event that more than one matchibngconnection object exists, only the first one is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getConnectionByCID"><span class="type-signature"></span>getConnectionByCID<span class="signature">(connectionID, userToken, serverToken)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a connection object from <code>namespace.wss.connections</code>based on a connection ID.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The connection ID for which to retrieve theconnection object.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>userToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The user-generated token stored with the specificconnection object.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>serverToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The server-generated token stored with the specificconnection object.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line97">line 97</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The connection object matching all parameters, or <code>null</code>if no such connection exists. In the unlikely event that more than one matchibngconnection object exists, only the first one is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getConnectionByPID"><span class="type-signature"></span>getConnectionByPID<span class="signature">(privateID)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a connection object from <code>namespace.wss.connections</code>based on a private ID.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>privateID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The private ID for which to retrieve theconnection object.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line126">line 126</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The connection object matching the private ID or <code>null</code>if no such connection exists. In the unlikely event that more than one matchibngconnection object exists, only the first one is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getConnectionBySocket"><span class="type-signature"></span>getConnectionBySocket<span class="signature">(socket)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns a connection object from <code>namespace.wss.connections</code>based on a <code>socket</code> instance.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>socket</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The socket reference to find within the <code>namespace.wss.connections</code>object.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The connection object matching the socket reference or <code>null</code>if no such connection exists. In the unlikely event that more than one matchibngconnection object exists, only the first one is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="getNewAddress"><span class="type-signature"></span>getNewAddress<span class="signature">(APIType<span class="signature-attributes">opt</span>, network<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
     
 
@@ -5328,7 +6350,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line154">line 154</a>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line241">line 241</a>
     </li></ul></dd>
     
 
@@ -5392,7 +6414,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
 
 
 <div class="description">
-    Handles data received through the HTTP endpoint and invokes <a href="global.html#processRPCRequest">processRPCRequest</a> when a full request is received.
+    Handles data received through the HTTP endpoint and invokes <a href="global.html#processRPCRequest">processRPCRequest</a> when a full request is received via a POSTmethod. This endpoint may also used to call functionailty through GET requests.
 </div>
 
 
@@ -5508,7 +6530,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line940">line 940</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line966">line 966</a>
     </li></ul></dd>
     
 
@@ -5729,7 +6751,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line916">line 916</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line941">line 941</a>
     </li></ul></dd>
     
 
@@ -5865,7 +6887,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line926">line 926</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line951">line 951</a>
     </li></ul></dd>
     
 
@@ -6000,7 +7022,7 @@ will be generated if true otherwise no ID is included (e.g. notification).</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line209">line 209</a>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line302">line 302</a>
     </li></ul></dd>
     
 
@@ -6110,7 +7132,7 @@ instance.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line800">line 800</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line824">line 824</a>
     </li></ul></dd>
     
 
@@ -6265,7 +7287,7 @@ The contents of this object will differ depending on the type of endpoint that r
 
             <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
 "ws" - WebSocket<br/>
-"wss" - secure WebSocket<br/>
+"wss" - secure WebSocket<br/>"wstunnel" - WebSocket tunnel<br/>
 "http" - HTTP<br/>
 "https" - secure HTTP</td>
         </tr>
@@ -6314,7 +7336,7 @@ The contents of this object will differ depending on the type of endpoint that r
             
 
             <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
-the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -6338,7 +7360,7 @@ the endpoint is "http" or "https", or the source WebSocket connection when the e
             
 
             <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
-the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -6426,7 +7448,7 @@ a single request.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line550">line 550</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line556">line 556</a>
     </li></ul></dd>
     
 
@@ -7276,7 +8298,7 @@ object and rejects with the error when the file could not be loaded or parsed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line91">line 91</a>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line180">line 180</a>
     </li></ul></dd>
     
 
@@ -7384,7 +8406,7 @@ object and rejects with the error when the file could not be loaded or parsed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line197">line 197</a>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line283">line 283</a>
     </li></ul></dd>
     
 
@@ -7392,13 +8414,6 @@ object and rejects with the error when the file could not be loaded or parsed.
 
     
 
-    
-    <dt class="tag-todo">To Do:</dt>
-    <dd class="tag-todo">
-        <ul>
-            <li>Update to use more secure random source(s).</li>
-        </ul>
-    </dd>
     
 </dl>
 
@@ -7705,7 +8720,7 @@ object and rejects with the error when the file could not be loaded or parsed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line117">line 117</a>
+        <a href="api_WSS_Handshake.js.html">api/WSS_Handshake.js</a>, <a href="api_WSS_Handshake.js.html#line204">line 204</a>
     </li></ul></dd>
     
 
@@ -7732,7 +8747,7 @@ object and rejects with the error when the file could not be loaded or parsed.
 
         
 <div class="param-desc">
-    The SHA256 hash of the server token concatenated with a semi-colonand the user token: <code>SHA256(server_token + ":" + user_token)</code>, or justthe <code>clear_token</code> if a valid one is found (this can be set viaWSS_Update). <code>null</code> is returned if either of theinput parameters is invalid.
+    The SHA256 hash of the server token concatenated with a semi-colonand the user token: <code>SHA256(server_token + ":" + user_token)</code>. <code>null</code>is returned if either of the input parameters is invalid.
 </div>
 
 
@@ -8294,7 +9309,7 @@ function in <a href="global.html#ping">ping</a>.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line793">line 793</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line817">line 817</a>
     </li></ul></dd>
     
 
@@ -8380,7 +9395,7 @@ function in <a href="global.html#ping">ping</a>.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line902">line 902</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line927">line 927</a>
     </li></ul></dd>
     
 
@@ -8466,7 +9481,392 @@ function in <a href="global.html#ping">ping</a>.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line909">line 909</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line934">line 934</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onTunnelClose"><span class="type-signature">(async) </span>onTunnelClose<span class="signature">(closedConnObj, otherConnObj, nextListener, closeEvent)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    A proxy or intercept function for a standard WebSocket "close" event whenthe socket has been closed. The other end of the tunnel is notified and the tunnelis either completely removed if closed by the endpoint or re-opened if closedby a client. Typically the "close" handler is swapped into the WebSocket instance in<a href="global.html#connectTunnel">connectTunnel</a>.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>closedConnObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The tunneled connection that has just closed.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>otherConnObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The connection at the other end of the tunnel.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>nextListener</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A reference to the next "close" event listenerregistered in the event chain for the closed socket.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>closeEvent</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The event included in the original "close" dispatch.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line321">line 321</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onTunnelMessage"><span class="type-signature">(async) </span>onTunnelMessage<span class="signature">(connectionSourceObj, connectionDestObj, message)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    A proxy or intercept function for a standard WebSocket "message" event whenthe socket is being tunneled that automatically forwards the receiving data tothe other end of the tunnel.<br/>Typically this handler is swapped into the WebSocket instance in<a href="global.html#connectTunnel">connectTunnel</a> where the extra parameter is introduced.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionSourceObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The tunneled sending connection object containing a<code>socket</code> reference, <code>private_id</code>, <code>tunnel</code> informationobject, <code>tunnelServerMessages</code>, and other information for the tunneledconnection.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionDestObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The tunneled receiving connection object containing a<code>socket</code> reference, <code>private_id</code>, <code>tunnel</code> informationobject, <code>tunnelServerMessages</code>, and other information for the tunneledconnection.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The message received from <code>connectionSourceObj</code> to sendto <code>connectionDestObj</code>.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line302">line 302</a>
     </li></ul></dd>
     
 
@@ -8624,7 +10024,7 @@ function in <a href="global.html#ping">ping</a>.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line889">line 889</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line914">line 914</a>
     </li></ul></dd>
     
 
@@ -8854,7 +10254,7 @@ function in <a href="global.html#ping">ping</a>.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line830">line 830</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line854">line 854</a>
     </li></ul></dd>
     
 
@@ -8965,7 +10365,7 @@ pings are automatically closed.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line811">line 811</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line835">line 835</a>
     </li></ul></dd>
     
 
@@ -9128,7 +10528,7 @@ The contents of this object will differ depending on the type of endpoint that r
 
             <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
 "ws" - WebSocket<br/>
-"wss" - secure WebSocket<br/>
+"wss" - secure WebSocket<br/>"wstunnel" - WebSocket tunnel<br/>
 "http" - HTTP<br/>
 "https" - secure HTTP</td>
         </tr>
@@ -9177,7 +10577,7 @@ The contents of this object will differ depending on the type of endpoint that r
             
 
             <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
-the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -9201,7 +10601,7 @@ the endpoint is "http" or "https", or the source WebSocket connection when the e
             
 
             <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
-the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a></td>
         </tr>
 
     
@@ -9249,7 +10649,7 @@ the endpoint is "http" or "https", or the target WebSocket connection when the e
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line486">line 486</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line489">line 489</a>
     </li></ul></dd>
     
 
@@ -10573,7 +11973,7 @@ The contents of this object will differ depending on the type of endpoint that r
 
             <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
 "ws" - WebSocket<br/>
-"wss" - secure WebSocket<br/>
+"wss" - secure WebSocket<br/>"wstunnel" - WebSocket tunnel<br/>
 "http" - HTTP<br/>
 "https" - secure HTTP</td>
         </tr>
@@ -10622,7 +12022,7 @@ The contents of this object will differ depending on the type of endpoint that r
             
 
             <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
-the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -10646,7 +12046,7 @@ the endpoint is "http" or "https", or the source WebSocket connection when the e
             
 
             <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
-the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -10750,7 +12150,165 @@ the endpoint is "http" or "https", or the target WebSocket connection when the e
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line600">line 600</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line609">line 609</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="sendIntercept"><span class="type-signature">(async) </span>sendIntercept<span class="signature">(connectionObj, data)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    A proxy or intercept function for a standard WebSocket <code>send</code> when thesocket is being tunneled.<br/>Typically this function is swapped into the WebSocket instance in<a href="global.html#connectTunnel">connectTunnel</a> where the extra parameter is introduced.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionObj</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The connection object containing a <code>socket</code>reference, <code>private_id</code>, <code>tunnel</code> information object,<code>tunnelServerMessages</code>, and other information for the tunneled connection.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The message to send to the tunneled socket.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line254">line 254</a>
     </li></ul></dd>
     
 
@@ -10912,7 +12470,7 @@ The contents of this object will differ depending on the type of endpoint that r
 
             <td class="description last">The source / target endpoint type associated with this session object. Valid values include:<br/>
 "ws" - WebSocket<br/>
-"wss" - secure WebSocket<br/>
+"wss" - secure WebSocket<br/>"wstunnel" - WebSocket tunnel<br/>
 "http" - HTTP<br/>
 "https" - secure HTTP</td>
         </tr>
@@ -10961,7 +12519,7 @@ The contents of this object will differ depending on the type of endpoint that r
             
 
             <td class="description last">The functional request object, either an <a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage</a> instance when
-the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -10985,7 +12543,7 @@ the endpoint is "http" or "https", or the source WebSocket connection when the e
             
 
             <td class="description last">The functional response object either a <a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse</a> instance when
-the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".</td>
+the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".Tunneled endpoints are usually handled by custom <a href="libs_Gateway.js.html">Gateway</a>-based classes such as <a href="libs_gateways_WSSTunnel.js.html">WSSTunnel</a>.</td>
         </tr>
 
     
@@ -11056,7 +12614,7 @@ the endpoint is "http" or "https", or the target WebSocket connection when the e
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line680">line 680</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line698">line 698</a>
     </li></ul></dd>
     
 
@@ -11434,6 +12992,164 @@ the endpoint is "http" or "https", or the target WebSocket connection when the e
     
 
     
+    <h4 class="name" id="sendTunnelMessage"><span class="type-signature">(async) </span>sendTunnelMessage<span class="signature">(connectionObject, data)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Sends a message directly to a tunneled WebSocket. Used when themessage would otherwuise be intercepted after the tunnel has alreadybeen established (for example, a tunnel "close" message.)
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionObject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The tunneled connection object containing a<code>socket</code> reference, <code>tunnel</code> information object,and other information for the tunneled connection to send to.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>data</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">*</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The data to send to the tunneled connection.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_WSS_Tunnel.js.html">api/WSS_Tunnel.js</a>, <a href="api_WSS_Tunnel.js.html#line272">line 272</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="sendUpdate"><span class="type-signature"></span>sendUpdate<span class="signature">(toArray, sendData, fromPID<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
@@ -11763,7 +13479,7 @@ ServerResponse</a> object to add default headers to.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line780">line 780</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line804">line 804</a>
     </li></ul></dd>
     
 
@@ -12277,7 +13993,7 @@ the server is successfully started. The <a href="global.html#handleHTTPRequest">
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line852">line 852</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line876">line 876</a>
     </li></ul></dd>
     
 
@@ -12364,7 +14080,7 @@ the server is successfully started.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="server.js.html">server.js</a>, <a href="server.js.html#line866">line 866</a>
+        <a href="server.js.html">server.js</a>, <a href="server.js.html#line891">line 891</a>
     </li></ul></dd>
     
 
@@ -14563,13 +16279,13 @@ the server is successfully started.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#connectTunnel">connectTunnel</a></li><li><a href="global.html#disconnectTunnel">disconnectTunnel</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getConnectionByAlias">getConnectionByAlias</a></li><li><a href="global.html#getConnectionByCID">getConnectionByCID</a></li><li><a href="global.html#getConnectionByPID">getConnectionByPID</a></li><li><a href="global.html#getConnectionBySocket">getConnectionBySocket</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onTunnelClose">onTunnelClose</a></li><li><a href="global.html#onTunnelMessage">onTunnelMessage</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendIntercept">sendIntercept</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendTunnelMessage">sendTunnelMessage</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:53:27 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:43:36 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

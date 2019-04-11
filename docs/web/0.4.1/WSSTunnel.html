@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: WSSClient</title>
+    <title>JSDoc: Class: WSSTunnel</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: WSSClient</h1>
+    <h1 class="page-title">Class: WSSTunnel</h1>
 
     
 
@@ -28,9 +28,9 @@
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>WSSClient<span class="signature">(handshakeServerAddress<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>WSSTunnel<span class="signature">(handshakeServerAddress<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
         
-            <div class="class-description">A WebSocket Session client interface used to connect to peers. Requires<a href="global.html#RPC">RPC</a> and <a href="EventPromise.html">EventPromise</a> to exist in the current executioncontext.</div>
+            <div class="class-description">A tunneling WebSocket Sessions interface based on <a href="WSSClient.html">WSSClient</a>.Once established, a tunneled connection appears and behaves nearly identically to a<a href="WSSClient.html">WSSClient</a> connection.</div>
         
     
 </header>
@@ -45,7 +45,7 @@
     
 
     
-    <h4 class="name" id="WSSClient"><span class="type-signature"></span>new WSSClient<span class="signature">(handshakeServerAddress<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="WSSTunnel"><span class="type-signature"></span>new WSSTunnel<span class="signature">(handshakeServerAddress<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -53,7 +53,7 @@
 
 
 <div class="description">
-    Creates an instance of WSSClient.
+    Creates an instance of WSSTunnel.
 </div>
 
 
@@ -158,7 +158,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_transports_WSSClient.js.html">libs/transports/WSSClient.js</a>, <a href="libs_transports_WSSClient.js.html#line13">line 13</a>
+        <a href="libs_transports_WSSTunnel.js.html">libs/transports/WSSTunnel.js</a>, <a href="libs_transports_WSSTunnel.js.html#line14">line 14</a>
     </li></ul></dd>
     
 
@@ -196,7 +196,7 @@
 
 
     <ul>
-        <li><a href="EventDispatcher.html">EventDispatcher</a></li>
+        <li><a href="WSSClient.html">WSSClient</a></li>
     </ul>
 
 
@@ -286,6 +286,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#handshakeServerAddr">WSSClient#handshakeServerAddr</a>
+    </li></ul></dd>
     
 
     
@@ -397,6 +402,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#peerOptions">WSSClient#peerOptions</a>
+    </li></ul></dd>
+    
 
     
 
@@ -506,6 +516,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#peers">WSSClient#peers</a>
+    </li></ul></dd>
     
 
     
@@ -617,6 +632,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#privateID">WSSClient#privateID</a>
+    </li></ul></dd>
+    
 
     
 
@@ -726,6 +746,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#serverToken">WSSClient#serverToken</a>
+    </li></ul></dd>
     
 
     
@@ -837,6 +862,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#socketServerAddr">WSSClient#socketServerAddr</a>
+    </li></ul></dd>
+    
 
     
 
@@ -860,6 +890,124 @@
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
         <a href="libs_transports_WSSClient.js.html">libs/transports/WSSClient.js</a>, <a href="libs_transports_WSSClient.js.html#line125">line 125</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="tunnelInfo"><span class="type-signature"></span>tunnelInfo<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tunnelInfo</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">Contains a <code>userToken</code>, <code>serverToken</code>,and <code>privateID</code> used to establish a connection with the tunneling server.Use these credentials when communicating with the tunneling server insteadof the standard class properties which are used with the tunneled endpoint.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_transports_WSSTunnel.js.html">libs/transports/WSSTunnel.js</a>, <a href="libs_transports_WSSTunnel.js.html#line34">line 34</a>
     </li></ul></dd>
     
 
@@ -946,6 +1094,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#userToken">WSSClient#userToken</a>
+    </li></ul></dd>
     
 
     
@@ -1056,6 +1209,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#webSocket">WSSClient#webSocket</a>
+    </li></ul></dd>
     
 
     
@@ -1474,6 +1632,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#broadcast">WSSClient#broadcast</a>
+    </li></ul></dd>
+    
 
     
 
@@ -1631,6 +1794,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#changePrivateID">WSSClient#changePrivateID</a>
+    </li></ul></dd>
+    
 
     
 
@@ -1709,7 +1877,7 @@
     
 
     
-    <h4 class="name" id="connect"><span class="type-signature">(async) </span>connect<span class="signature">(socketServerAddr<span class="signature-attributes">opt</span>, useHTTPHandshake<span class="signature-attributes">opt</span>, connectData<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="connect"><span class="type-signature">(async) </span>connect<span class="signature">(socketServerAddr<span class="signature-attributes">opt</span>, useHTTPHandshake<span class="signature-attributes">opt</span>, connectData)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1717,7 +1885,7 @@
 
 
 <div class="description">
-    Initiates a WebSocket Session by performing a handshake and subsequentconnection to the WSS server.
+    Creates a WebSocket Session tunnel by performing a handshake, subsequentconnection to the WSS server, opening the tunnel, and finally connecting to thetunneled server endpoint via <a href="WSSTunnel.html#connectEndpoint">connectEndpoint</a>
 </div>
 
 
@@ -1789,7 +1957,7 @@
                 </td>
             
 
-            <td class="description last">The WebSocket server address to connectto. If omitted, the assigned handshake server address will be used forboth the handshake and the connection.</td>
+            <td class="description last">The WebSocket Sessions tunneling serveraddress to connect to. If omitted, the assigned handshake server address will be used forboth the handshake and the connection.</td>
         </tr>
 
     
@@ -1850,8 +2018,6 @@
             
                 <td class="attributes">
                 
-                    &lt;optional><br>
-                
 
                 
 
@@ -1862,12 +2028,10 @@
             
                 <td class="default">
                 
-                    null
-                
                 </td>
             
 
-            <td class="description last">Optional data to include with the connect APIcall. If omitted or <code>null</code>, an empty object is created and a minimal <code>options</code>object is appended. If included, any <code>user_token</code> and <code>server_token</code>properties will be overriden with handshake <a href="WSSClient.html#userToken">WSSClient#userToken</a> and<a href="WSSClient.html#serverToken">WSSClient#serverToken</a> values.
+            <td class="description last">Data to include with the connect and tunelling API calls
                 <h6>Properties</h6>
                 
 
@@ -1885,7 +2049,377 @@
         
 
         
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>tunnelParams</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An object containing the tunelling parameters.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>endpoint</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An object containing thetunneling endpoint candidates and associated parameters.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>aliases</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">An indexed array oftunnel candidate aliases (usually based on the endpoint private ID). The connectionprocess will attempt to connect to each alias in the order provided.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="WSSClient.html#connect">WSSClient#connect</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_transports_WSSTunnel.js.html">libs/transports/WSSTunnel.js</a>, <a href="libs_transports_WSSTunnel.js.html#line64">line 64</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+<h5>Throws:</h5>
+
+        
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        Thrown when a valid handshake / socket server address wasnot supplied, tunelling information was omitted or erroneous, or the connection could not beestablished.
+        </div>
+    </dt>
+    <dd></dd>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">Error</span>
+
+
+            </dd>
+        </dl>
+    </dt>
+    <dd></dd>
+</dl>
+
+
+    
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="connectEndpoint"><span class="type-signature">(async) </span>connectEndpoint<span class="signature">(connectData<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Attempts to connect to a tunneled WebSocket Sessions endpoint. Existing<a href="WSSTunnel.html#userToken">userToken</a>, <a href="WSSTunnel.html#serverToken">serverToken</a>, and<a href="WSSTunnel.html#privateID"> privateID</a> values will be replaced with ones generated for / by theendpoint.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
         <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    null
+                
+                </td>
+            
+
+            <td class="description last">Endpoint and peer connection information.
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
         
 
         <th class="last">Description</th>
@@ -1922,12 +2456,8 @@
             
 
             
-                <td class="default">
-                
-                </td>
-            
 
-            <td class="description last">The peer connection options for this connection.If omitted or <code>null</code> a minimal connection options object is created withdefault values.
+            <td class="description last">Peer connectivity options to advertiseto other peers through the endpoint.
                 <h6>Properties</h6>
                 
 
@@ -1963,7 +2493,7 @@
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">Object</span>
 
 
             
@@ -1989,7 +2519,7 @@
                 </td>
             
 
-            <td class="description last">Denotes whether (<code>true</code>) or not(<code>false</code>) WebSocket Sessions is supported by the client.</td>
+            <td class="description last">Defines if WebSocket Sessionsconnectivity is available (true), or not (false).</td>
         </tr>
 
     
@@ -2002,7 +2532,7 @@
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">Object</span>
 
 
             
@@ -2028,7 +2558,7 @@
                 </td>
             
 
-            <td class="description last">Denotes whether (<code>true</code>) or not(<code>false</code>) <a href="https://webrtc.org/">WebRTC</a> is supported by the client.</td>
+            <td class="description last">Defines if WebRTCconnectivity is available (true), or not (false).</td>
         </tr>
 
     
@@ -2041,7 +2571,7 @@
             <td class="type">
             
                 
-<span class="param-type">Boolean</span>
+<span class="param-type">Object</span>
 
 
             
@@ -2067,7 +2597,7 @@
                 </td>
             
 
-            <td class="description last">Denotes whether (<code>true</code>) or not(<code>false</code>) <a href="https://ortc.org/">ORTC</a> is support by the client.</td>
+            <td class="description last">Defines if ObjectRTCconnectivity is available (true), or not (false).</td>
         </tr>
 
     
@@ -2075,45 +2605,6 @@
 </table>
 
             </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>listeners</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    true
-                
-                </td>
-            
-
-            <td class="description last">If false, socket listeners will not be addedby this instance (for example, if this class has been extended).</td>
         </tr>
 
     
@@ -2161,7 +2652,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_transports_WSSClient.js.html">libs/transports/WSSClient.js</a>, <a href="libs_transports_WSSClient.js.html#line233">line 233</a>
+        <a href="libs_transports_WSSTunnel.js.html">libs/transports/WSSTunnel.js</a>, <a href="libs_transports_WSSTunnel.js.html#line124">line 124</a>
     </li></ul></dd>
     
 
@@ -2361,6 +2852,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#disconnect">WSSClient#disconnect</a>
+    </li></ul></dd>
     
 
     
@@ -2715,6 +3211,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#handleRequestResponse">WSSClient#handleRequestResponse</a>
+    </li></ul></dd>
+    
 
     
 
@@ -2850,6 +3351,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#handleSocketClose">WSSClient#handleSocketClose</a>
+    </li></ul></dd>
+    
 
     
 
@@ -2914,7 +3420,7 @@
 
 
 <div class="description">
-    Handles WebSocket message events for the WSS instance. Most events aresimply re-broadcast but some such as <code>session</code> messages arehandled internally. Listen to "message" events on the WSS'swebSocket to receive all messages.
+    Handles WebSocket message events for the tunnel. Any messages that arenot tunnels-specific are passed to the parent<a href="WSSClient.html#handleSocketMessage">WSSClient.handleSocketMessage</a> function.
 </div>
 
 
@@ -2966,7 +3472,7 @@
 
             
 
-            <td class="description last">A "message" event dispatched by the associatedWebSocket instance.</td>
+            <td class="description last">A "message" event dispatched by the tunneledWebSocket instance.</td>
         </tr>
 
     
@@ -2986,6 +3492,11 @@
 
     
 
+    
+    <dt class="tag-overrides">Overrides:</dt>
+    <dd class="tag-overrides"><ul class="dummy"><li>
+        <a href="WSSClient.html#handleSocketMessage">WSSClient#handleSocketMessage</a>
+    </li></ul></dd>
     
 
     
@@ -3007,7 +3518,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_transports_WSSClient.js.html">libs/transports/WSSClient.js</a>, <a href="libs_transports_WSSClient.js.html#line508">line 508</a>
+        <a href="libs_transports_WSSTunnel.js.html">libs/transports/WSSTunnel.js</a>, <a href="libs_transports_WSSTunnel.js.html#line190">line 190</a>
     </li></ul></dd>
     
 
@@ -3408,6 +3919,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#request">WSSClient#request</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3652,6 +4168,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#send">WSSClient#send</a>
+    </li></ul></dd>
+    
 
     
 
@@ -3808,6 +4329,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#SHA256">WSSClient#SHA256</a>
+    </li></ul></dd>
     
 
     
@@ -3996,6 +4522,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#event:message">WSSClient#event:message</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4144,6 +4675,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#event:peerconnect">WSSClient#event:peerconnect</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4291,6 +4827,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#event:peerdisconnect">WSSClient#event:peerdisconnect</a>
+    </li></ul></dd>
     
 
     
@@ -4486,6 +5027,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#event:peerpid">WSSClient#event:peerpid</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4634,6 +5180,11 @@
     
 
     
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#event:privateid">WSSClient#event:privateid</a>
+    </li></ul></dd>
+    
 
     
 
@@ -4781,6 +5332,11 @@
 
     
 
+    
+    <dt class="inherited-from">Inherited From:</dt>
+    <dd class="inherited-from"><ul class="dummy"><li>
+        <a href="WSSClient.html#event:update">WSSClient#event:update</a>
+    </li></ul></dd>
     
 
     

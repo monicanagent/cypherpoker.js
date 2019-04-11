@@ -1224,7 +1224,7 @@ within a standard web browser this reference will remain <code>null</code>.</td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line160">line 160</a>
+        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line201">line 201</a>
     </li></ul></dd>
     
 
@@ -1276,6 +1276,236 @@ within a standard web browser this reference will remain <code>null</code>.</td>
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="handleRPCResponses"><span class="type-signature">(async) </span>handleRPCResponses<span class="signature">(transport, type, expectedResponseID, resolve, reject)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Handles asynchronous JSON-RPC 2.0 responses where a response ID must match a request ID beforeassociated promises can be resolved.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>transport</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A reference to the network transport handling thr response.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The transport type being handled. Supported types include: "websocket"</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>expectedResponseID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The expected response ID to match from messagesreceived by the <code>transport</code> before resolving.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>resolve</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A promise resolve function to invoke with the response data whenthe response ID matches <code>expectedResponseID</code></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>reject</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A promise reject function. Not currently used.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line163">line 163</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1483,7 +1713,7 @@ running within a desktop (Electron) environment.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line235">line 235</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line236">line 236</a>
     </li></ul></dd>
     
 
@@ -1595,7 +1825,7 @@ interface is available otherwise <code>null</code> is returned. If <code>async=t
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line347">line 347</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line348">line 348</a>
     </li></ul></dd>
     
 
@@ -1753,7 +1983,7 @@ otherwise it's a standard web (browser) host environment.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line149">line 149</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line150">line 150</a>
     </li></ul></dd>
     
 
@@ -1816,7 +2046,7 @@ otherwise it's a standard web (browser) host environment.
     
 
     
-    <h4 class="name" id="RPC"><span class="type-signature"></span>RPC<span class="signature">(method, param, transport, generateOnly<span class="signature-attributes">opt</span>, msgID<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise|Object}</span></h4>
+    <h4 class="name" id="RPC"><span class="type-signature"></span>RPC<span class="signature">(method, param, transport, generateOnly<span class="signature-attributes">opt</span>, msgID<span class="signature-attributes">opt</span>, resolveOnID<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise|Object}</span></h4>
     
 
     
@@ -1824,7 +2054,7 @@ otherwise it's a standard web (browser) host environment.
 
 
 <div class="description">
-    Invokes a RPC request through either a HTTP or WebSocket (or their securecounterparts).
+    Invokes a RPC (API) request through a HTTP, WebSocket, or routed interface.
 </div>
 
 
@@ -1944,6 +2174,9 @@ otherwise it's a standard web (browser) host environment.
 |
 
 <span class="param-type">WebSocket</span>
+|
+
+<span class="param-type">router</span>
 
 
             
@@ -2050,6 +2283,45 @@ otherwise it's a standard web (browser) host environment.
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>resolveOnID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last">If true, the returned promise resolves<i>only</i> when a response is received matching the message ID of the request,otherwise the first server response or notification resolves the returned promise.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -2087,7 +2359,7 @@ otherwise it's a standard web (browser) host environment.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line85">line 85</a>
+        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line88">line 88</a>
     </li></ul></dd>
     
 
@@ -2114,7 +2386,7 @@ otherwise it's a standard web (browser) host environment.
 
         
 <div class="param-desc">
-    An asynchorous Promise or JSON-RPC 2.0 object if(generateOnly=true).<br/><br/>The returned Promise will include the RPC result event as the resolution ora rejection if the request could not be processed. Note that the result datafor WebSocket objects is returned as the <i>data</i> property, a string, ofthe result while for XHR objects the result is the <i>target.response</i>property which is a native (parsed) object.<br/><br/>The generated JSON-RPC 2.0 object can be stringified and sent using anothercommunication channel.
+    An asynchorous Promise or JSON-RPC 2.0 object if(generateOnly=true).<br/><br/>The returned Promise will resolve with either the immediate response (if <code>resolveOnID=false</code>)or when the mathing response ID matches the request ID (if <code>resolveOnID=true</code>).It will reject if the request could not be processed. Note that the result datafor WebSocket objects is returned as the <i>data</i> property, a string, ofthe result while for XHR objects the result is the <i>target.response</i>property which is a native (parsed) object.<br/><br/>The generated JSON-RPC 2.0 object can be stringified and sent using anothercommunication channel.
 </div>
 
 
@@ -2211,7 +2483,7 @@ otherwise it's a standard web (browser) host environment.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line196">line 196</a>
+        <a href="libs_RPC.js.html">libs/RPC.js</a>, <a href="libs_RPC.js.html#line237">line 237</a>
     </li></ul></dd>
     
 
@@ -2829,7 +3101,7 @@ otherwise it's a standard web (browser) host environment.
                 </td>
             
 
-            <td class="description last">A reference to the WebSocket Sessions transportwith which to communicate with the peer.</td>
+            <td class="description last">A reference to the WebSocket Sessions / Tunnel transportwith which to communicate with the peer.</td>
         </tr>
 
     
@@ -3095,7 +3367,7 @@ otherwise it's a standard web (browser) host environment.
 
             
 
-            <td class="description last">The <code>Promise</code> functions that resolveor reject when the WebSocket Sessions transport connects or fails to connect.
+            <td class="description last">The <code>Promise</code> functions that resolveor reject when the WebSocket Sessions / Tunnel transport connects or fails to connect.
                 <h6>Properties</h6>
 
 <table class="props">
@@ -3442,7 +3714,7 @@ otherwise it's a standard web (browser) host environment.
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_P2PRouter.js.html">libs/P2PRouter.js</a>, <a href="libs_P2PRouter.js.html#line68">line 68</a>
+        <a href="libs_P2PRouter.js.html">libs/P2PRouter.js</a>, <a href="libs_P2PRouter.js.html#line71">line 71</a>
     </li></ul></dd>
     
 
@@ -3472,13 +3744,13 @@ otherwise it's a standard web (browser) host environment.
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li><li><a href="WSSTunnel.html">WSSTunnel</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:close">close</a></li><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:peerpid">peerpid</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li><li><a href="WSSTunnel.html#event:message">message</a></li><li><a href="WSSTunnel.html#event:peerconnect">peerconnect</a></li><li><a href="WSSTunnel.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSTunnel.html#event:peerpid">peerpid</a></li><li><a href="WSSTunnel.html#event:privateid">privateid</a></li><li><a href="WSSTunnel.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleRPCResponses">handleRPCResponses</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:46:49 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:40:30 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

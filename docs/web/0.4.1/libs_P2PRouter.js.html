@@ -34,6 +34,9 @@
 /**
 * @class Transparently routes messages to/from available peer-to-peer interfaces.
 * @extends EventDispatcher
+* @see {@link WSSClient}
+* @see {@link WSSTunnel}
+* @see {@link WebRTCClient}
 */
 class P2PRouter extends EventDispatcher {
 
@@ -115,7 +118,7 @@ class P2PRouter extends EventDispatcher {
    * communication, or a connection attempt may have &lt;code>"failed"&lt;/code>.
    * @property {Object} transport Contains references to any transports defined in
    * the conectivity &lt;code>options&lt;/code>.
-   * @property {Object} transport.wss=null A reference to the WebSocket Sessions transport
+   * @property {Object} transport.wss=null A reference to the WebSocket Sessions / Tunnel transport
    * with which to communicate with the peer.
    * @property {Object} transport.webrtc=null] A reference to the WebRTC transport
    * with which to communicate with the peer.
@@ -133,7 +136,7 @@ class P2PRouter extends EventDispatcher {
    * references that are resolved or rejected when the associated transport is attempting
    * a connection.
    * @property {Object} connectPromise.wss The &lt;code>Promise&lt;/code> functions that resolve
-   * or reject when the WebSocket Sessions transport connects or fails to connect.
+   * or reject when the WebSocket Sessions / Tunnel transport connects or fails to connect.
    * @property {Function} connectPromise.wss.resolve=null The &lt;code>Promise.resolve&lt;/code>
    * function invoked on a successfull WebSocket Sessions connection.
    * @property {Function} connectPromise.wss.reject=null The &lt;code>Promise.reject&lt;/code>
@@ -342,6 +345,9 @@ class P2PRouter extends EventDispatcher {
          case "WSSClient":
             this.updatePeerConnections(["wss"],[this._rendezvous]);
             break;
+         case "WSSTunnel":
+            this.updatePeerConnections(["wss"],[this._rendezvous]);
+            break;
          default:
             break;
       }
@@ -421,7 +427,11 @@ class P2PRouter extends EventDispatcher {
    * Valid types include:&lt;br/>
    * &lt;ul>
    * &lt;li>&lt;code>wss&lt;/code>: WebSocket Sessions&lt;/li>
+   * &lt;li>&lt;code>wsst&lt;/code>: WebSocket Sessions Tunnel&lt;/li>
    * &lt;/ul>
+   * @param {Object} [connectInfo.tunnelParams] Tunneling parameters such as a list of
+   * possible endpoints for use with the tunneling connection (if &lt;code>connectInfo.transport="wsst"&lt;/code>,
+   * for example).
    * @throws {Error} Thrown when the specified server could not be contacted or
    * if there is a problem with the &lt;code>connectioInfo&lt;/code> parameter.
    */
@@ -433,16 +443,29 @@ class P2PRouter extends EventDispatcher {
          throw (new Error("The connection info \"transport\" property must be a string."));
       }
       var connectData = new Object();
+      connectData.options = P2PRouter.supportedTransports.options;
       switch (connectionInfo.transport) {
          case "wss":
             try {
-               connectData.options = P2PRouter.supportedTransports.options;
                this.rendezvous = new WSSClient(connectionInfo.url);
                var result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
                this.updatePeerConnections(["wss"],[this.rendezvous]);
             } catch (err) {
+               this._rendezvous.destroy();
                this._rendezvous = null;
                throw(err);
+            }
+            return (result);
+            break;
+         case "wsst":
+            try {
+               this.rendezvous = new WSSTunnel(connectionInfo.url);
+               connectData.tunnelParams = JSON.parse(connectionInfo.parameters);
+               result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
+               this.updatePeerConnections(["wss"],[this.rendezvous]);
+            } catch (err) {
+               this._rendezvous.destroy();
+               this._rendezvous = null;
             }
             return (result);
             break;
@@ -893,7 +916,7 @@ class P2PRouter extends EventDispatcher {
    *
    * @param {Array} recipients Indexed array of recipient private IDs to group
    * by preferred / available transport.
-   * @param {Array} [preferred=P2PRouter.supportedTransports.preferred}] Indexed array
+   * @param {Array} [preferred=P2PRouter.supportedTransports.preferred] Indexed array
    * of preferred transport ordering to use for creating groups.
    * @param {Boolean} [onlyAvail=true] If true, only private IDs with available
    * transports are returned. If false, a special &lt;code>none&lt;/code> transport type
@@ -1143,7 +1166,7 @@ class P2PRouter extends EventDispatcher {
       } else {
          var source = event.target.toString();
          var newEvent = new Event("message");
-         if (source == "WSSClient") {
+         if ((source == "WSSClient") || (source == "WSSTunnel")) {
             newEvent.data = event.data;
             newEvent.data.result.transport = "wss";
             newEvent.transport = event.target;
@@ -1182,7 +1205,7 @@ class P2PRouter extends EventDispatcher {
          var newEvent = new Event("update");
          newEvent.data = event.data;
          newEvent.transport = event.target;
-         if (source == "WSSClient") {
+         if ((source == "WSSClient") || (source == "WSSTunnel")) {
             newEvent.transportType = "wss";
          } else if (source == "WebRTCClient") {
             newEvent.transportType = "webrtc";
@@ -1280,9 +1303,10 @@ class P2PRouter extends EventDispatcher {
       var source = event.target.toString();
       var newEvent = new Event("peerconnect");
       newEvent.transport = event.target;
-      if (source == "WSSClient") {
+      if ((source == "WSSClient") || (source == "WSSTunnel")) {
          console.dir (event.data);
          var privateID = event.data.result.connect;
+         console.log ("A new peer has connected on ("+source+"): "+privateID);
          if ((event.data.result.options == undefined) || (event.data.result.options == null)) {
             //added for pre-v0.4.1 compatibility
             event.data.result.options = {"wss":true,"webrtc":false,"ortc":false};
@@ -1316,7 +1340,7 @@ class P2PRouter extends EventDispatcher {
       var source = event.target.toString();
       var newEvent = new Event("peerdisconnect");
       newEvent.transport = event.target;
-      if (source == "WSSClient") {
+      if ((source == "WSSClient") || (source == "WSSTunnel")) {
          var privateID = event.data.result.disconnect;
          this.setConnectionStatus(privateID, "closed", "wss");
          newEvent.data = event.data;
@@ -1359,6 +1383,7 @@ class P2PRouter extends EventDispatcher {
    * @async
    */
    async destroy() {
+         console.log ("P2PRouter.destroy()");
       if (this.rendezvous != null) {
          this.rendezvous.removeEventListener("message", this.onMessage);
          this.rendezvous.removeEventListener("update", this.onUpdate);
@@ -1406,13 +1431,13 @@ class P2PRouter extends EventDispatcher {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li><li><a href="WSSTunnel.html">WSSTunnel</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:close">close</a></li><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:peerpid">peerpid</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li><li><a href="WSSTunnel.html#event:message">message</a></li><li><a href="WSSTunnel.html#event:peerconnect">peerconnect</a></li><li><a href="WSSTunnel.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSTunnel.html#event:peerpid">peerpid</a></li><li><a href="WSSTunnel.html#event:privateid">privateid</a></li><li><a href="WSSTunnel.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleRPCResponses">handleRPCResponses</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:46:49 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:40:30 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

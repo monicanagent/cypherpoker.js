@@ -200,7 +200,7 @@ const JSONRPC_ERRORS = {
 * @property {Number} api_timelimit=3000 The time limit, in milliseconds, to allow external API functions to execute.
 * @property {Boolean} http_only_handshake=false Defines whether session handshakes are done only through HTTP/HTTPS (true),
 * or if they can be done through the WebSocket server (false).
-* @property {Number} max_ws_per_ip=5 The maximum number of concurrent WebSocket connections to allow from a single IP.
+* @property {Number} max_ws_per_ip=10 The maximum number of concurrent WebSocket connections to allow from a single IP.
 * @property {Exposed_Gateway_Objects} exposed_gateway_objects Internal server references to expose to communication gateways functions. Note that each internal
 * reference may be assigned an alias instead of its actual name.
 */
@@ -238,7 +238,7 @@ var rpc_options = {
   },
   api_timelimit: 3000,
   http_only_handshake: false,
-  max_ws_per_ip:5,
+  max_ws_per_ip:10,
   exposed_gateway_objects: {
      hostEnv:hostEnv,
      config:config,
@@ -503,13 +503,16 @@ function validateJSONRPC (dataObj) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:&lt;br/>
 * "ws" - WebSocket&lt;br/>
 * "wss" - secure WebSocket&lt;br/>
+* "wstunnel" - WebSocket tunnel&lt;br/>
 * "http" - HTTP&lt;br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an &lt;a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage&lt;/a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a &lt;a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse&lt;/a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}
 */
 function processRPCRequest(requestData, sessionObj) {
    var parsed = false;
@@ -565,13 +568,16 @@ function processRPCRequest(requestData, sessionObj) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:&lt;br/>
 * "ws" - WebSocket&lt;br/>
 * "wss" - secure WebSocket&lt;br/>
+* "wstunnel" - WebSocket tunnel&lt;br/>
 * "http" - HTTP&lt;br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an &lt;a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage&lt;/a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a &lt;a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse&lt;/a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {Number} [requestNum=null] The index of the batched request within sessionObj.requestObj to process if the request is a batched request. If null or omitted then the requests is processed as
 * a single request.
 */
@@ -615,13 +621,16 @@ function invokeAPIFunction(sessionObj, requestNum=null) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:&lt;br/>
 * "ws" - WebSocket&lt;br/>
 * "wss" - secure WebSocket&lt;br/>
+* "wstunnel" - WebSocket tunnel&lt;br/>
 * "http" - HTTP&lt;br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an &lt;a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage&lt;/a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a &lt;a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse&lt;/a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {Object} sessionObj.batchResponses An object containing batched responses if the original request was a batched request.
 * @param {*} [data] Any additional relevant data to include in the response.
 */
@@ -656,6 +665,9 @@ function sendError(code, message, sessionObj, data) {
                 break;
               case "wss":
                 break;
+             case "wstunnel":
+               sessionObj.serverResponse.send(JSON.stringify(sessionObj.batchResponses.responses));
+               break;
               default:
                 throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
                 break;
@@ -677,6 +689,9 @@ function sendError(code, message, sessionObj, data) {
            break;
          case "wss":
            break;
+        case "wstunnel":
+          sessionObj.serverResponse.send(JSON.stringify(responseData));
+          break;
          default:
            throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
            break;
@@ -696,13 +711,16 @@ function sendError(code, message, sessionObj, data) {
 * @param {String} sessionObj.endpoint The source / target endpoint type associated with this session object. Valid values include:&lt;br/>
 * "ws" - WebSocket&lt;br/>
 * "wss" - secure WebSocket&lt;br/>
+* "wstunnel" - WebSocket tunnel&lt;br/>
 * "http" - HTTP&lt;br/>
 * "https" - secure HTTP
 * @param {Object} sessionObj.requestObj The full, parsed JSON-RPC 2.0 object as received in the original request.
 * @param {String} sessionObj.serverRequest The functional request object, either an &lt;a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">IncomingMessage&lt;/a> instance when
 * the endpoint is "http" or "https", or the source WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {String} sessionObj.serverResponse The functional response object either a &lt;a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">ServerResponse&lt;/a> instance when
 * the endpoint is "http" or "https", or the target WebSocket connection when the endpoint is "ws" or "wss".
+* Tunneled endpoints are usually handled by custom [Gateway]{@link libs/Gateway.js}-based classes such as [WSSTunnel]{@link libs/gateways/WSSTunnel.js}.
 * @param {Object} sessionObj.batchResponses An object containing batched responses if the original request was a batched request.
 */
 function sendResult(result, sessionObj) {;
@@ -732,6 +750,9 @@ function sendResult(result, sessionObj) {;
                 break;
               case "wss":
                 break;
+             case "wstunnel":
+               sessionObj.serverResponse.send(sessionObj.batchResponses.responses);
+               break;
               default:
                 throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
                 break;
@@ -753,6 +774,9 @@ function sendResult(result, sessionObj) {;
               break;
             case "wss":
               break;
+           case "wstunnel":
+             sessionObj.serverResponse.send(JSON.stringify(responseData));
+             break;
             default:
               throw (new Error(`Unsupported endpoint type ${sessionObj.endpoint}`));
               break;
@@ -887,6 +911,7 @@ async function startHTTPServer() {
    }
 }
 
+
 /**
 * Attempts to start the JSON-RPC 2.0 WebSocket server using the default {@link rpc_options}. The {@link onStartWSServer} function is invoked when
 * the server is successfully started.
@@ -897,10 +922,10 @@ function startWSServer() {
    } else {
    	console.log (`Starting JSON-RPC 2.0 WebSocket server on port ${rpc_options.ws_port}...`);
    	try {
-       ws_server = new websocket.Server({ port: rpc_options.ws_port });
-       ws_server.on("listening", onStartWSServer);
-       ws_server.on("connection", onWSConnection);
-       ws_ping_intervalID = setInterval(ping, ws_ping_interval);
+         ws_server = new websocket.Server({ port: rpc_options.ws_port });
+         ws_server.on("listening", onStartWSServer);
+         ws_server.on("connection", onWSConnection);
+         ws_ping_intervalID = setInterval(ping, ws_ping_interval);
    	} catch (err) {
    		console.error (err);
    	}
@@ -960,7 +985,8 @@ function handleWSRequest(requestData) {
 }
 
 /**
-* Handles data received through the HTTP endpoint and invokes {@link processRPCRequest} when a full request is received.
+* Handles data received through the HTTP endpoint and invokes {@link processRPCRequest} when a full request is received via a POST
+* method. This endpoint may also used to call functionailty through GET requests.
 *
 * @param {Object} requestObj HTTP request object &lt;a href="https://nodejs.org/api/http.html#http_class_http_incomingmessage">https://nodejs.org/api/http.html#http_class_http_incomingmessage&lt;/a>
 * @param {Object} responseObj HTTP response object &lt;a href="https://nodejs.org/api/http.html#http_class_http_serverresponse">https://nodejs.org/api/http.html#http_class_http_serverresponse&lt;/a>
@@ -983,7 +1009,10 @@ function handleHTTPRequest(requestObj, responseObj){
          sessionObj.serverResponse = responseObj;
 			processRPCRequest(requestData, sessionObj);
 		});
-	 }
+   } else if (requestObj.method == 'GET') {
+      //process GET request
+      //responseObj.send("HTTP response...");
+   }
 }
 
 /**
@@ -1238,7 +1267,8 @@ loadConfig().then (configObj => {
    rpc_options.exposed_gateway_objects.hostEnv = hostEnv;
    rpc_options.exposed_gateway_objects.config = config;
    if (hostEnv.embedded == true) {
-      Gateways = require(hostEnv.dir.server + "./libs/Gateways.js");
+      var gatewaysClass = path.resolve(hostEnv.dir.server + "./libs/Gateways.js");
+      Gateways = require(gatewaysClass);
    } else {
       Gateways = require("./libs/Gateways.js");
    }
@@ -1258,13 +1288,13 @@ loadConfig().then (configObj => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#connectTunnel">connectTunnel</a></li><li><a href="global.html#disconnectTunnel">disconnectTunnel</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getConnectionByAlias">getConnectionByAlias</a></li><li><a href="global.html#getConnectionByCID">getConnectionByCID</a></li><li><a href="global.html#getConnectionByPID">getConnectionByPID</a></li><li><a href="global.html#getConnectionBySocket">getConnectionBySocket</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onTunnelClose">onTunnelClose</a></li><li><a href="global.html#onTunnelMessage">onTunnelMessage</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendIntercept">sendIntercept</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendTunnelMessage">sendTunnelMessage</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:53:27 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:43:35 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

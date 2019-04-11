@@ -146,12 +146,21 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line11">line 11</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line13">line 13</a>
     </li></ul></dd>
     
 
     
 
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="APIRouter.html">APIRouter</a></li>
+        
+            <li><a href="P2PRouter.html">P2PRouter</a></li>
+        </ul>
+    </dd>
     
 
     
@@ -266,7 +275,7 @@
                 </td>
             
 
-            <td class="description last">Reference to a multi-network routing interface over which RPC API functionsare invoked For example, <a href="APIRouter.html">APIRouter</a>.</td>
+            <td class="description last">Reference to a multi-network routing interface over which RPC API functionsare invoked. For example, <a href="APIRouter.html">APIRouter</a>.</td>
         </tr>
 
     
@@ -305,7 +314,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line89">line 89</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line91">line 91</a>
     </li></ul></dd>
     
 
@@ -423,7 +432,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line105">line 105</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line107">line 107</a>
     </li></ul></dd>
     
 
@@ -533,7 +542,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line65">line 65</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line67">line 67</a>
     </li></ul></dd>
     
 
@@ -651,7 +660,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line74">line 74</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -769,7 +778,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line114">line 114</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line116">line 116</a>
     </li></ul></dd>
     
 
@@ -1092,7 +1101,7 @@
                 </td>
             
 
-            <td class="description last">The API creation JavaScript snippet</td>
+            <td class="description last">The API creation JavaScript snippet input field.</td>
         </tr>
 
     
@@ -1179,7 +1188,7 @@
                 </td>
             
 
-            <td class="description last">The P2P creation JavaScript snippet</td>
+            <td class="description last">The P2P creation JavaScript snippet input field.</td>
         </tr>
 
     
@@ -1254,7 +1263,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line43">line 43</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line45">line 45</a>
     </li></ul></dd>
     
 
@@ -1512,6 +1521,163 @@
     
 
     
+    <h4 class="name" id="adjustURL"><span class="type-signature"></span>adjustURL<span class="signature">(connectionURL)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Adjusts a URL that contains additional information that would be considered invalid(such as a "tunnel@" protocol prefix, for example).
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionURL</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The URL to adjust.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line854">line 854</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The adjusted URL.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
     <h4 class="name" id="canShareConnections"><span class="type-signature"></span>canShareConnections<span class="signature">(connectObj1, connectObj2)</span><span class="type-signature"> &rarr; {Boolean}</span></h4>
     
 
@@ -1636,7 +1802,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line259">line 259</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line261">line 261</a>
     </li></ul></dd>
     
 
@@ -1852,7 +2018,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line992">line 992</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1037">line 1037</a>
     </li></ul></dd>
     
 
@@ -2046,7 +2212,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1119">line 1119</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1166">line 1166</a>
     </li></ul></dd>
     
 
@@ -2240,7 +2406,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line938">line 938</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line983">line 983</a>
     </li></ul></dd>
     
 
@@ -2395,7 +2561,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line440">line 440</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line446">line 446</a>
     </li></ul></dd>
     
 
@@ -2649,7 +2815,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line298">line 298</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line300">line 300</a>
     </li></ul></dd>
     
 
@@ -2826,7 +2992,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line481">line 481</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line487">line 487</a>
     </li></ul></dd>
     
 
@@ -2986,7 +3152,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line753">line 753</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line759">line 759</a>
     </li></ul></dd>
     
 
@@ -3025,6 +3191,163 @@
     <dd>
         
 <span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getConnectionParameters"><span class="type-signature"></span>getConnectionParameters<span class="signature">(connectionURL)</span><span class="type-signature"> &rarr; {URLSearchParams}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns the parameters included with a supplied URL.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>connectionURL</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The URL from which to determine the parameters.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line873">line 873</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    The parameters included with the URL
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">URLSearchParams</span>
 
 
     </dd>
@@ -3201,7 +3524,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line784">line 784</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line790">line 790</a>
     </li></ul></dd>
     
 
@@ -3540,7 +3863,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line701">line 701</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line707">line 707</a>
     </li></ul></dd>
     
 
@@ -3700,7 +4023,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line818">line 818</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line824">line 824</a>
     </li></ul></dd>
     
 
@@ -3808,7 +4131,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line902">line 902</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line947">line 947</a>
     </li></ul></dd>
     
 
@@ -3894,7 +4217,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1080">line 1080</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1127">line 1127</a>
     </li></ul></dd>
     
 
@@ -3980,7 +4303,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line635">line 635</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line641">line 641</a>
     </li></ul></dd>
     
 
@@ -4115,7 +4438,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line514">line 514</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line520">line 520</a>
     </li></ul></dd>
     
 
@@ -4201,7 +4524,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1044">line 1044</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1090">line 1090</a>
     </li></ul></dd>
     
 
@@ -4287,7 +4610,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1171">line 1171</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1219">line 1219</a>
     </li></ul></dd>
     
 
@@ -4373,7 +4696,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line608">line 608</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line614">line 614</a>
     </li></ul></dd>
     
 
@@ -4459,7 +4782,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line884">line 884</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line929">line 929</a>
     </li></ul></dd>
     
 
@@ -4649,7 +4972,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line845">line 845</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line890">line 890</a>
     </li></ul></dd>
     
 
@@ -4735,7 +5058,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line170">line 170</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line172">line 172</a>
     </li></ul></dd>
     
 
@@ -4821,7 +5144,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1062">line 1062</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line1109">line 1109</a>
     </li></ul></dd>
     
 
@@ -4956,7 +5279,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line571">line 571</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line577">line 577</a>
     </li></ul></dd>
     
 
@@ -5160,7 +5483,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line132">line 132</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line134">line 134</a>
     </li></ul></dd>
     
 
@@ -5548,7 +5871,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line729">line 729</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line735">line 735</a>
     </li></ul></dd>
     
 
@@ -5656,7 +5979,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line624">line 624</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line630">line 630</a>
     </li></ul></dd>
     
 
@@ -5742,7 +6065,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line660">line 660</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line666">line 666</a>
     </li></ul></dd>
     
 
@@ -5936,7 +6259,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line206">line 206</a>
+        <a href="libs_ConnectivityManager.js.html">libs/ConnectivityManager.js</a>, <a href="libs_ConnectivityManager.js.html#line208">line 208</a>
     </li></ul></dd>
     
 
@@ -5980,13 +6303,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li><li><a href="WSSTunnel.html">WSSTunnel</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:close">close</a></li><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:peerpid">peerpid</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li><li><a href="WSSTunnel.html#event:message">message</a></li><li><a href="WSSTunnel.html#event:peerconnect">peerconnect</a></li><li><a href="WSSTunnel.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSTunnel.html#event:peerpid">peerpid</a></li><li><a href="WSSTunnel.html#event:privateid">privateid</a></li><li><a href="WSSTunnel.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleRPCResponses">handleRPCResponses</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:46:50 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:40:31 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

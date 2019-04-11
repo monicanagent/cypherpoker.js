@@ -62,14 +62,14 @@ async function WSS_Handshake (sessionObj) {
          }
       }
    }
-   var server_token = namespace.wss.makeConnectionToken();
+   var server_token = await namespace.wss.makeConnectionToken();
    if ((namespace.wss.connections[connectionID] == undefined) || (namespace.wss.connections[connectionID] == null)) {
       var connectionObj = new Object();
       connectionObj.user_token = requestParams.user_token;
       connectionObj.socket = null; //not yet connected
       connectionObj.last_update = new Date();
       connectionObj.server_token = server_token;
-      connectionObj.clear_token = null;
+      connectionObj.tunnels = new Array();
       namespace.wss.connections[connectionID] = new Array();
       namespace.wss.connections[connectionID].push(connectionObj);
       num_activeconnections++; //new connection just added
@@ -93,7 +93,7 @@ async function WSS_Handshake (sessionObj) {
          connectionObj.socket = null; //not yet connected
          connectionObj.last_update = Date.now();
          connectionObj.server_token = server_token;
-         connectionObj.clear_token = null;
+         connectionObj.tunnels = new Array();
          namespace.wss.connections[connectionID].push(connectionObj);
          responseObj.message = "accept";
          num_activeconnections++; //new connection just added
@@ -105,6 +105,95 @@ async function WSS_Handshake (sessionObj) {
       }
    }
    return (true);
+}
+
+/**
+* Returns a connection object from &lt;code>namespace.wss.connections&lt;/code>
+* based on a connection ID.
+*
+* @param {String} connectionID The connection ID for which to retrieve the
+* connection object.
+* @param {String} userToken The user-generated token stored with the specific
+* connection object.
+* @param {String} serverToken The server-generated token stored with the specific
+* connection object.
+*
+* @return {Object} The connection object matching all parameters, or &lt;code>null&lt;/code>
+* if no such connection exists. In the unlikely event that more than one matchibng
+* connection object exists, only the first one is returned.
+*/
+function getConnectionByCID(connectionID, userToken, serverToken) {
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
+      return (null);
+   }
+   if ((namespace.wss.connections[connectionID] == undefined) || (namespace.wss.connections[connectionID] == null)) {
+      retrun (null);
+   }
+   var connectionsArr = namespace.wss.connections[connectionID];
+   for (var count=0; count &lt; connectionsArr.length; count++) {
+      var connectionObj = connectionsArr[count];
+      if ((connectionObj.user_token == userToken) &amp;&amp; (connectionObj.server_token == serverToken)) {
+         return (connectionObj);
+      }
+   }
+   return (null);
+}
+
+/**
+* Returns a connection object from &lt;code>namespace.wss.connections&lt;/code>
+* based on a private ID.
+*
+* @param {String} privateID The private ID for which to retrieve the
+* connection object.
+*
+* @return {Object} The connection object matching the private ID or &lt;code>null&lt;/code>
+* if no such connection exists. In the unlikely event that more than one matchibng
+* connection object exists, only the first one is returned.
+*/
+function getConnectionByPID(privateID) {
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
+      return (null);
+   }
+   for (var connectionID in namespace.wss.connections) {
+      var connectionsArr = namespace.wss.connections[connectionID];
+      for (var count=0; count &lt; connectionsArr.length; count++) {
+         var connectionObj = connectionsArr[count];
+         if (connectionObj.private_id == privateID) {
+            return (connectionObj);
+         }
+      }
+   }
+   return (null);
+}
+
+/**
+* Returns a connection object from &lt;code>namespace.wss.connections&lt;/code>
+* based on a &lt;code>socket&lt;/code> instance.
+*
+* @param {Object} socket The socket reference to find within the &lt;code>namespace.wss.connections&lt;/code>
+* object.
+*
+* @return {Object} The connection object matching the socket reference or &lt;code>null&lt;/code>
+* if no such connection exists. In the unlikely event that more than one matchibng
+* connection object exists, only the first one is returned.
+*/
+function getConnectionBySocket(socket) {
+   if ((namespace.wss.connections == undefined) || (namespace.wss.connections == null)) {
+      namespace.wss.connections = new Object();
+      return (null);
+   }
+   for (var connectionID in namespace.wss.connections) {
+      var connectionsArr = namespace.wss.connections[connectionID];
+      for (var count=0; count &lt; connectionsArr.length; count++) {
+         var connectionObj = connectionsArr[count];
+         if (connectionObj.socket == socket) {
+            return (connectionObj);
+         }
+      }
+   }
+   return (null);
 }
 
 /**
@@ -137,10 +226,8 @@ function makeConnectionID (sessionObj) {
 * &lt;code>user_token&lt;/code> properties (this should be done prior to invoking this function).
 *
 * @return {String} The SHA256 hash of the server token concatenated with a semi-colon
-* and the user token: &lt;code>SHA256(server_token + ":" + user_token)&lt;/code>, or just
-* the &lt;code>clear_token&lt;/code> if a valid one is found (this can be set via
-* {@link WSS_Update}). &lt;code>null&lt;/code> is returned if either of the
-* input parameters is invalid.
+* and the user token: &lt;code>SHA256(server_token + ":" + user_token)&lt;/code>. &lt;code>null&lt;/code>
+* is returned if either of the input parameters is invalid.
 */
 function makePrivateID (sessionObj) {
    try {
@@ -220,11 +307,17 @@ function getPrivateID(sessionObj) {
 *
 * @return {String} A randomly generated server connection token.
 *
-* @todo Update to use more secure random source(s).
 */
 function makeConnectionToken() {
-   var token = String(Math.random()).split("0.").join("");
-   return (token);
+   var promise = new Promise((resolve, reject) => {
+      crypto.randomBytes(32, (err, buf) => {
+         if (err) {
+            reject (err);
+         }
+         resolve (buf.toString("hex"));
+      });
+   })
+   return (promise);
 }
 
 /**
@@ -299,6 +392,9 @@ if (namespace.wss == undefined) {
 }
 
 namespace.wss.makeConnectionID = makeConnectionID;
+namespace.wss.getConnectionByCID = getConnectionByCID;
+namespace.wss.getConnectionByPID = getConnectionByPID;
+namespace.wss.getConnectionBySocket = getConnectionBySocket;
 namespace.wss.getPrivateID = getPrivateID;
 namespace.wss.makePrivateID = makePrivateID;
 namespace.wss.makeConnectionToken = makeConnectionToken;
@@ -314,13 +410,13 @@ namespace.wss.allSessions = allSessions;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="module.exports.html">exports</a></li></ul><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#cashoutToAddress">cashoutToAddress</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#connectTunnel">connectTunnel</a></li><li><a href="global.html#disconnectTunnel">disconnectTunnel</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getBlockchainBalance">getBlockchainBalance</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getConnectionByAlias">getConnectionByAlias</a></li><li><a href="global.html#getConnectionByCID">getConnectionByCID</a></li><li><a href="global.html#getConnectionByPID">getConnectionByPID</a></li><li><a href="global.html#getConnectionBySocket">getConnectionBySocket</a></li><li><a href="global.html#getNewAddress">getNewAddress</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makeHDWallet">makeHDWallet</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#newBTCTx">newBTCTx</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onTunnelClose">onTunnelClose</a></li><li><a href="global.html#onTunnelMessage">onTunnelMessage</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendBTCTx">sendBTCTx</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendIntercept">sendIntercept</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTransaction">sendTransaction</a></li><li><a href="global.html#sendTunnelMessage">sendTunnelMessage</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#signBTCTx">signBTCTx</a></li><li><a href="global.html#signToDER">signToDER</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:53:27 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:43:36 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>

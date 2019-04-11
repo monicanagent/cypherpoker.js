@@ -33,10 +33,18 @@
 */
 self.importScripts("BigInteger.min.js"); //very important!
 var useCrypto = false; //use browser's crypto interface?
+var useNative = false; //use native BigInt (https://caniuse.com/#search=BigInt -or- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt#Browser_compatibility)
 try {
    //sometimes crypto is defined but getRandomValues isn't
    if (typeof(crypto.getRandomValues) == "function") {
       useCrypto = true;
+   }
+} catch (err) {
+}
+try {
+   //sometimes crypto is defined but getRandomValues isn't
+   if (typeof(BigInt) == "function") {
+      useNative = true;
    }
 } catch (err) {
 }
@@ -380,6 +388,104 @@ function decrypt (decValue, valueRadix, keypair, keyRadix) {
    }
 }
 
+// Native BigInt functons (not yet implemented above)
+
+/*
+
+function isPrimeNative(n) {
+   n = BigInt(n)
+   if (n % 1n || n &lt; 2n) return false;
+   if (n==leastFactor(n)) return true;
+   return false;
+}
+
+
+
+function leastFactor (n){
+   n = BigInt(n)
+ if (n==0n) return 0n;
+ if (n % 1n || n*n &lt; 2n) return 1n;
+ if (n%2n==0n) return 2n;
+ if (n%3n==0n) return 3n;
+ if (n%5n==0n) return 5n;
+ var m = sqrt(n);
+ for (var i=7n;i&lt;=m;i+=30n) {
+  if (n%i==0n)      return i;
+  if (n%(i+4n)==0n)  return i+4n;
+  if (n%(i+6n)==0n)  return i+6n;
+  if (n%(i+10n)==0n) return i+10n;
+  if (n%(i+12n)==0n) return i+12n;
+  if (n%(i+16n)==0n) return i+16n;
+  if (n%(i+22n)==0n) return i+22n;
+  if (n%(i+24n)==0n) return i+24n;
+ }
+ return n;
+}
+
+function sqrt(value) {
+		if (value &lt; 0n) {
+			throw 'square root of negative numbers is not supported'
+		}
+
+		if (value &lt; 2n) {
+			return value;
+		}
+
+		function newtonIteration(n, x0) {
+			const x1 = ((n / x0) + x0) >> 1n;
+			if (x0 === x1 || x0 === (x1 - 1n)) {
+				return x0;
+			}
+			return newtonIteration(n, x1);
+		}
+
+		return newtonIteration(value, 1n);
+	}
+
+function modInvNative(x, m) {
+   var inverse = xgcdNative(BigInt(x), BigInt(m))[0];
+   if (inverse &lt; BigInt(0)) {
+      inverse = m + inverse;
+   }
+   return (inverse);
+}
+
+function xgcdNative(a, m) {
+  if (m == BigInt(0)) {
+    return ([BigInt(1), BigInt(0), a]);
+  }
+  temp = xgcdNative(m, a % m);
+  var x = temp[BigInt(0)];
+  var y = temp[BigInt(1)];
+  var d = temp[BigInt(2)];
+   return ([y, x-y*(a/m), d]);
+}
+
+function generateRandomPrimeNative(startValue, radix) {
+   var prime = BigInt(startValue);
+   while (isPrimeNative(prime)== false) {
+      prime = prime - 1n;
+   }
+   if (radix == 16) {
+      return ("0x" + prime.toString(radix));
+   } else {
+      return (prime.toString(radix));
+   }
+}
+
+function generateRandomPrimeNative(bitLength, radix) {
+   var bitStr = randomBitStr(bitLength);
+   var prime = BigInt("0b"+bitStr);
+   while (isPrimeNative(prime)== false) {
+      prime = prime - 1n;
+   }
+   if (radix == 16) {
+      return ("0x" + prime.toString(radix));
+   } else {
+      return (prime.toString(radix));
+   }
+}
+*/
 //setup message handler
 onmessage = handleMessage;
 
@@ -395,13 +501,13 @@ postMessage({"ready":true});
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li><li><a href="WSSTunnel.html">WSSTunnel</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:close">close</a></li><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:peerpid">peerpid</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li><li><a href="WSSTunnel.html#event:message">message</a></li><li><a href="WSSTunnel.html#event:peerconnect">peerconnect</a></li><li><a href="WSSTunnel.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSTunnel.html#event:peerpid">peerpid</a></li><li><a href="WSSTunnel.html#event:privateid">privateid</a></li><li><a href="WSSTunnel.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleRPCResponses">handleRPCResponses</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Mar 30 2019 14:46:49 GMT-0400 (Eastern Daylight Time)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 10 2019 21:40:30 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
