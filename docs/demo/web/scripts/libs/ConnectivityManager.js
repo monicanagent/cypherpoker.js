@@ -338,7 +338,11 @@ class ConnectivityManager extends EventDispatcher {
          var sdbEntType = sdbEntity.entity;
          if (typeof(sdbEntity.url) != "string") {
             //construct URL, assume port is present (we should probably check for this)
-            var url = sdbEntity.protocol +"://"+ sdbEntity.host + ":" + sdbEntity.port;
+            if (sdbEntity.port > 0) {
+               var url = sdbEntity.protocol +"://"+ sdbEntity.host + ":" + sdbEntity.port;
+            } else {
+               url = sdbEntity.protocol +"://"+ sdbEntity.host;
+            }
             sdbEntity.url = url;
          }
       }
