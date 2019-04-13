@@ -6,6 +6,7 @@
 <p>The open-source software stack makes extensive use of cutting-edge <a href="https://www.ecma-international.org/ecma-262/8.0/">browser technologies</a> and desktop (<a href="https://nodejs.org/en/">Node.js</a> / <a href="https://electronjs.org/">Electron</a>) runtime environments.</p>
 
 <p>CypherPoker.JS is written by <a href=https://github.com/monicanagent/">the same author</a> as the <a href="https://github.com/monicanagent/cypherpoker">original ActionScript CypherPoker project</a> and employs many of the same features including the SRA cryptosystem and game / peer protocols as <a href="https://github.com/monicanagent/cypherpoker/wiki">described in the original wiki</a>.</p>
+
 ***
 <p align="center"><img src="https://user-images.githubusercontent.com/9059336/53627116-94152f80-3bd5-11e9-8639-02819305018d.png"/></p>
 
