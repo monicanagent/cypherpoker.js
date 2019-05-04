@@ -30,7 +30,7 @@
             "WSSTunnel": {
                "enable": false,
                "start": false,
-               "host": "ws://127.0.0.1:8090",
+               "host": "wss://cypherpokerjs-servicesserver-zehxipjszu.now.sh",
                "tunnels": [
                   {"alias":null, "allow":"*", "socketOptions":null},
                   {"alias":null, "allow":"*", "socketOptions":null},
@@ -51,8 +51,22 @@
             "enabled":false,
             "url":"http://localhost/rdb.php",
             "host":"localhost",
-            "accessKey":"DATABASE_ACCESS_KEY"
+            "accessKey":"DATABASE_ACCESS_KEY",
+            "adapters": {
+               "sqlite3": {
+                  "script": "./libs/adapters/SQLite3.js",
+                  "bin": "./bin/sqlite/%os%/%bin%"
+               }
+            }
          },
+         "handlers":[
+            {
+               "type": "cryptocurrency",
+               "name": "BlockCypher API Cryptocurrency Handler",
+               "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
+               "handlerClass": "./libs/adapters/BlockCypherAPI.js"
+            }
+         ],
          "wallets":{
             "bitcoin":{
                "xprv":"xprv...",
@@ -92,12 +106,14 @@
                   "feeUpdateEnabled": true
                }
             },
-            "url": {
-               "newaddr": "https://api.blockcypher.com/v1/btc/%network%/addrs",
-               "balance": "https://api.blockcypher.com/v1/btc/%network%/addrs/%address%/full",
-               "createtx": "https://api.blockcypher.com/v1/btc/%network%/txs/new?token=%token%",
-               "sendtx": "https://api.blockcypher.com/v1/btc/%network%/txs/send?token=%token%",
-               "fees": "https://api.blockcypher.com/v1/btc/%network%"
+            "urls": {
+               "blockcypher": {
+                  "newaddr": "https://api.blockcypher.com/v1/btc/%network%/addrs",
+                  "balance": "https://api.blockcypher.com/v1/btc/%network%/addrs/%address%/full",
+                  "createtx": "https://api.blockcypher.com/v1/btc/%network%/txs/new?token=%token%",
+                  "sendtx": "https://api.blockcypher.com/v1/btc/%network%/txs/send?token=%token%",
+                  "fees": "https://api.blockcypher.com/v1/btc/%network%"
+               }
             }
          },
          "contract":{
@@ -105,4 +121,3 @@
          }
       }
    }
-}

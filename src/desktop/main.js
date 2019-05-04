@@ -20,8 +20,7 @@
 *  clearInterval:clearInterval,<br/>
 *  setTimeout:setTimeout,<br/>
 *  clearTimeout:clearTimeout,<br/>
-*  process:process,<br/>
-* startDatabase: {@link startDatabase}
+*  process:process<br/>
 * }
 */
 
@@ -33,7 +32,7 @@ const fs = require("fs");
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle} and may be used in other places in the application.
 */
-const appVersion = "0.4.1";
+const appVersion = "0.5.0";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle} and may be used in other places in the application.
@@ -74,11 +73,6 @@ const appTitle = appName+" v"+appVersion;
 * the first/main user interface window.
 * @property {Function} electronEnv.server.vm=null A reference to the virtual machine / context
 * in which the server is executing.
-* @property {Object} electronEnv.database Contains settings for the database adapters that
-* can be started using the {@link startDatabase} function. Each adapter's settings vary
-* but each has at least a <code>script</code> path that specifies the adapter's script and
-* an <code>vm</code> reference that points to the virtual machine instance hosting the
-* running <code>script</code>.
 * @property {Number} electronEnv.host=this A reference to the main Electron
 * process used to launch the server and client.
 */
@@ -105,18 +99,10 @@ var electronEnv = {
         clearInterval:clearInterval,
         setTimeout:setTimeout,
         clearTimeout:clearTimeout,
-        process:process,
-        startDatabase:startDatabase
+        process:process
      },
      onInit:createClient,
      vm:null
-   },
-   database: {
-    sqlite3: {
-      vm: null,
-      script: "./adapters/sqlite3.js",
-      bin: "./bin/sqlite/%os%/%bin%"
-    }
    },
    host:null
 }
@@ -135,36 +121,6 @@ process.on("unhandledRejection", (reason, p) => {
   console.log("Unhandled Promise Rejection: "+reason);
   //application specific logging, throwing an error, or other logic here
 });
-
-/**
-* Starts a database adapter and makes it available to the application.
-*
-* @param {String} dbAdapter The database adapter to start. The name must match one of those defined
-* in the {@link electronEnv}.database objects.
-*
-* @todo Add error reporting when starting adapter (right now if there's a syntax error the
-* application just stops halway through startup and doesn't continue or halt).
-*/
-async function startDatabase(dbAdapter) {
-   var adapterData = electronEnv.database[dbAdapter];
-   var scriptPath = adapterData.script;
-   var adapterScript = fs.readFileSync(scriptPath, {encoding:"UTF-8"});
-   var vmContext = new Object();
-   vmContext = Object.assign(electronEnv.server.exposed_objects, vmContext);
-   var context = vm.createContext(vmContext);
-   vm.runInContext(adapterScript, context, {
-     displayErrors: true,
-     filename: scriptPath
-   });
-   adapterData.vm = context;
-   try {
-      var result = await context.initialize(adapterData);
-      return (true);
-   } catch (err) {
-      console.error ("Couldn't initialize \""+dbAdapter+"\" database adapter: \n"+err.stack);
-      return (false);
-   }
-}
 
 /**
 * Creates and initializes the main WebSocket Sessions server process that
@@ -434,11 +390,7 @@ function onAppActivate() {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
    if (mainWindow === null) {
-      startDatabase("sqlite3").then(result => {
-         createServer();
-      }).catch(err => {
-         console.error (err.stack);
-      });
+      createServer();
    }
 }
 

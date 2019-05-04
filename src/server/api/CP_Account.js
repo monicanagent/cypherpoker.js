@@ -55,23 +55,32 @@ async function CP_Account (sessionObj) {
       switch (requestParams.action) {
          case "new":
             //create new account
+            var ccHandler = getHandler("cryptocurrency", requestParams.type);
+            if (ccHandler == null) {
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Cryptocurrency \""+requestParams.type+"\" not supported.", sessionObj);
+               return(false);
+            }
             var accountObj = new Object(); //returned to user
             var fullAccountObj = new Object(); //stored internally
-            var newAddressResult = await namespace.cp.getNewAddress(requestParams.type, requestParams.network);
+            var newWalletResult = await ccHandler.makeNewWallet(requestParams.type, requestParams.network);
             let hash = crypto.createHash("sha256");
             hash.update(requestParams.password);
             var pwHash = hash.digest("hex");
             fullAccountObj.type = requestParams.type;
             fullAccountObj.network = requestParams.network;
-            if (requestParams.network == "main") {
-               fullAccountObj.chain = config.CP.API.wallets.bitcoin.startChain;
-               fullAccountObj.addressIndex = config.CP.API.wallets.bitcoin.startIndex;
-               fullAccountObj.address = getAddress(newAddressResult);
-            } else {
-               fullAccountObj.chain = config.CP.API.wallets.test3.startChain;
-               fullAccountObj.addressIndex = config.CP.API.wallets.test3.startIndex;
-               fullAccountObj.address = getAddress(newAddressResult, bitcoin.networks.testnet);
+            //is there a more elegant / agnostic way to do this? ...
+            if (requestParams.type == "bitcoin") {
+               if (requestParams.network == "main") {
+                  fullAccountObj.chain = config.CP.API.wallets.bitcoin.startChain;
+                  fullAccountObj.addressIndex = config.CP.API.wallets.bitcoin.startIndex;
+                  fullAccountObj.address = ccHandler.getAddress(newWalletResult);
+               } else {
+                  fullAccountObj.chain = config.CP.API.wallets.test3.startChain;
+                  fullAccountObj.addressIndex = config.CP.API.wallets.test3.startIndex;
+                  fullAccountObj.address = ccHandler.getAddress(newWalletResult, requestParams.network);
+               }
             }
+            fullAccountObj.address = ccHandler.getAddress(newWalletResult, requestParams.network);
             fullAccountObj.pwhash = pwHash;
             fullAccountObj.balance = "0";
             fullAccountObj.updated = MySQLDateTime(new Date()); //make sure to store local date/time (db may differ)
@@ -79,10 +88,12 @@ async function CP_Account (sessionObj) {
             accountObj.network = requestParams.network;
             accountObj.chain = config.CP.API.wallets.bitcoin.startChain;
             accountObj.addressIndex = config.CP.API.wallets.bitcoin.startIndex;
-            if (requestParams.network == "main") {
-               accountObj.address = getAddress(newAddressResult);
-            } else {
-               accountObj.address = getAddress(newAddressResult, bitcoin.networks.testnet);
+            if (requestParams.type == "bitcoin") {
+               if (requestParams.network == "main") {
+                  accountObj.address = ccHandler.getAddress(newWalletResult);
+               } else {
+                  accountObj.address = ccHandler.getAddress(newWalletResult, requestParams.network);
+               }
             }
             accountObj.pwhash = pwHash;
             accountObj.balance = bigInt("0");
@@ -120,6 +131,7 @@ async function CP_Account (sessionObj) {
                sendError(JSONRPC_ERRORS.AUTH_FAILED, "Authentication failed.", sessionObj);
                return (false);
             }
+            ccHandler = getHandler("cryptocurrency", requestParams.type);
             var balanceConfirmed = true;
             if ((accountResults.length == 1) &&
                ((accountResults[0].balance=="0") || (accountResults[0].balance=="NULL") ||
@@ -137,7 +149,7 @@ async function CP_Account (sessionObj) {
                if (delta >= updateLimitSeconds) {
                   //time limit elapsed for checking live balance (allowed)
                   try {
-                     var balanceResult = await this.getBlockchainBalance(requestParams.address, requestParams.type, requestParams.network);
+                     var balanceResult = await ccHandler.getBlockchainBalance(requestParams.address, requestParams.type, requestParams.network);
                      resultObj.address = searchObj.address;
                      resultObj.type = searchObj.type;
                      resultObj.network = searchObj.network;
@@ -147,25 +159,15 @@ async function CP_Account (sessionObj) {
                      resultObj.balance = String(balanceResult.balance);
                      if (resultObj.balance != accountResults[0].balance) {
                         //new confirmed deposit detected; forward new account balance to cashout wallet
-                        if (requestParams.network == "main") {
-                           var wallet = namespace.cp.bitcoinWallet;
-                        } else {
-                           wallet = namespace.cp.bitcoinTest3Wallet;
-                        }
-                        var cashoutWallet = wallet.derivePath(config.CP.API[requestParams.type].default[requestParams.network].cashOutAddrPath);
-                        if (requestParams.network == "main") {
-                           var cashoutAddress = namespace.cp.getAddress(cashoutWallet);
-                        } else {
-                           cashoutAddress = namespace.cp.getAddress(cashoutWallet, bitcoin.networks.testnet);
-                        }
                         var fromAddressPath = "m/" + String(accountResults[0].chain) + "/" + String(accountResults[0].addressIndex);
-                        var fromWallet = wallet.derivePath(fromAddressPath);
+                        var cashoutPath = config.CP.API[requestParams.type].default[requestParams.network].cashOutAddrPath;
+                        var cashoutAddress = ccHandler.getDerivedWallet(cashoutPath, requestParams.network, true);
                         var transferAmount = bigInt(balanceResult.balance);
                         var minerFee = bigInt(config.CP.API[requestParams.type].default[requestParams.network].minerFee);
                         var depositFee = bigInt(config.CP.API[requestParams.type].default[requestParams.network].depositFee);
                         transferAmount = transferAmount.minus(minerFee);
                         try {
-                           var txResult = await sendTransaction(fromWallet, cashoutAddress, transferAmount, minerFee, requestParams.type, requestParams.network);
+                           var txResult = await ccHandler.sendTransaction(fromAddressPath, cashoutAddress, transferAmount, minerFee, requestParams.type, requestParams.network);
                         } catch (err) {
                            sendError(JSONRPC_ERRORS.INTERNAL_ERROR, "Unable to forward transaction to cashout wallet.", sessionObj);
                            return(false);
@@ -174,7 +176,7 @@ async function CP_Account (sessionObj) {
                            if ((txResult.tx != undefined) && (txResult.tx != null)) {
                               if ((txResult.tx.hash != undefined) && (txResult.tx.hash != null) && (txResult.tx.hash != "")) {
                                  //Successfully forwarded new confirmed deposit:
-                                 //Sender: getAddress(fromWallet) or getAddress(fromWallet, bitcoin.networks.testnet)
+                                 //Sender: ccHandler.getDerivedWallet(fromWallet).address or ccHandler.getDerivedWallet(fromWallet).address
                                  //Receiver: cashoutAddress
                                  //Transaction hash: txResult.tx.hash
                                  //Amount: transferAmount
@@ -231,6 +233,7 @@ async function CP_Account (sessionObj) {
             break;
          case "cashout":
             //cashout an account to a provided address
+            ccHandler = getHandler("cryptocurrency", requestParams.type);
             if (typeof(requestParams.password) != "string") {
                sendError(JSONRPC_ERRORS.AUTH_FAILED, "Authentication failed.", sessionObj);
                return (false);
@@ -292,7 +295,7 @@ async function CP_Account (sessionObj) {
             }
             var newBalance = availableAmount.minus(totalCashoutAmount);
             addPendingCashout(requestParams.address, requestParams.toAddress, requestParams.type, requestParams.network, cashoutAmount.toString(10), fees.toString(10));
-            var txResult = await cashoutToAddress(requestParams.toAddress, cashoutAmount.toString(10), fees.toString(10), requestParams.type, requestParams.network);
+            var txResult = await ccHandler.cashoutToAddress(requestParams.toAddress, cashoutAmount.toString(10), fees.toString(10), requestParams.type, requestParams.network);
             removePendingCashout(requestParams.address, requestParams.type, requestParams.network);
             if (txResult != null) {
                if ((txResult.tx != undefined) && (txResult.tx != null)) {
@@ -474,36 +477,6 @@ function MySQLDateTime(dateObj) {
 }
 
 /**
-*
-* Creates a HD (Hierarchical Deterministic) Bitcoin wallet from which addresses can be
-* derived.
-*
-* @param {String} privKey A "xprv" or "tprv" base 58 string containing the private
-* key of the wallet.
-*
-* @return {Object} A wallet object containing both the public and private keys
-* from which Bitcoin addresses can be derived (using <code>derivePath</code>).
-*/
-function makeHDWallet(privKey) {
-   try {
-      if (privKey.indexOf("xprv") == 0) {
-         //mainnet
-         var wallet = bitcoin.bip32.fromBase58(privKey);
-      } else {
-         //testnett
-         wallet = bitcoin.bip32.fromBase58(privKey, bitcoin.networks.testnet);
-      }
-   } catch (err) {
-      console.error(err.stack);
-      return (null);
-   }
-   if (wallet == undefined) {
-      return (null);
-   }
-   return (wallet);
-}
-
-/**
 * Compares a password (or any string) against its SHA256 hash.
 *
 * @param {String} password The plaintext password (or any string) to compare.
@@ -521,81 +494,6 @@ function checkPassword(password, pwhash) {
    } else {
       return (false);
    }
-}
-
-/**
-* Returns the address of a Bitcoin wallet object.
-*
-* @param {Object} walletObj A Bitcoin wallet data object.
-* @param {Object} [network=null] The sub-network for which to get the address.
-* Either <null>code</code> (mainnet), or <code>bitcoin.networks.testnet</code>
-*
-* @private
-*/
-function getAddress(walletObj, network=null) {
-   if (network == null) {
-      return (bitcoin.payments.p2pkh({pubkey:walletObj.publicKey}).address);
-   } else {
-      return (bitcoin.payments.p2pkh({pubkey:walletObj.publicKey, network}).address);
-   }
-}
-
-/**
-* Creates a new blockchain address.
-*
-* @param {String} [APIType="bitcoin"] The API endpoint configuration to use for
-* the API call. This value must match one of the definitions found in the
-* <code>config.CP.API</code> object.
-* @param {String} [network=null] The sub-network, if applicable, for which to
-* create the address. Valid values include "main" and "test3".
-* If <code>null</code>, the default network specified in
-* <code>config.CP.API[APIType].default.network</code> is used.
-*
-* @return {Promise} The resolved promise will include a native JavaScript object
-* containing the new derived wallet object. The rejected promise will
-* contain the error object.
-*/
-function getNewAddress(APIType="bitcoin", network=null) {
-   var promise = new Promise(function(resolve, reject) {
-      if (network == null) {
-         network = config.CP.API[APIType].default.network;
-      }
-      if ((network == "main") && (namespace.cp.bitcoinWallet != null)) {
-         if (config.CP.API.wallets.bitcoin.startChain < 0) {
-            config.CP.API.wallets.bitcoin.startChain = 0;
-         }
-         //address index 0 is reserved for the cashout address
-         if (config.CP.API.wallets.bitcoin.startIndex < 0) {
-            config.CP.API.wallets.bitcoin.startIndex = 0;
-         }
-         //currently we simply increment the index:
-         config.CP.API.wallets.bitcoin.startIndex++;
-         //the chain value is currently 0 but can be set manually
-         var startChain = config.CP.API.wallets.bitcoin.startChain;
-         var startIndex = config.CP.API.wallets.bitcoin.startIndex;
-      } else if ((network == "test3") && (namespace.cp.bitcoinTest3Wallet != null)) {
-         if (config.CP.API.wallets.test3.startChain < 0) {
-            config.CP.API.wallets.test3.startChain = 0;
-         }
-         //address index 0 is reserved for the cashout address
-         if (config.CP.API.wallets.test3.startIndex < 0) {
-            config.CP.API.wallets.test3.startIndex = 0;
-         }
-         config.CP.API.wallets.test3.startIndex++;
-         startChain = config.CP.API.wallets.test3.startChain;
-         startIndex = config.CP.API.wallets.test3.startIndex;
-      } else {
-         reject(new Error("Wallet for \""+APIType+"\", network \""+network+"\" not defined."));
-         return;
-      }
-      if (network == "main") {
-         var newWallet = namespace.cp.bitcoinWallet.derivePath("m/"+startChain+"/"+startIndex);
-      } else {
-         newWallet = namespace.cp.bitcoinTest3Wallet.derivePath("m/"+startChain+"/"+startIndex);
-      }
-      resolve (newWallet);
-   });
-   return (promise);
 }
 
 /**
@@ -747,25 +645,6 @@ function callAccountDatabase(method, message) {
             transport = "http";
          }
          switch (transport) {
-            case "sqlite3":
-               //use SQLite 3 adapter
-               if (hostEnv.embedded == false) {
-                  //not supported in current host
-                  reject (new Error("Host environment doesn't support SQLite 3 database functionality."));
-               } else {
-                  var requestObj = new Object();
-                  requestObj.jsonrpc = "2.0";
-                  requestObj.id = String(Math.random()).split(".")[1];
-                  requestObj.method = method;
-                  requestObj.params = new Object();
-                  requestObj.params.message = message;
-                  hostEnv.database.sqlite3.vm.invoke(requestObj).then(result => {
-                     resolve(result); //any JSON-RPC response is valid
-                  }).catch (err => {
-                     reject(err);
-                  });
-               }
-               break;
             case "http":
                //standard remote database call:
                var host = config.CP.API.database.host;
@@ -804,7 +683,21 @@ function callAccountDatabase(method, message) {
                });
                break;
             default:
-               reject (new Error("Unrecognized database transport type \""+transport+"\"."));
+               //process call using adapter
+               var adapterConfigPath = "CP.API.database.adapters."+transport;
+               var adapterConfig = getConfigByPath(adapterConfigPath);
+               var adapter = adapterConfig.instance;
+               var requestObj = new Object();
+               requestObj.jsonrpc = "2.0";
+               requestObj.id = String(Math.random()).split(".")[1];
+               requestObj.method = method;
+               requestObj.params = new Object();
+               requestObj.params.message = message;
+               adapter.invoke(requestObj).then(result => {
+                  resolve(result); //any JSON-RPC response is valid
+               }).catch (err => {
+                  reject(err);
+               });
                break;
          }
       } else {
@@ -812,299 +705,6 @@ function callAccountDatabase(method, message) {
       }
    });
    return (promise);
-}
-
-/**
-* Retrieves a live blockchain balance for an address.
-*
-* @param {String} address The address for which to retrieve the live balance.
-* @param {String} [APIType="bitcoin"] The API endpoint configuration to use for
-* the API call. This value must match one of the definitions found in the
-* <code>config.CP.API</code> object.
-* @param {String} [network=null] The sub-network, if applicable, from which
-* to retrieve the live balance. Valid values include "main" and "test3".
-* If <code>null</code>, the default network specified in
-* <code>config.CP.API[APIType].default.network</code> is used.
-*
-* @return {Promise} The resolved promise will include a native JavaScript object
-* containing the parsed response from the API endpoint. The rejected promise will
-* contain the error object.
-*/
-function getBlockchainBalance(address, APIType="bitcoin", network=null) {
-   var promise = new Promise(function(resolve, reject) {
-      var API = config.CP.API[APIType];
-      var url = API.url.balance;
-      if (network == null) {
-         network = API.default.network;
-      }
-      url = url.split("%address%").join(address).split("%network%").join(network);
-      request({
-   		url: url,
-   		method: "GET",
-   		json: true
-   	}, (error, response, body) => {
-         if (error) {
-            reject(error);
-         } else {
-            resolve(body);
-         }
-   	});
-   });
-	return (promise);
-}
-
-/**
-* Cashes out from the configured cashout wallet to a specific address.
-*
-* @param {String} toAddress The address to cash out to.
-* @param {String|Number} amount The amount to cash out. The miner <code>fees</code> will
-* be deducted from this amount.
-* @param {String|Number} [fees=null] The miner fees to deduct from <code>amount</code> and
-* include with the transaction. If <code>null</code>, the default fee defined for the
-* <code>APIType</code> and <code>network</code> will be used.
-* @param {String} [APIType="bitcoin"] The main cryptocurrency API type.
-* @param {String} [network=null] The cryptocurrency sub-network, if applicable, for the
-* transaction. Current <code>network</code> types include: "main" and "test3". If <code>null</code>,
-* the default network specified in <code>config.CP.API[APIType].default.network</code> is used.
-*/
-async function cashoutToAddress(toAddress, amount, fees=null, APIType="bitcoin", network=null) {
-   var API = config.CP.API[APIType];
-   if (network == null) {
-      network = API.default.network;
-   }
-   if (fees == null) {
-      fees = API.default[network].minerFee;
-   }
-   var result = null;
-   switch (APIType) {
-      case "bitcoin":
-         if (network == "main") {
-            var fromWallet = namespace.cp.bitcoinWallet.derivePath(API.default[network].cashOutAddrPath);
-         } else {
-            fromWallet = namespace.cp.bitcoinTest3Wallet.derivePath(API.default[network].cashOutAddrPath);
-         }
-         var sendTxResult = await sendTransaction(fromWallet, toAddress, amount, fees, APIType, network);
-         return (sendTxResult);
-         break;
-      default:
-         throw (new Error("Unsupported API type \""+APIType+"\"."));
-         break;
-   }
-   throw (new Error("Unknown error when cashing out."));
-}
-
-/**
-* Sends a transaction from a wallet to an address.
-*
-* @param {Object} fromWallet The sending wallet object containing the public and private keys.
-* @param {String} toAddress The receiving address that the funds will be sent to.
-* @param {String|Number} amount The amount to send in the transaction in the lowest denomination for
-* the associated cryptocurrency/API type (e.g. satoshis if <code>APIType="bitcoin"</code>). The
-* fees specified in the <code>fees</code> parameter will be automatically deducted from this value.
-* @param {String|Number} [fees=null] The miner fees to deduct from the <code>amount</code> and include
-* with the transaction. If <code>null</code>, the default fee defined for the <code>APIType</code>
-* and <code>network</code> will be used.
-* @param {String} [APIType="bitcoin"] The main cryptocurrency API type.
-* @param {String} [network=null] The cryptocurrency sub-network, if applicable, for the
-* transaction. Current <code>network</code> types include: "main" and "test3". If <code>null</code>,
-* the default network specified in <code>config.CP.API[APIType].default.network</code> is used.
-*/
-async function sendTransaction(fromWallet, toAddress, amount, fees=null, APIType="bitcoin", network=null) {
-   var API = config.CP.API[APIType];
-   if (network == null) {
-      network = API.default.network;
-   }
-   if (fees == null) {
-      fees = API.default[network].minerFee;
-   }
-   var result = null;
-   switch (APIType) {
-      case "bitcoin":
-         if (network == "main") {
-            var fromAddress = getAddress(fromWallet);
-         } else {
-            fromAddress = getAddress(fromWallet, bitcoin.networks.testnet);
-         }
-         var fromWIF = fromWallet.toWIF();
-         var txSkeleton = await newBTCTx(fromAddress, toAddress, amount, fees, network);
-         var signedTx = signBTCTx(txSkeleton, fromWIF, network); //not async
-         if (signedTx == null) {
-            throw (new Error("Couldn't sign transaction."));
-         }
-         try {
-            var sendTxResult = await sendBTCTx(signedTx, network);
-         } catch (err) {
-            throw (err);
-         }
-         return (sendTxResult);
-         break;
-      default:
-         throw (new Error("Unsupported API type \""+APIType+"\"."));
-         break;
-   }
-   throw (new Error("Unknown error when sending transaction."));
-}
-
-/**
-* Creates a new BlockCypher Bitcoin transaction skeleton for use with the {@link signBTCTx} function.
-*
-* @param {String} fromAddress The address sending the transaction.
-* @param {String} toAddress The address receiving the transaction.
-* @param {String|Number} satAmount The amount, in satoshis, to send to <code>toAddress</code>.
-* @param {String|Number} satFees The miner fees, in satoshis, to include with the transaction.
-* @param {String} [network=null] The sub-network, if applicable, for which to create the
-* new transaction skeleton. Valid values include "main" and "test3".
-* If <code>null</code>, the default network specified in
-* <code>config.CP.API.bitcoin.default.network</code> is used.
-*
-* @return {Promise} The resolved promise will include a native JavaScript object
-* containing the unsigned transaction skeleton. The rejected promise will contain the
-* error response.
-*/
-function newBTCTx (fromAddress, toAddress, satAmount, satFees, network=null) {
-   var promise = new Promise(function(resolve, reject) {
-      var API = config.CP.API.bitcoin;
-      var url = API.url.createtx;
-      if (network == null) {
-         network = API.default.network;
-      }
-      var token = config.CP.API.tokens.blockcypher;
-      url = url.split("%network%").join(network).split("%token%").join(token);
-      var requestBody = {
-         "inputs":[{"addresses":[fromAddress]}],
-         "outputs":[{"addresses":[toAddress],
-         "value": Number(satAmount)}],
-         "fees":Number(satFees)
-      };
-   	request({
-   		url: url,
-   		method: "POST",
-   		body:requestBody,
-   		json: true
-   	}, function (error, response, body){
-   		if (error) {
-            reject (error);
-         } else {
-            if ((body == undefined) || (body == null)) {
-               reject (response);
-               return;
-            }
-            if ((body.errors != undefined) && (body.errors != null)) {
-               if (body.errors.length > 0) {
-                  reject (body.errors);
-               } else {
-                  resolve (body);
-               }
-            } else {
-               resolve (body);
-            }
-         }
-   	});
-   });
-   return (promise);
-}
-
-/**
-* Signs a BlockCypher-generated Bitcoin transaction skeleton with a keypair in WIF format.
-*
-* @param {Object} txObject The transaction skeleton object to sign.
-* @param {Object} WIF The Wallet Import Format data to use for signing.
-* @param {String} [network=null] The sub-network, if applicable, for which the
-* transaction skeleton has been created. Valid values include "main" and "test3".
-* If <code>null</code>, the default network specified in
-* <code>config.CP.API.bitcoin.default.network</code> is used.
-*
-* @return {Object} The signed Bitcoin transaction object (which can be sent to the network).
-*/
-function signBTCTx (txObject, WIF, network=null) {
-   if (network == null) {
-      network = config.CP.API.bitcoin.default.network;
-   }
-	if (network == "main") {
-		var keys = keys = new bitcoin.ECPair.fromWIF(WIF);
-	} else {
-		keys = new bitcoin.ECPair.fromWIF(WIF, bitcoin.networks.testnet);
-	}
-	try {
-      var pubkeys = new Array();
-      var signatures = txObject.tosign.map(function(tosign) {
-        pubkeys.push(keys.publicKey.toString("hex"));
-        return (signToDER(tosign, keys.privateKey).toString("hex"));
-      });
-		txObject.signatures = signatures;
-		txObject.pubkeys = pubkeys;
-	} catch (err) {
-      console.error(err.stack);
-		txObject = null;
-	}
-	return (txObject);
-}
-
-/**
-* Signs an input hexadecimal string and returns a DER-encoded signature.
-*
-* @param {String} toSignHex Hexadecimal-encoded data string to sign.
-* @param {Buffer} privateKeyBuffer The private key with which to sign <code>toSignHex</code>.
-*
-* @return {Buffer} The DER-encoded, signed message. Use <code>toString("hex")</code> to get the
-* hexadecimal string representation of the output.
-*/
-function signToDER (toSignHex, privateKeyBuffer) {
-   var sigObj = secp256k1.sign(Buffer.from(toSignHex, "hex"), privateKeyBuffer);
-   return (secp256k1.signatureExport(sigObj.signature));
-}
-
-/**
-* Sends a signed Bitcoin transaction skeleton via the BlockCypher API.
-*
-* @param {Object} txObject The transaction to send.
-* @param {String} [network=null] The Bitcoin sub-network for which the
-* transaction is intended. Valid values include "main" and "test3".
-* If <code>null</code>, the default network specified in
-* <code>config.CP.API.bitcoin.default.network</code> is used.
-*
-* @return {Promise} The resolved promise will include a native JavaScript object
-* containing the parsed response from the API endpoint. The rejected promise will
-* contain the error object.
-*/
-function sendBTCTx(txObject, network=null) {
-   /*
-   TODO: Future update example to build transaction from scratch:
-
-   var key = bitcoin.ECKey.fromWIF("L1Kzcyy88LyckShYdvoLFg1FYpB5ce1JmTYtieHrhkN65GhVoq73");
-   var tx = new bitcoin.TransactionBuilder();
-   tx.addInput("d18e7106e5492baf8f3929d2d573d27d89277f3825d3836aa86ea1d843b5158b", 1);
-   tx.addOutput("12idKQBikRgRuZEbtxXQ4WFYB7Wa3hZzhT", 149000);
-   tx.sign(0, key);
-   console.log(tx.build().toHex());
-   */
-   var promise = new Promise(function(resolve, reject) {
-      var API = config.CP.API.bitcoin;
-      var url = API.url.sendtx;
-      if (network == null) {
-         network = API.default.network;
-      }
-      var token = config.CP.API.tokens.blockcypher;
-      url = url.split("%network%").join(network).split("%token%").join(token);
-      request({
-         url: url,
-   		method: "POST",
-   		body: txObject,
-   		json: true
-   	}, (error, response, body) => {
-         if ((body == undefined) || (body == null)) {
-            reject (response);
-            return;
-         }
-         if (error) {
-            reject(error);
-         } else {
-            //do we want to catch and reject JSON-RPC errors here?
-            resolve(body);
-         }
-   	});
-   });
-	return (promise);
 }
 
 /**
@@ -1267,7 +867,7 @@ function updateTxFees(APIType="bitcoin", network=null, forceUpdate=false) {
          reject (new Error("Fee updates for \""+APIType+"/"+network+"\" disabled."));
          return;
       }
-      var url = API.url.fees;
+      var url = API.urls.blockcypher.fees;
       var updateSeconds = API.default[network].feeUpdateSeconds;
       if ((updateSeconds > 0) && (forceUpdate == false)) {
          var lastUpdate = API.default[network]["lastUpdated"];
@@ -1402,22 +1002,20 @@ namespace.cp.saveAccount = saveAccount;
 namespace.cp.updateAccount = updateAccount;
 namespace.cp.checkPassword = checkPassword;
 namespace.cp.callAccountDatabase = callAccountDatabase;
-namespace.cp.getAddress = getAddress;
-namespace.cp.getNewAddress = getNewAddress;
-namespace.cp.getBlockchainBalance = getBlockchainBalance;
-namespace.cp.cashoutToAddress = cashoutToAddress;
 namespace.cp.cashoutIsPending = cashoutIsPending;
-namespace.cp.newBTCTx = newBTCTx;
-namespace.cp.signBTCTx = signBTCTx;
-namespace.cp.sendBTCTx = sendBTCTx;
-namespace.cp.makeHDWallet = makeHDWallet;
 namespace.cp.MySQLDateTime = MySQLDateTime;
 namespace.cp.buildCPMessage = buildCPMessage;
-if (namespace.cp.bitcoinWallet == undefined) {
-   namespace.cp.bitcoinWallet = null;
+if (namespace.cp.wallets == undefined) {
+   namespace.cp.wallets = new Object();
 }
-if (namespace.cp.bitcoinTest3Wallet == undefined) {
-   namespace.cp.bitcoinTest3Wallet = null;
+if (namespace.cp.wallets.bitcoin == undefined) {
+   namespace.cp.wallets.bitcoin = new Object();
+}
+if (namespace.cp.wallets.bitcoin.main == undefined) {
+   namespace.cp.wallets.bitcoin.main = null;
+}
+if (namespace.cp.wallets.bitcoin.test3 == undefined) {
+   namespace.cp.wallets.bitcoin.test3 = null;
 }
 if (namespace.cp._txFeesUpdating == undefined) {
    namespace.cp._txFeesUpdating = true;

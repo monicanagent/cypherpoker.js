@@ -20,7 +20,9 @@
 * @default {
 *  namespace:namespace,<br/>
 *  config:{@link config},<br/>
+*  getConfigByPath:{@link getConfigByPath),<br/>
 *  require:require,<br/>
+*  process:process,<br/>
 *  Buffer:Buffer,<br/>
 *  request:request,<br/>
 *  console:console,<br/>
@@ -31,7 +33,8 @@
 *  setTimeout:setTimeout,<br/>
 *  clearTimeout:clearTimeout,<br/>
 *  crypto:crypto,<br/>
-*  bigInt:bigInt,<br/>
+*  bigInt:bigInt,
+*  getHandler:{@link getHandler}<br/>
 *  bitcoin:bitcoin,<br/>
 *  secp256k1:secp256k1,<br/>
 *  sendResult:{@link sendResult},<br/>
@@ -41,24 +44,43 @@
 *  JSONRPC_ERRORS:{@link JSONRPC_ERRORS}
 * }
 */
-
 /**
-* Server objects exposed to gateway modules. Note that
-* because gateways are not executed in their own virtual machines
+* Server objects exposed to external library, adapter, gateway, and other add-on
+* modules. Note that because libraries are not executed in their own virtual machines
 * they have access to most top-level objects.
-* @typedef {Object} Exposed_Gateway_Objects
+* @typedef {Object} Exposed_Library_Objects
 * @default {
+*  namespace:namespace,<br/>
 *  config:{@link config},<br/>
-*  validateJSONRPC:{@link validateJSONRPC},<br/>
+*  require:require,<br/>
+*  Buffer:Buffer,<br/>
+*  request:request,<br/>
+*  console:console,<br/>
+*  module:module,<br/>
+*  hostEnv:{@link hostEnv},<br/>
+*  setInterval:setInterval,<br/>
+*  clearInterval:clearInterval,<br/>
+*  setTimeout:setTimeout,<br/>
+*  clearTimeout:clearTimeout,<br/>
+*  bigInt:bigInt,<br/>
+*  crypto:crypto,<br/>
+*  getHandler:getHandler,<br/>
+*  bitcoin:bitcoin,<br/>
+*  secp256k1:secp256k1,<br/>
+*  sendResult:{@link sendResult},<br/>
+*  sendError:{@link sendError},<br/>
+*  buildJSONRPC:{@link buildJSONRPC},<br/>
 *  paramExists:{@link paramExists},<br/>
+*  getConfigByPath:{@link getConfigByPath},<br/>
+*  validateJSONRPC:{@link validateJSONRPC},<br/>
+*  handleHTTPRequest:{@link handleHTTPRequest}
+,<br/>
 *  processRPCRequest:{@link processRPCRequest},<br/>
 *  invokeAPIFunction:{@link invokeAPIFunction},<br/>
-*  sendError:{@link sendError},<br/>
-*  sendResult:{@link sendResult},<br/>
-*  buildJSONRPC:{@link buildJSONRPC},<br/>
-*  handleHTTPRequest:{@link handleHTTPRequest}
+*  JSONRPC_ERRORS:{@link JSONRPC_ERRORS}<br/>
 * }
 */
+
 /**
 * @typedef {ws} wsserv A WebSocket endpoint ("ws" module).
 */
@@ -173,8 +195,9 @@ const JSONRPC_ERRORS = {
 * @property {Boolean} http_only_handshake=false Defines whether session handshakes are done only through HTTP/HTTPS (true),
 * or if they can be done through the WebSocket server (false).
 * @property {Number} max_ws_per_ip=10 The maximum number of concurrent WebSocket connections to allow from a single IP.
-* @property {Exposed_Gateway_Objects} exposed_gateway_objects Internal server references to expose to communication gateways functions. Note that each internal
-* reference may be assigned an alias instead of its actual name.
+* @property {Exposed_Library_Objects} exposed_library_objects Internal server references to expose to libraries, adapters, communication gateways functions, and other
+* server add-ons. Note that each internal reference may be assigned an alias instead of its actual name.
+
 */
 var rpc_options = {
   api_dir: "./api",
@@ -186,6 +209,34 @@ var rpc_options = {
 		{"Content-Type" : "application/json-rpc"}
   ],
   exposed_api_objects: {
+    namespace:namespace,
+    config:config,
+    getConfigByPath:getConfigByPath,
+    require:require,
+    Buffer:Buffer,
+    request:request,
+    console:console,
+    module:module,
+    hostEnv:hostEnv,
+    setInterval:setInterval,
+    clearInterval:clearInterval,
+    setTimeout:setTimeout,
+    clearTimeout:clearTimeout,
+    bigInt:bigInt,
+    crypto:crypto,
+    getHandler:getHandler,
+    bitcoin:bitcoin,
+    secp256k1:secp256k1,
+    sendResult:sendResult,
+    sendError:sendError,
+    buildJSONRPC:buildJSONRPC,
+    paramExists:paramExists,
+    JSONRPC_ERRORS:JSONRPC_ERRORS
+  },
+  api_timelimit: 3000,
+  http_only_handshake: false,
+  max_ws_per_ip:10,
+  exposed_library_objects: {
     namespace:namespace,
     config:config,
     require:require,
@@ -200,30 +251,20 @@ var rpc_options = {
     clearTimeout:clearTimeout,
     bigInt:bigInt,
     crypto:crypto,
+    getHandler:getHandler,
     bitcoin:bitcoin,
     secp256k1:secp256k1,
     sendResult:sendResult,
     sendError:sendError,
     buildJSONRPC:buildJSONRPC,
     paramExists:paramExists,
+    getConfigByPath:getConfigByPath,
+    validateJSONRPC:validateJSONRPC,
+    handleHTTPRequest:handleHTTPRequest,
+    processRPCRequest:processRPCRequest,
+    invokeAPIFunction:invokeAPIFunction,
     JSONRPC_ERRORS:JSONRPC_ERRORS
-  },
-  api_timelimit: 3000,
-  http_only_handshake: false,
-  max_ws_per_ip:10,
-  exposed_gateway_objects: {
-     hostEnv:hostEnv,
-     config:config,
-     getConfigByPath:getConfigByPath,
-     validateJSONRPC:validateJSONRPC,
-     paramExists:paramExists,
-     processRPCRequest:processRPCRequest,
-     invokeAPIFunction:invokeAPIFunction,
-     sendError:sendError,
-     sendResult:sendResult,
-     buildJSONRPC:buildJSONRPC,
-     handleHTTPRequest:handleHTTPRequest
- }
+   }
 }
 rpc_options.exposed_api_objects.rpc_options = rpc_options; // expose the options too (circular reference!)
 
@@ -1071,20 +1112,22 @@ async function createAccountSystem(onCreateCB=null) {
             break;
       }
    }
+   var ccHandler = getHandler("cryptocurrency", "bitcoin");
    //create HD wallets if possible
-   namespace.cp.bitcoinWallet = namespace.cp.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
-   if (namespace.cp.bitcoinWallet != null) {
+   namespace.cp.wallets.bitcoin.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
+   console.log ("Created main Bitcoin wallet: "+namespace.cp.wallets.bitcoin.main );
+   if (namespace.cp.wallets.bitcoin.main != null) {
       var walletPath = config.CP.API.bitcoin.default.main.cashOutAddrPath;
-      var cashoutWallet = namespace.cp.bitcoinWallet.derivePath(walletPath);
-      console.log ("Bitcoin HD wallet (\""+walletPath+"\") configured @ "+namespace.cp.getAddress(cashoutWallet));
+      var cashoutWallet = namespace.cp.wallets.bitcoin.main.derivePath(walletPath);
+      console.log ("Bitcoin HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet));
    } else {
       console.log ("Could not configure Bitcoin wallet.");
    }
-   namespace.cp.bitcoinTest3Wallet = namespace.cp.makeHDWallet(config.CP.API.wallets.test3.tprv);
-   if (namespace.cp.bitcoinTest3Wallet != null) {
+   namespace.cp.wallets.bitcoin.test3 = ccHandler.makeHDWallet(config.CP.API.wallets.test3.tprv);
+   if (namespace.cp.wallets.bitcoin.test3 != null) {
       walletPath = config.CP.API.bitcoin.default.test3.cashOutAddrPath;
-      cashoutWallet = namespace.cp.bitcoinTest3Wallet.derivePath(walletPath);
-      console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+namespace.cp.getAddress(cashoutWallet, bitcoin.networks.testnet));
+      cashoutWallet = namespace.cp.wallets.bitcoin.test3.derivePath(walletPath);
+      console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, bitcoin.networks.testnet));
    } else {
       console.log ("Could not configure Bitcoin testnet wallet.");
    }
@@ -1141,6 +1184,156 @@ async function createAccountSystem(onCreateCB=null) {
 }
 
 /**
+* Starts a database adapter and makes it available to the application.
+*
+* @param {String} [dbAdapter=null] The database adapter to start. The name must match one of those defined
+* in the {@link config}.CP.API.database.adapters objects. If null or not supplied, the adapter (if applicable),
+is determined from the {@link config}CP.API.database.url property.
+*
+* @return {Promise} The returned promise resolves with <code>true</code> if the database could be
+* successfully started. An <code>Error</code> object is included with a rejection on any failure.
+*/
+async function startDatabase(dbAdapter=null) {
+   if (dbAdapter == null) {
+      var url = config.CP.API.database.url;
+      var dbAdapter = url.split("://")[0];
+      if ((dbAdapter == "https") || (dbAdapter == "http")) {
+         //use remote adapter (nothing to do)
+         return (true);
+      }
+      var adapters = config.CP.API.database.adapters;
+   }
+   var found = false;
+   for (var adapter in adapters) {
+      if (adapter == dbAdapter) {
+         found = true;
+         break;
+      }
+   }
+   if (found == false) {
+      throw (new Error("Database adapter definition for \""+dbAdapter+"\" not found in configuration."));
+   }
+   console.log ("Starting database adapter: "+dbAdapter);
+   var adapterConfig = config.CP.API.database.adapters[dbAdapter];
+   //var adapterData = electronEnv.database[dbAdapter];
+   var scriptPath = adapterConfig.script;
+   var binPath = adapterConfig.bin;
+   var dbFilePath = config.CP.API.database.url.split(dbAdapter+"://")[1];
+   if (hostEnv.embedded == true) {
+      scriptPath = path.resolve(hostEnv.dir.server + scriptPath);
+      adapterConfig.bin = path.resolve(hostEnv.dir.server + adapterConfig.bin);
+      dbFilePath = hostEnv.dir.server + dbFilePath;
+      dbFilePath = dbFilePath.split("/./").join("/");
+   }
+   var DatabaseAdapter = require(scriptPath);
+   var adapter = new DatabaseAdapter(rpc_options.exposed_library_objects);
+   adapterConfig.instance = adapter;
+   try {
+      var result = await adapter.initialize(adapterConfig);
+      if (result == true) {
+         var opened = await adapter.openDBFile(dbFilePath);
+      }
+      console.log ("Database adapter successfully started.");
+      return (true);
+   } catch (err) {
+      console.error ("Couldn't initialize \""+dbAdapter+"\" database adapter: \n"+err.stack);
+      return (false);
+   }
+}
+
+/**
+* Loads and starts any handlers defined in the {@link config}
+* object's <code>CP.RPC.handlers</code> array. Each affected element
+* will have a new <code>handler</code> property addedd to it with the
+* defined handler instance. Any existing handlers will be <code>destroy</code>ed
+* and removed.
+*
+* @param {String} [type="all"] The handlers or a specific <code>type</code>
+* to load. If "all", all handlers found in <code>CP.RPC.handlers</code> are
+* created.
+*/
+async function loadHandlers(type="all") {
+   var handlers = config.CP.API.handlers;
+   console.log ("Now loading \""+type+"\" handlers ("+String(handlers.length)+"): ");
+   for (var count = 0; count < handlers.length; count++) {
+      try {
+         var currentHandler = handlers[count];
+         var handlerType = currentHandler.type;
+         var handlerName = currentHandler.name
+         if (type == "all") {
+            var handlerClass = require(currentHandler.handlerClass);
+            var handler = new handlerClass(rpc_options.exposed_library_objects);
+            console.log ("   Loaded handler: "+handlerName);
+            if (typeof (currentHandler.handler) == "object") {
+               try {
+                  currentHandler.handler.destroy();
+               } catch (err) {
+                  //probably no "destroy" function
+               }
+               delete currentHandler.handler;
+            }
+            currentHandler.handler = handler;
+         } else {
+            if (handlerType == type) {
+               if (typeof (currentHandler.handler) == "object") {
+                  try {
+                     currentHandler.handler.destroy();
+                  } catch (err) {
+                     //probably no "destroy" function
+                  }
+                  delete currentHandler.handler;
+               }
+               var handlerClass = require(currentHandler.handlerClass);
+               var handler = new handlerClass(rpc_options.exposed_library_objects);
+               console.log ("   "+handlerName);
+               currentHandler.handler = handler;
+            }
+         }
+      } catch (err) {
+         console.error (err);
+      }
+   }
+}
+
+/**
+* Retrieves the first availablle handler of a certain type and sub-type from
+* the {@link config} object's <code>CP.RPC.handlers</code> array.
+*
+* @param {String} handlerType The main handler category matching a handler's
+* <code>type</code> definition. E.g. "cryptocurrency"
+* @param {String} subType The secondary handler category matching one of the handler's
+* <code>types</code> elements. If this is "any" or "*" then the first match for the
+* <code>handlerType</code> os returned.
+* @param {Boolean} [caseSensitive=false] If true, the sub-type match is done with
+* case sensititivity.
+*
+* @return {Object} Either the class instance of the found handler, or <code>null</code>
+* if no such handler can be found.
+*/
+function getHandler(handlerType, subType, caseSensitive=false) {
+   var handlers = config.CP.API.handlers;
+   for (var count = 0; count < handlers.length; count++) {
+      var currentHandler = handlers[count];
+      var handlerTypes = currentHandler.types;
+      for (var count2=0; count2 < handlerTypes.length; count2++) {
+         var currentType = handlerTypes[count2];
+         if (caseSensitive == false) {
+            currentType = currentType.toLowerCase();
+            subType = subType.toLowerCase();
+         }
+         if ((currentType == subType) || (subType == "*") || (subType == "any")) {
+            if (typeof(currentHandler.handler) == "object") {
+               return (currentHandler.handler);
+            } else {
+               //keep looking
+            }
+         }
+      }
+   }
+   return (null);
+}
+
+/**
 * Invokes the "onInit" function in the host desktop (Electron) environment when
 * all initialization routines have completed. If the server is not running as
 * an embedded component this function does nothing.
@@ -1159,45 +1352,21 @@ function invokeHostOnInit() {
 
 /**
 * Function invoked after the main configuration data is loaded and parsed but
-* before API functions are loaded, the account system initialized, and the
-* server endpoints started.
+* before any database adapter is started, API functions are loaded, the account system initialized,
+* or any server gateway(s) are started.
 *
 * @async
 * @private
 */
 async function postLoadConfig() {
-   if ((hostEnv.embedded == true) && (config.CP.API.database.enabled == true)) {
-      var url = config.CP.API.database.url;
-      var transport = url.split("://")[0];
-      if (transport == "https") {
-         transport = "http";
-      }
-      if (transport == "sqlite3") {
-         //using local SQLite 3 database
-         var dbFilePath = url.split(transport+"://").join("");
-         try {
-            //console.dir (hostEnv.host);
-            //startDatabase function exposed by host (Electron) environment
-            var started = await startDatabase(transport);
-            if (started == true) {
-               var opened = await hostEnv.database.sqlite3.vm.openDBFile(dbFilePath);
-               if (opened == false) {
-                  console.log ("Couldn't open SQLite 3 database: "+dbFilePath);
-               }
-            } else {
-               console.error ("Could not start SQLite 3 database.");
-            }
-         } catch (err) {
-            //couldn't open database
-            return(false);
-         }
-      } else {
-         //using rdb or other account storage
-      }
-   }
+   rpc_options.exposed_library_objects.hostEnv = hostEnv;
+   rpc_options.exposed_library_objects.config = config;
+   var result = await startDatabase();
    loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
    try {
-      var result = createAccountSystem(invokeHostOnInit);
+      var result = await loadHandlers("all");
+      result = await createAccountSystem(invokeHostOnInit);
+      result = checkBalances();
    } catch(error) {
       return (false);
    }
@@ -1231,21 +1400,19 @@ loadConfig().then (configObj => {
       rpc_options.ws_port = -1;
    }
    adjustEnvironment(); //adjust for local runtime environment
-   if (postLoadConfig() == true) {
-      //account system successfully created immediately
-   } else {
-      //account system not yet successfully created
-   }
-   rpc_options.exposed_gateway_objects.hostEnv = hostEnv;
-   rpc_options.exposed_gateway_objects.config = config;
-   if (hostEnv.embedded == true) {
-      var gatewaysClass = path.resolve(hostEnv.dir.server + "./libs/Gateways.js");
-      Gateways = require(gatewaysClass);
-   } else {
-      Gateways = require("./libs/Gateways.js");
-   }
-   gateways = new Gateways(rpc_options.exposed_gateway_objects, config.CP.API.gateways);
-   gateways.initialize();
+   postLoadConfig().then(success => {
+      if (hostEnv.embedded == true) {
+         var gatewaysClass = path.resolve(hostEnv.dir.server + "./libs/Gateways.js");
+         Gateways = require(gatewaysClass);
+      } else {
+         Gateways = require("./libs/Gateways.js");
+      }
+      gateways = new Gateways(rpc_options.exposed_library_objects, config.CP.API.gateways);
+      gateways.initialize();
+   }).catch (error => {
+      console.error ("Couldn't complete configuration post-load initialization.");
+      console.error (error);
+   })
 }).catch (err => {
    console.error ("Couldn't load or parse configuration data.");
    console.error (err);

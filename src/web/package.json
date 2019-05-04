@@ -1,6 +1,6 @@
 {
   "name": "CypherPokerJS-client",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "CypherPoker.JS client API interface.",
   "engines": {
     "node": ">=8.0.0"
