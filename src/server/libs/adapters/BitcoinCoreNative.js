@@ -1,5 +1,5 @@
 /**
-* @file BlockCypher API adapter for blockchain interactions such as balance retrieval and
+* @file Native Bitcoin (bitcoind) Core adapter for blockchain interactions such as balance retrieval and
 * transaction posting.
 *
 * @version 0.5.0
@@ -8,15 +8,17 @@
 */
 
 const CryptocurrencyHandler = require("../CryptocurrencyHandler");
+const BTCClient = require('bitcoin-core');
+const path = require("path");
 
 /**
-* @class BlockCypher API adapter for blockchain interactions.
+* @class Bitcoin Core native adapter (bitcoind) for blockchain interactions.
 * @extends EventEmitter
 */
-module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
+module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
 
    /**
-   * Creates a new instance of the BlockCypherAPI adapter.
+   * Creates a new instance of the native Bitcoin Core adapter.
    *
    * @param {Object} serverRef A reference to the server-exposed objects made available
    * to this class.
@@ -25,6 +27,177 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
    */
    constructor(serverRef, handlerConfig) {
       super(serverRef, handlerConfig);
+   }
+
+   /**
+   * @property {Object} downloadRootURL="https://bitcoin.org/bin/" The root download path for the bitcoind
+   * client binary.
+   * @readonly
+   */
+   get downloadRootURL() {
+      return ("https://bitcoin.org/bin/");
+   }
+
+   /**
+   * @property {String} installDir=null The installation directory for the native client. Typically
+   * this is set via the global config but may be set locally.
+   */
+   get installDir () {
+      if (this._installDir == undefined) {
+         this._installDir = null;
+      }
+      return (this._installDir);
+   }
+
+   set installDir(idSet) {
+      this._installDir = idSet;
+   }
+
+   /**
+   * @property {Object} RPCOptions RPC options to use with the native client binary / executable
+   * such as a username, password, allowed IPs, etc.
+   */
+   get RPCOptions() {
+      return ({
+         username: "rpclocaluser",
+         password: "Rpcl0c@lu$3rpaSs",
+         allowIP: "127.0.0.1"
+      })
+   }
+
+   /**
+   * Returns an initialized reference to the native Bitcoin client RPC library instance used to communicate
+   * with the running executable / binary.
+   *
+   * @param {String} [network="main"] The network for which the client is configured. Valid networks
+   * include "main" and "test3".
+   *
+   * @readonly
+   */
+   nativeRPC(network="main") {
+      if (this._clients == undefined) {
+         this._clients = new Object();
+      }
+      if (this._clients[network] == undefined) {
+         switch (network) {
+            case "main":
+               this._clients[network] = new BTCClient({
+                 network: "mainnet",
+                 username: this.RPCOptions.username,
+                 password: this.RPCOptions.password,
+                 port: 8332
+               });
+               break;
+            case "test3":
+               this._clients[network] = new BTCClient({
+                 network: "testnet",
+                 username: this.RPCOptions.username,
+                 password: this.RPCOptions.password,
+                 port: 18332
+               });
+               break;
+            default:
+               throw (new Error("Unsupported network \""+network+"\"."));
+               break;
+         }
+      }
+      return (this._clients[network]);
+   }
+
+   /**
+   * Returns an object containing references to native processes managed by
+   * this instance.
+   *
+   * @return {Object} A generic object storing references to native child
+   * processes managed by this instance. Typically these will be stored under
+   * "main" and "test3" properties but other names and aliases may also be used.
+   */
+   nativeProcess() {
+      if (this._nativeProcess == undefined) {
+         this._nativeProcess = new Object();
+      }
+      return (this._nativeProcess);
+   }
+
+   /**
+   * Initializes the instance by checking dependencies, downloading any
+   * missing component, and starting the native client. Note that the client
+   * process requires a few moments before the RPC connection accessible via
+   * [nativeRPC]{@link BitcoinCoreNative#nativeRPC} becomes available.
+   *
+   * @return {Boolean} True if the initialization could be succesfully completed,
+   * false otherwise.
+   *
+   * @async
+   */
+   async initialize() {
+      var installDirectory = this.handlerConfig.installDir;
+      var dataDirectory = path.resolve(this.handlerConfig.dataDir);
+      switch (process.platform) {
+         case "linux":
+            //process.arch == ia32 (for 32-bit Linux)
+            installDirectory = installDirectory.split("%os%").join("linux");
+            var binFiles = ["bitcoind"];
+            break;
+         case "win32":
+            installDirectory = installDirectory.split("%os%").join("win");
+            binFiles = ["bitcoind.exe"];
+            break;
+         case "darwin":
+            installDirectory = installDirectory.split("%os%").join("macOS");
+            binFiles = ["bitcoind"];
+            break;
+         default:
+            throw (new Error("Unsupported platform: "+process.platform));
+            break;
+      }
+      var result = await this.checkInstall(binFiles, installDirectory, true);
+      if (result == false) {
+         return (false);
+      }
+      var mainParameters = new Array();
+      mainParameters.push("-server");
+      mainParameters.push("-rpcport=8332"); // default
+      mainParameters.push("-rpcallowip="+this.RPCOptions.allowIP);
+      mainParameters.push("-rpcbind=127.0.0.1");
+      mainParameters.push("-rpcuser="+this.RPCOptions.username);
+      mainParameters.push("-rpcpassword="+this.RPCOptions.password);
+      mainParameters.push("-datadir="+dataDirectory);
+      this.nativeProcess["main"] = this.startNativeClient(binFiles[0], mainParameters, installDirectory);
+      this.nativeProcess["main"].stdout.on('data', this.onClientSTDOUT.bind(this, "main"));
+      this.nativeProcess["main"].stderr.on('data', this.onClientSTDERR.bind(this, "main"));
+      this.nativeProcess["main"].on('close', this.onProcessClose.bind(this, "main"));
+      var testParameters = new Array();
+      testParameters.push("-server");
+      testParameters.push("-testnet");
+      testParameters.push("-rpcport=18332"); // default
+      testParameters.push("-rpcallowip="+this.RPCOptions.allowIP);
+      testParameters.push("-rpcbind=127.0.0.1");
+      testParameters.push("-rpcuser="+this.RPCOptions.username);
+      testParameters.push("-rpcpassword="+this.RPCOptions.password);
+      testParameters.push("-datadir="+dataDirectory);
+      this.nativeProcess["test3"] = this.startNativeClient(binFiles[0], testParameters, installDirectory);
+      this.nativeProcess["test3"].stdout.on('data', this.onClientSTDOUT.bind(this, "test3"));
+      this.nativeProcess["test3"].stderr.on('data', this.onClientSTDERR.bind(this, "test3"));
+      this.nativeProcess["test3"].on('close', this.onProcessClose.bind(this, "main"));
+   }
+
+   onClientSTDOUT(network, data) {
+      if (this.handlerConfig.showOutput) {
+         console.log ("BitcoinCoreNative ("+network+") > "+data.toString());
+      }
+   }
+
+   onClientSTDERR(network, data) {
+      if (this.handlerConfig.showOutput) {
+         console.log ("BitcoinCoreNative ("+network+") > "+data.toString());
+      }
+   }
+
+   onProcessClose(network) {
+      console.error ("Native process for \""+network+"\" has closed unexpectedly.")
+      this.nativeRPC(network) = null;
+      delete network;
    }
 
    /**
@@ -161,8 +334,7 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
    }
 
    /**
-   * Invokes the BlockCypher balance ("address-full") API endpoint to retrieve information about
-   * an address, including its balances.
+   * Retrieves the blockchain balance of an address or derived wallet.
    *
    * @param {String} addressOrPath A Bitcoin/testnet address or derivation path.
    * If a derivation path is supplied, a master wallet must exist in the
@@ -204,23 +376,7 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
          address = addressOrPath;
       }
       var promise = new Promise((resolve, reject) => {
-         var API = this.server.config.CP.API[APIType];
-         var url = API.urls.blockcypher.balance;
-         if (network == null) {
-            network = API.default.network;
-         }
-         url = url.split("%address%").join(address).split("%network%").join(network);
-         this.server.request({
-      		url: url,
-      		method: "GET",
-      		json: true
-      	}, (error, response, body) => {
-            if (error) {
-               reject(error);
-            } else {
-               resolve(body);
-            }
-      	});
+         //implement
       });
    	return (promise);
    }
@@ -267,7 +423,7 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
 
    /**
    * Sends a transaction from a (derived) wallet to a specific address with customizable fee using
-   * the BlockCypher API.
+   * the native client.
    *
    * @param {Object|String} from The wallet object or wallet derivation path from which to send the funds.
    * If this parameter is a string, the wallet is derived from a root
@@ -325,18 +481,7 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
       var result = null;
       switch (APIType) {
          case "bitcoin":
-            var fromWIF = fromWallet.toWIF();
-            var txSkeleton = await this.newBTCTx(fromAddress, toAddress, amount, fee, network);
-            var signedTx = this.signBTCTx(txSkeleton, fromWIF, network); //not async
-            if (signedTx == null) {
-               throw (new Error("Couldn't sign transaction."));
-            }
-            try {
-               var sendTxResult = await this.sendBTCTx(signedTx, network);
-            } catch (err) {
-               throw (err);
-            }
-            return (sendTxResult);
+            //implement
             break;
          default:
             throw (new Error("Unsupported API type \""+APIType+"\"."));
@@ -344,168 +489,6 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
       }
       throw (new Error("Unknown error when sending transaction."));
    }
-
-   /**
-   * Creates a new BlockCypher Bitcoin transaction skeleton for use with the {@link signBTCTx} function.
-   *
-   * @param {String} fromAddress The address sending the transaction.
-   * @param {String} toAddress The address receiving the transaction.
-   * @param {String|Number} satAmount The amount, in satoshis, to send to <code>toAddress</code>.
-   * @param {String|Number} satFees The miner fees, in satoshis, to include with the transaction.
-   * @param {String} [network=null] The sub-network, if applicable, for which to create the
-   * new transaction skeleton. Valid values include "main" and "test3".
-   * If <code>null</code>, the default network specified in
-   * <code>config.CP.API.bitcoin.default.network</code> is used.
-   *
-   * @return {Promise} The resolved promise will include a native JavaScript object
-   * containing the unsigned transaction skeleton. The rejected promise will contain the
-   * error response.
-   */
-   newBTCTx (fromAddress, toAddress, satAmount, satFees, network=null) {
-     var promise = new Promise((resolve, reject) => {
-        var API = this.server.config.CP.API.bitcoin;
-        var url = API.urls.blockcypher.createtx;
-        if (network == null) {
-           network = API.default.network;
-        }
-        var token = this.server.config.CP.API.tokens.blockcypher;
-        url = url.split("%network%").join(network).split("%token%").join(token);
-        var requestBody = {
-           "inputs":[{"addresses":[fromAddress]}],
-           "outputs":[{"addresses":[toAddress],
-           "value": Number(satAmount)}],
-           "fees":Number(satFees)
-        };
-        this.server.request({
-           url: url,
-           method: "POST",
-           body:requestBody,
-           json: true
-        }, function (error, response, body){
-           if (error) {
-              reject (error);
-           } else {
-              if ((body == undefined) || (body == null)) {
-                 reject (response);
-                 return;
-              }
-              if ((body.errors != undefined) && (body.errors != null)) {
-                 if (body.errors.length > 0) {
-                    reject (body.errors);
-                 } else {
-                    resolve (body);
-                 }
-              } else {
-                 resolve (body);
-              }
-           }
-        });
-     });
-     return (promise);
-  }
-
-  /**
-  * Signs a BlockCypher-generated Bitcoin transaction skeleton with a keypair in WIF format.
-  *
-  * @param {Object} txObject The transaction skeleton object to sign.
-  * @param {Object} WIF The Wallet Import Format data to use for signing.
-  * @param {String} [network=null] The sub-network, if applicable, for which the
-  * transaction skeleton has been created. Valid values include "main" and "test3".
-  * If <code>null</code>, the default network specified in
-  * <code>config.CP.API.bitcoin.default.network</code> is used.
-  *
-  * @return {Object} The signed Bitcoin transaction object (which can be sent to the network).
-  */
-  signBTCTx (txObject, WIF, network=null) {
-     if (network == null) {
-        network = this.server.config.CP.API.bitcoin.default.network;
-     }
-  	if (network == "main") {
-  		var keys = keys = new this.server.bitcoin.ECPair.fromWIF(WIF);
-  	} else {
-  		keys = new this.server.bitcoin.ECPair.fromWIF(WIF, this.server.bitcoin.networks.testnet);
-  	}
-  	try {
-        var pubkeys = new Array();
-        var signatures = txObject.tosign.map(function(tosign) {
-          pubkeys.push(keys.publicKey.toString("hex"));
-          return (this.signToDER(tosign, keys.privateKey).toString("hex"));
-       }, this);
-  		txObject.signatures = signatures;
-  		txObject.pubkeys = pubkeys;
-  	} catch (err) {
-        console.error(err.stack);
-  		txObject = null;
-  	}
-  	return (txObject);
-  }
-
-  /**
-  * Signs an input hexadecimal string and returns a DER-encoded signature.
-  *
-  * @param {String} toSignHex Hexadecimal-encoded data string to sign.
-  * @param {Buffer} privateKeyBuffer The private key with which to sign <code>toSignHex</code>.
-  *
-  * @return {Buffer} The DER-encoded, signed message. Use <code>toString("hex")</code> to get the
-  * hexadecimal string representation of the output.
-  */
-  signToDER (toSignHex, privateKeyBuffer) {
-     var sigObj = this.server.secp256k1.sign(Buffer.from(toSignHex, "hex"), privateKeyBuffer);
-     return (this.server.secp256k1.signatureExport(sigObj.signature));
-  }
-
-  /**
-  * Sends a signed Bitcoin transaction skeleton via the BlockCypher API.
-  *
-  * @param {Object} txObject The BlockCypher transaction skeleton transaction to send.
-  * @param {String} [network=null] The Bitcoin sub-network for which the
-  * transaction is intended. Valid values include "main" and "test3".
-  * If <code>null</code>, the default network specified in
-  * <code>config.CP.API.bitcoin.default.network</code> is used.
-  *
-  * @return {Promise} The resolved promise will include a native JavaScript object
-  * containing the parsed response from the API endpoint. The rejected promise will
-  * contain an error object.
-  */
-  sendBTCTx(txObject, network=null) {
-     /*
-     TODO: Future update example to build transaction from scratch:
-
-     var key = bitcoin.ECKey.fromWIF("L1Kzcyy88LyckShYdvoLFg1FYpB5ce1JmTYtieHrhkN65GhVoq73");
-     var tx = new bitcoin.TransactionBuilder();
-     tx.addInput("d18e7106e5492baf8f3929d2d573d27d89277f3825d3836aa86ea1d843b5158b", 1);
-     tx.addOutput("12idKQBikRgRuZEbtxXQ4WFYB7Wa3hZzhT", 149000);
-     tx.sign(0, key);
-     console.log(tx.build().toHex());
-     */
-     var promise = new Promise((resolve, reject) => {
-        var API = this.server.config.CP.API.bitcoin;
-        var url = API.urls.blockcypher.sendtx;
-        if (network == null) {
-           network = API.default.network;
-        }
-        var token = this.server.config.CP.API.tokens.blockcypher;
-        url = url.split("%network%").join(network).split("%token%").join(token);
-        this.server.request({
-            url: url,
-            method: "POST",
-            body: txObject,
-            json: true
-     	}, (error, response, body) => {
-           if ((body == undefined) || (body == null)) {
-              reject (response);
-              return;
-           }
-           if (error) {
-              reject(error);
-           } else {
-              //do we want to catch and reject JSON-RPC errors here?
-              resolve(body);
-           }
-     	});
-     });
-  	return (promise);
-  }
 
   /**
   * Returns an estimated miner fee for a transaction. The fee estimation may either be based on an

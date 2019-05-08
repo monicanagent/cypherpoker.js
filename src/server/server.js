@@ -1261,9 +1261,6 @@ async function loadHandlers(type="all") {
          var handlerType = currentHandler.type;
          var handlerName = currentHandler.name
          if (type == "all") {
-            var handlerClass = require(currentHandler.handlerClass);
-            var handler = new handlerClass(rpc_options.exposed_library_objects);
-            console.log ("   Loaded handler: "+handlerName);
             if (typeof (currentHandler.handler) == "object") {
                try {
                   currentHandler.handler.destroy();
@@ -1271,6 +1268,16 @@ async function loadHandlers(type="all") {
                   //probably no "destroy" function
                }
                delete currentHandler.handler;
+            }
+            var handlerClass = require(currentHandler.handlerClass);
+            var handler = new handlerClass(rpc_options.exposed_library_objects, currentHandler);
+            console.log ("   Loaded handler: "+handlerName);
+            if (typeof(handler.initialize) == "function") {
+               try {
+                  var initResult = await handler.initialize();
+               } catch (err) {
+                  console.error(err);
+               }
             }
             currentHandler.handler = handler;
          } else {
@@ -1285,7 +1292,14 @@ async function loadHandlers(type="all") {
                }
                var handlerClass = require(currentHandler.handlerClass);
                var handler = new handlerClass(rpc_options.exposed_library_objects);
-               console.log ("   "+handlerName);
+               if (typeof(handler.initialize) == "function") {
+                  try {
+                     var initResult = await handler.initialize();
+                  } catch (err) {
+                     console.error(err);
+                  }
+               }
+               console.log ("   Loaded handler: "+handlerName);
                currentHandler.handler = handler;
             }
          }

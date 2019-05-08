@@ -65,6 +65,20 @@
                "name": "BlockCypher API Cryptocurrency Handler",
                "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
                "handlerClass": "./libs/adapters/BlockCypherAPI.js"
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "Native Bitcoin Core (bitcoind) Handler",
+               "installDir":"./bin/bitcoind/%os%/",
+               "dataDir":"./bin/bitcoind/data/",
+               "downloads":{
+                  "darwin":"https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-osx.dmg",
+                  "linux":"https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-x86_64-linux-gnu.tar.gz",
+                  "win32":"https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-win64.zip"
+               },
+               "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
+               "handlerClass": "./libs/adapters/BitcoinCoreNative.js",
+               "showOutput": true
             }
          ],
          "wallets":{
