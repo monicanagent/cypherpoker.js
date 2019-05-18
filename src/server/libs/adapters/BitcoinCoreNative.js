@@ -96,6 +96,14 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
                  port: 18332
                });
                break;
+            case "regtest":
+               this._clients[network] = new BTCClient({
+                 network: "regtest",
+                 username: this.RPCOptions.username,
+                 password: this.RPCOptions.password,
+                 port: 18333
+               });
+               break;
             default:
                throw (new Error("Unsupported network \""+network+"\"."));
                break;
@@ -133,6 +141,8 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    async initialize() {
       var installDirectory = this.handlerConfig.installDir;
       var dataDirectory = path.resolve(this.handlerConfig.dataDir);
+      process.stdin.resume();
+      process.on("SIGINT", this.onServerExit.bind(this));
       switch (process.platform) {
          case "linux":
             //process.arch == ia32 (for 32-bit Linux)
@@ -155,6 +165,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
       if (result == false) {
          return (false);
       }
+      //mainnet
       var mainParameters = new Array();
       mainParameters.push("-server");
       mainParameters.push("-rpcport=8332"); // default
@@ -167,6 +178,8 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
       this.nativeProcess["main"].stdout.on('data', this.onClientSTDOUT.bind(this, "main"));
       this.nativeProcess["main"].stderr.on('data', this.onClientSTDERR.bind(this, "main"));
       this.nativeProcess["main"].on('close', this.onProcessClose.bind(this, "main"));
+      var result = await this.waitForOutput("main");
+      //testnet
       var testParameters = new Array();
       testParameters.push("-server");
       testParameters.push("-testnet");
@@ -179,25 +192,140 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
       this.nativeProcess["test3"] = this.startNativeClient(binFiles[0], testParameters, installDirectory);
       this.nativeProcess["test3"].stdout.on('data', this.onClientSTDOUT.bind(this, "test3"));
       this.nativeProcess["test3"].stderr.on('data', this.onClientSTDERR.bind(this, "test3"));
-      this.nativeProcess["test3"].on('close', this.onProcessClose.bind(this, "main"));
+      this.nativeProcess["test3"].on('close', this.onProcessClose.bind(this, "test3"));
+      var result = await this.waitForOutput("test3");
+      /*
+      //regtest (local developer testnet)
+      var regParameters = new Array();
+      regParameters.push("-server");
+      regParameters.push("-regtest");
+      regParameters.push("-rpcport=18333"); // default
+      regParameters.push("-rpcallowip="+this.RPCOptions.allowIP);
+      regParameters.push("-rpcbind=127.0.0.1");
+      regParameters.push("-rpcuser="+this.RPCOptions.username);
+      regParameters.push("-rpcpassword="+this.RPCOptions.password);
+      regParameters.push("-datadir="+dataDirectory);
+      this.nativeProcess["regtest"] = this.startNativeClient(binFiles[0], regParameters, installDirectory);
+      this.nativeProcess["regtest"].stdout.on('data', this.onClientSTDOUT.bind(this, "regtest"));
+      this.nativeProcess["regtest"].stderr.on('data', this.onClientSTDERR.bind(this, "regtest"));
+      this.nativeProcess["regtest"].on('close', this.onProcessClose.bind(this, "regtest"));
+      var result = await this.waitForOutput("regtest");
+      */
    }
 
+   /**
+   * Creates a promise that resolves when the console output of a process
+   * designated for a specific network is detected.
+   *
+   * @param {String} [network="main"] The sub-network process for
+   * which to detect console output. Valid network types include "main",
+   * "test3", or "regtest".
+   * @param {String} [type="STDOUT"] The console on which the output
+   * is to be detected, either "STDOUT" or "STDERR".
+   *
+   * @return {Promise} The returned promise resolves when output on the
+   * specified console <code>type</code> is detected.
+   */
+   waitForOutput(network="main", type="STDOUT") {
+      var promise=new Promise((resolve, reject) => {
+         if (type == "STDOUT") {
+            this._onNextSTDOUT = new Object();
+            this._onNextSTDOUT.network = network;
+            this._onNextSTDOUT.resolve = resolve;
+            this._onNextSTDOUT.reject = reject;
+         } else {
+            this._onNextSTDERR = new Object();
+            this._onNextSTDERR.network = network;
+            this._onNextSTDERR.resolve = resolve;
+            this._onNextSTDERR.reject = reject;
+         }
+      });
+      return (promise);
+   }
+
+   /**
+   * Handles STDOUT output for a native client process.
+   *
+   * @param {String} network The sub-network that the native client is associated
+   * with ("main", "test3", or "regtest").
+   * @param {Object} data The output received from the native client on the STDOUT
+   * pipe.
+   *
+   * @private
+   */
    onClientSTDOUT(network, data) {
       if (this.handlerConfig.showOutput) {
          console.log ("BitcoinCoreNative ("+network+") > "+data.toString());
       }
+      if ((this._onNextSTDOUT != undefined) && (this._onNextSTDOUT != null)) {
+         if (this._onNextSTDOUT.network == network) {
+            this._onNextSTDOUT.resolve(data.toString());
+            this._onNextSTDOUT = null;
+            delete this._onNextSTDOUT;
+         }
+      }
    }
 
+   /**
+   * Handles STDERR (error) output for a native client process.
+   *
+   * @param {String} network The sub-network that the native client is associated
+   * with ("main", "test3", or "regtest").
+   * @param {Object} data The output received from the native client on the STDERR
+   * pipe.
+   *
+   * @private
+   */
    onClientSTDERR(network, data) {
       if (this.handlerConfig.showOutput) {
          console.log ("BitcoinCoreNative ("+network+") > "+data.toString());
       }
+      if ((this._onNextSTDERR != undefined) && (this._onNextSTDERR != null)) {
+         if (this._onNextSTDERR.network == network) {
+            this._onNextSTDERR.resolve(data.toString());
+            this._onNextSTDERR = null;
+            delete this._onNextSTDERR;
+         }
+      }
    }
 
+   /**
+   * Invoked when a native client process closes (usually unexpectedly).
+   *
+   * @param {String} network The sub-network that the native client is associated
+   * with ("main", "test3", or "regtest").
+   *
+   * @private
+   */
    onProcessClose(network) {
-      console.error ("Native process for \""+network+"\" has closed unexpectedly.")
-      this.nativeRPC(network) = null;
-      delete network;
+      console.error ("Native process for \""+network+"\" has closed.");
+      if (typeof(this._exitOnProcessClose) == "object") {
+         process.exit(130); // https://www.tldp.org/LDP/abs/html/exitcodes.html
+      }
+   }
+
+   /**
+   * Generates a new block and credits a target address if the native client
+   * is running in "regtest" (regression testing or local development) mode.
+   *
+   * @param {String} toAddress The address to credit with the creation of a new
+   * block and any transaction fees.
+   * @param {Number} [numBlocks=1] The number of blocks to mine.
+   *
+   * @return {Array} A list of mined block header hashes or <code>null</code> if they
+   * couldn't be mined / generated.
+   *
+   * @async
+   */
+   async generateRegBlocks(toAddress, numBlocks=1) {
+      var rpc = this.nativeRPC("regtest");
+      if ((rpc == undefined) || (rpc == null)) {
+         return (null);
+      }
+      var result = await rpc.importAddress(toAddress, "", true); //import and rescan all transactions
+      //console.log ("Address import result: "+result);
+      var result = await rpc.generateToAddress(numBlocks, toAddress);
+      return (result);
    }
 
    /**
@@ -334,6 +462,71 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    }
 
    /**
+   * Converts an amount from a specific denomination to a specific denomination
+   * for display.
+   *
+   * @param {String} amount The amount to convert.
+   * @param {String} fromDenom The source denomination. Valid values include:
+   * "satoshi", "bitcoin"
+   * @param {String} toDenom The target denomination. Valid values include:
+   * "satoshi", "bitcoin"
+   *
+   * @return {String} The <code>amount</code> converted to from the source
+   * denomination to the target denomination.
+   */
+   convertDenom(amount, fromDenom, toDenom) {
+      if (fromDenom == toDenom) {
+         return (amount);
+      }
+      switch (fromDenom) {
+         case "satoshi":
+            if (toDenom == "bitcoin") {
+               amount = amount.padStart(8, "0");
+               var decimal = amount.substring(amount.length-8);
+               var whole = amount.substring(0,amount.length-8);
+               if (whole == "") {
+                  whole = "0";
+               }
+               amount = whole + "." + decimal;
+            } else {
+               throw (new Error("Unrecognized target denomination \""+toDenom+"\""));
+            }
+            break;
+         case "bitcoin":
+            if (toDenom == "satoshis") {
+               var amountSplit = amount.split(".");
+               if (amountSplit.length > 1) {
+                  whole = amountSplit[0];
+                  decimal = amountSplit[1].padEnd(8, "0");
+               } else {
+                  whole = amountSplit[0].padEnd((amountSplit[0].length + 8), "0");
+                  decimal = "";
+               }
+               if (decimal.length > 8) {
+                  decimal = decimal.substring(0, 7);
+               }
+               if (whole == "0") {
+                  whole = "";
+                  while (decimal.startsWith("0")) {
+                     decimal = decimal.substring(1);
+                  }
+               }
+               amount = whole + decimal;
+               if (amount == "") {
+                  amount = "0";
+               }
+            } else {
+               throw (new Error("Unrecognized target denomination \""+toDenom+"\""));
+            }
+            break;
+         default:
+            throw (new Error("Unrecognized source denomination \""+fromDenom+"\""));
+            break;
+      }
+      return (amount);
+   }
+
+   /**
    * Retrieves the blockchain balance of an address or derived wallet.
    *
    * @param {String} addressOrPath A Bitcoin/testnet address or derivation path.
@@ -369,14 +562,39 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
          if (network == "main") {
             var address = this.getAddress(derivedWallet);
          } else {
-            address = this.getAddress(derivedWallet, this.server.bitcoin.networks.testnet);
+            //address = this.getAddress(derivedWallet, this.server.bitcoin.networks.testnet);
+            address = this.getAddress(derivedWallet, "test3");
          }
       } else {
          //this is a plain address
          address = addressOrPath;
       }
       var promise = new Promise((resolve, reject) => {
-         //implement
+         var resultObj = new Object();
+         resultObj.address = address;
+         resultObj.balance = 0;
+         resultObj.unconfirmed_balance = 0;
+         resultObj.final_balance = 0;
+         var rpc = this.nativeRPC(network);
+         var totalConfirmed = this.server.bigInt(0);
+         var totalUnconfirmed = this.server.bigInt(0);
+         rpc.listUnspent(0, 999999999, [address]).then (utxoList => {
+            for (var count=0; count < utxoList.length; count++) {
+               var currentUTXO = utxoList[count];
+               var confirmations = currentUTXO.confirmations;
+               var amount = this.convertDenom(String(currentUTXO.amount), "bitcoin", "satoshis");
+               amount = this.server.bigInt(amount);
+               if (confirmations > 0) {
+                  totalConfirmed = totalConfirmed.plus(amount);
+               } else {
+                  totalUnconfirmed = totalUnconfirmed.plus(amount);
+               }
+            }
+            resultObj.balance = parseInt(totalConfirmed.toString(10), 10);
+            resultObj.unconfirmed_balance = parseInt(totalUnconfirmed.toString(10), 10);
+            resultObj.final_balance = parseInt(totalConfirmed.plus(totalUnconfirmed).toString(10), 10);
+            resolve (resultObj);
+         });
       });
    	return (promise);
    }
@@ -385,7 +603,8 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    * Cashes out from the configured cashout wallet to a specific address.
    *
    * @param {String} toAddress The address to cash out to.
-   * @param {String|Number} amount The amount to cash out. The miner <code>fees</code> will
+   * @param {String|Number} amount The amount to cash out in the smallest denominiation
+   * for the cryptocurrency. The miner <code>fees</code> will
    * be deducted from this amount.
    * @param {String|Number} [fees=null] The miner fees to deduct from <code>amount</code> and
    * include with the transaction. If <code>null</code>, the default fee defined for the
@@ -444,8 +663,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    * If null, the <code>config.CP.API[APIType].default.network</code> network is used.
    *
    * @return {Object} The function resolves with the posted transaction object returned by
-   * the BlockCypher API or rejects with an <code>Error</code> object. See the
-   * <a href="https://www.blockcypher.com/dev/bitcoin/#TXskeleton">BlockCypher API reference</a> for details on the returned object.
+   * the RPC API or rejects with an <code>Error</code> object.
    * @async
    *
    * @see https://www.blockcypher.com/dev/bitcoin/#TXskeleton
@@ -476,18 +694,113 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
       if (network == "main") {
          var fromAddress = this.getAddress(fromWallet);
       } else {
-         fromAddress = this.getAddress(fromWallet, this.server.bitcoin.networks.testnet);
+         //fromAddress = this.getAddress(fromWallet, this.server.bitcoin.networks.testnet);
+         fromAddress = this.getAddress(fromWallet, "test3");
       }
       var result = null;
       switch (APIType) {
          case "bitcoin":
-            //implement
+            var UTXOList = await this.getUTXOList(fromAddress, network);
+            if ((network == "test3") || (network == "regtest")) {
+               var signingKey = this.server.bitcoin.ECPair.fromWIF(fromWallet.toWIF(), this.server.bitcoin.networks.testnet);
+            } else {
+               signingKey = this.server.bitcoin.ECPair.fromWIF(fromWallet.toWIF());
+            }
+            var tx = await this.buildRawTransaction(UTXOList, fromAddress, toAddress, signingKey, network, amount, fee);
+            var txHex = tx.build().toHex();
+            var txHash = await this.nativeRPC(network).sendRawTransaction(txHex, true); //alow high transaction fees (if included)
+            console.log ("Transaction hash: "+txHash);
+            //create expected response object
+            var txObject = new Object();
+            txObject.tx = new Object();
+            txObject.hash = txHash;
+            if (network == "regtest") {
+               //"mine" a block immediately to push the transaction into the chain
+               var mineAddress = this.getDerivedWallet(this.server.config.CP.API.bitcoin.default.test3.cashOutAddrPath, "regtest", true);
+               var result = await this.generateRegBlocks(mineAddress, 1); //mine a block
+            }
+            return (txObject);
             break;
          default:
             throw (new Error("Unsupported API type \""+APIType+"\"."));
             break;
       }
       throw (new Error("Unknown error when sending transaction."));
+   }
+
+   /**
+   * Retrieves a list of spendable transactions for a specific address.
+   *
+   * @param {String} address The address for which to retrieve the list of
+   * transactions.
+   * @param {String} [network="main"] The sub-network to which this address belongs.
+   * Valid <code>network</code> types include "main", "test3", and "regtest".
+   *
+   * @async
+   * @private
+   */
+   async getUTXOList(address, network="main") {
+      var rpc = this.nativeRPC(network);
+      var importResult = await rpc.importAddress(address, "", true);
+      var UTXOList = await rpc.listUnspent(1, 9999999, [address]);
+      return (UTXOList);
+   }
+
+   /**
+   * Builds a raw Bitcoin transaction.
+   *
+   * @param {Array} UTXOList Indexed list of unspent transaction outputs (objects containing
+   * at least <code>amount</code>, <code>txid</code>, and <code>vout</code> properties).
+   * @param {String} fromAddress The sending address.
+   * @param {String} toAddress The receiving address.
+   * @param {Object} signingKey The keypair belonging to <code>fromAddress</code> used to sign the transaction(s).
+   * @param {String} network The network to which <code>fromAddress</code> and <code>toAddress</code> belong. Valid
+   * networks include "main", "test3", and "regtest".
+   * @param {String} amountSat The amount to send to the receiving address, in satoshis.
+   * @param {String} feeSat The transaction fee to include with the transaction, in satoshis (this value
+   *  is <i>in addition to</code> the <code>amountSat</code>)
+   *
+   * @return {Object} The raw, signed transaction in hexadecimal.
+   * @async
+   */
+   async buildRawTransaction(UTXOList, fromAddress, toAddress, signingKey, network, amountSat, feeSat) {
+      if ((network == "test3") || (network == "regtest")) {
+         var tx = new this.server.bitcoin.TransactionBuilder(this.server.bitcoin.networks.testnet);
+      } else {
+         tx = new this.server.bitcoin.TransactionBuilder();
+      }
+      //all values are in satoshis
+      var spentAmount = this.server.bigInt(0);
+      var feeAmount = this.server.bigInt(feeSat);
+      var amountNF = this.server.bigInt(amountSat); //amount (no fee)
+      var totalAmount = this.server.bigInt(amountSat).plus(feeAmount); //amount including fee
+      var numTxs = 0; //number of transactions to sign after adding inputs + outpus
+      for (var count = 0; count < UTXOList.length; count++) {
+         var utxo = UTXOList[count];
+         var itxAmount = this.server.bigInt(this.convertDenom(String(utxo.amount), "bitcoin", "satoshis"));
+         var txid = utxo.txid;
+         var txindex = utxo.vout;
+         if (spentAmount.plus(itxAmount).greaterOrEquals(totalAmount)) {
+            //no additional inputs required (final transaction)
+            var outputAmount = amountNF.minus(spentAmount);
+            var changeAmount = itxAmount.minus(outputAmount).minus(feeAmount);
+            tx.addInput(txid, txindex);
+            tx.addOutput(toAddress, parseInt(outputAmount, 10)); //send remaining amount in input
+            tx.addOutput(fromAddress, parseInt(changeAmount, 10)); //send change-fee
+            numTxs++;
+            break;
+         } else {
+            //additional inputs required
+            tx.addInput(txid, txindex);
+            tx.addOutput(toAddress, parseInt(itxAmount, 10)); //send full amount in input
+            numTxs++;
+         }
+         spentAmount = spentAmount.plus(itxAmount);
+      }
+      for (var count = 0; count < numTxs; count++) {
+         tx.sign(count, signingKey);
+      }
+      return (tx);
    }
 
   /**
@@ -602,8 +915,40 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
      return (promise);
   }
 
+  /**
+  * Event responder invoked when the main server process (Node.js) is about to exit.
+  * This causes any launched child processes to stop and exit gracefully (failure to do
+  * so may cause data loss).
+  *
+  * @param {String} code The exit code with which the server is exiting.
+  *
+  * @async
+  */
+  async onServerExit(code) {
+     console.log ("onServerExit");
+     this._exitOnProcessClose = new Object();
+     try {
+        var result = this.nativeRPC("main").stop();
+        this._exitOnProcessClose.main = true;
+     } catch (err) {
+        console.log (err);
+     }
+     try {
+        var result = this.nativeRPC("test3").stop();
+        this._exitOnProcessClose.test3 = true;
+     } catch (err) {
+        console.log (err);
+     }
+     try {
+        var result = this.nativeRPC("regtest").stop();
+        this._exitOnProcessClose.regtest = true;
+     } catch (err) {
+        console.log (err);
+     }
+  }
+
   toString() {
-     return ("[object BlockCypherAPI]");
- }
+     return ("[object BitcoinCoreNative]");
+  }
 
 }

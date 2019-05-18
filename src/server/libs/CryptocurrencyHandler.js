@@ -333,14 +333,11 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
       } else {
          options.cwd = ".";
       }
-//options.shell = true; //hide console window
       options.windowsHide = true; //hide console window
-      console.log ("Spawning >>>>> "+executablePath);
-      console.log ("paramaters >>>>> "+paramaters);
       try {
          var childProc = spawn(executablePath, paramaters, options);
       } catch (err) {
-         console.error ("................. "+err);
+         console.error (err);
       }
       return (childProc);
    }
