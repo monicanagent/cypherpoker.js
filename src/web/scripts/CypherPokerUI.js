@@ -2357,8 +2357,8 @@ class CypherPokerUI {
                   whole = amountSplit[0];
                   decimal = amountSplit[1].padEnd(8, "0");
                } else {
-                  whole = "0";
-                  decimal = amountSplit[0].padEnd(8, "0");
+                  whole = amountSplit[0].padEnd((amountSplit[0].length + 8), "0");
+                  decimal = "";
                }
                if (decimal.length > 8) {
                   decimal = decimal.substring(0, 7);
@@ -2370,6 +2370,9 @@ class CypherPokerUI {
                   }
                }
                amount = whole + decimal;
+               if (amount == "") {
+                  amount = "0";
+               }
             } else {
                throw (new Error("Unrecognized target denomination \""+toDenom+"\""));
             }
