@@ -78,7 +78,23 @@
                },
                "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
                "handlerClass": "./libs/adapters/BitcoinCoreNative.js",
-               "showOutput": true
+               "showOutput": true,
+               "enabled": false
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "Native Bitcoin Cash (bitcoind) Handler",
+               "installDir":"./bin/bitcoincash/%os%/",
+               "dataDir":"./bin/bitcoincash/data/",
+               "downloads":{
+                  "darwin":"https://download.bitcoinabc.org/0.19.6/osx/bitcoin-abc-0.19.6-osx-unsigned.dmg",
+                  "linux":"https://download.bitcoinabc.org/0.19.6/linux/bitcoin-abc-0.19.6-x86_64-linux-gnu.tar.gz",
+                  "win32":"https://download.bitcoinabc.org/0.19.6/windows/bitcoin-abc-0.19.6-win64.zip"
+               },
+               "types": ["bch", "bitcoincash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "handlerClass": "./libs/adapters/BitcoinCashNative.js",
+               "showOutput": true,
+               "enabled": false
             }
          ],
          "wallets":{
@@ -88,6 +104,16 @@
                "startIndex":2
             },
             "test3":{
+               "tprv":"tprv...",
+               "startChain":0,
+               "startIndex":2
+            },
+            "bitcoincash":{
+               "xprv":"xprv...",
+               "startChain":0,
+               "startIndex":2
+            },
+            "bchtest":{
                "tprv":"tprv...",
                "startChain":0,
                "startIndex":2
@@ -128,6 +154,33 @@
                   "sendtx": "https://api.blockcypher.com/v1/btc/%network%/txs/send?token=%token%",
                   "fees": "https://api.blockcypher.com/v1/btc/%network%"
                }
+            }
+         },
+         "bitcoincash":{
+            "networks":{
+               "main:":"main",
+               "test":"test"
+            },
+            "default": {
+               "network": "test",
+               "updateLimitSeconds": 120,
+               "baseDenom": "satoshi",
+               "main":{
+                  "cashOutAddrPath":"m/0/1",
+                  "minerFee": "50000",
+                  "depositFee": "10000",
+                  "feeUpdateSeconds": 1200,
+                  "feeUpdateEnabled": true
+               },
+               "test":{
+                  "cashOutAddrPath":"m/0/1",
+                  "minerFee": "50000",
+                  "depositFee": "10000",
+                  "feeUpdateSeconds": 1200,
+                  "feeUpdateEnabled": true
+               }
+            },
+            "urls": {
             }
          },
          "contract":{

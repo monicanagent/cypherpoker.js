@@ -1017,6 +1017,15 @@ if (namespace.cp.wallets.bitcoin.main == undefined) {
 if (namespace.cp.wallets.bitcoin.test3 == undefined) {
    namespace.cp.wallets.bitcoin.test3 = null;
 }
+if (namespace.cp.wallets.bitcoincash == undefined) {
+   namespace.cp.wallets.bitcoincash = new Object();
+}
+if (namespace.cp.wallets.bitcoincash.main == undefined) {
+   namespace.cp.wallets.bitcoincash.main = null;
+}
+if (namespace.cp.wallets.bitcoincash.test == undefined) {
+   namespace.cp.wallets.bitcoincash.test = null;
+}
 if (namespace.cp._txFeesUpdating == undefined) {
    namespace.cp._txFeesUpdating = true;
    //automatically update transaction fee estimates at startup

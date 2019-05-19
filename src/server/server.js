@@ -99,6 +99,7 @@ const request = require("request");
 const crypto = require("crypto");
 const bigInt = require("big-integer");
 const bitcoin = require("bitcoinjs-lib");
+const bitcoincash = require("bitcoinjs-lib");
 const secp256k1 = require("secp256k1"); //required for Bitcoin transaction signing
 
 
@@ -226,6 +227,7 @@ var rpc_options = {
     crypto:crypto,
     getHandler:getHandler,
     bitcoin:bitcoin,
+    bitcoincash:bitcoincash,
     secp256k1:secp256k1,
     sendResult:sendResult,
     sendError:sendError,
@@ -253,6 +255,7 @@ var rpc_options = {
     crypto:crypto,
     getHandler:getHandler,
     bitcoin:bitcoin,
+    bitcoincash:bitcoincash,
     secp256k1:secp256k1,
     sendResult:sendResult,
     sendError:sendError,
@@ -1073,6 +1076,12 @@ async function createAccountSystem(onCreateCB=null) {
    if (typeof(process.env["WALLET_TPRV"]) == "string") {
       config.CP.API.wallets.test3.tprv = process.env["WALLET_TPRV"];
    }
+   if (typeof(process.env["BCHWALLET_XPRV"]) == "string") {
+      config.CP.API.wallets.bitcoincash.xprv = process.env["WALLET_XPRV"];
+   }
+   if (typeof(process.env["BCHWALLET_TPRV"]) == "string") {
+      config.CP.API.wallets.bchtest.tprv = process.env["WALLET_TPRV"];
+   }
    //try updating via command line arguments:
    for (var count = 2; count < process.argv.length; count++) {
       var currentArg = process.argv[count];
@@ -1102,10 +1111,16 @@ async function createAccountSystem(onCreateCB=null) {
             config.CP.API.database.accessKey = argValue;
             break;
          case "wallet_xprv":
-            onfig.CP.API.wallets.bitcoin.xprv = argValue;
+            config.CP.API.wallets.bitcoin.xprv = argValue;
             break;
          case "wallet_tprv":
-            onfig.CP.API.wallets.test3.tprv = argValue;
+            config.CP.API.wallets.test3.tprv = argValue;
+            break;
+         case "bchwallet_xprv":
+            config.CP.API.wallets.bitcoin.xprv = argValue;
+            break;
+         case "bchwallet_tprv":
+            config.CP.API.wallets.bchtest.tprv = argValue;
             break;
          default:
             //unrecognized command line parameter
@@ -1113,9 +1128,8 @@ async function createAccountSystem(onCreateCB=null) {
       }
    }
    var ccHandler = getHandler("cryptocurrency", "bitcoin");
-   //create HD wallets if possible
+   //Bitcoin (standard) wallets
    namespace.cp.wallets.bitcoin.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
-   console.log ("Created main Bitcoin wallet: "+namespace.cp.wallets.bitcoin.main );
    if (namespace.cp.wallets.bitcoin.main != null) {
       var walletPath = config.CP.API.bitcoin.default.main.cashOutAddrPath;
       var cashoutWallet = namespace.cp.wallets.bitcoin.main.derivePath(walletPath);
@@ -1131,6 +1145,24 @@ async function createAccountSystem(onCreateCB=null) {
    } else {
       console.log ("Could not configure Bitcoin testnet wallet.");
    }
+   //Bitcoin Cash wallets
+   namespace.cp.wallets.bitcoincash.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
+   if (namespace.cp.wallets.bitcoincash.main != null) {
+      var walletPath = config.CP.API.bitcoincash.default.main.cashOutAddrPath;
+      var cashoutWallet = namespace.cp.wallets.bitcoincash.main.derivePath(walletPath);
+      console.log ("Bitcoin Cash HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet));
+   } else {
+      console.log ("Could not configure Bitcoin Cash wallet.");
+   }
+   namespace.cp.wallets.bitcoincash.test = ccHandler.makeHDWallet(config.CP.API.wallets.bchtest.tprv);
+   if (namespace.cp.wallets.bitcoincash.test != null) {
+      walletPath = config.CP.API.bitcoincash.default.test.cashOutAddrPath;
+      cashoutWallet = namespace.cp.wallets.bitcoincash.test.derivePath(walletPath);
+      console.log ("Bitcoin Cash testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, bitcoin.networks.testnet));
+   } else {
+      console.log ("Could not configure Bitcoin Cash testnet wallet.");
+   }
+
    var wallets = config.CP.API.wallets;
    if (config.CP.API.database.enabled == true) {
       console.log ("Database functionality is ENABLED.");
@@ -1259,29 +1291,13 @@ async function loadHandlers(type="all") {
       try {
          var currentHandler = handlers[count];
          var handlerType = currentHandler.type;
-         var handlerName = currentHandler.name
-         if (type == "all") {
-            if (typeof (currentHandler.handler) == "object") {
-               try {
-                  currentHandler.handler.destroy();
-               } catch (err) {
-                  //probably no "destroy" function
-               }
-               delete currentHandler.handler;
-            }
-            var handlerClass = require(currentHandler.handlerClass);
-            var handler = new handlerClass(rpc_options.exposed_library_objects, currentHandler);
-            console.log ("   Loaded handler: "+handlerName);
-            if (typeof(handler.initialize) == "function") {
-               try {
-                  var initResult = await handler.initialize();
-               } catch (err) {
-                  console.error(err);
-               }
-            }
-            currentHandler.handler = handler;
-         } else {
-            if (handlerType == type) {
+         var handlerName = currentHandler.name;
+         var handlerEnabled = currentHandler.enabled;
+         if ((handlerEnabled == undefined) || (handlerEnabled == null)) {
+            handlerEnabled = true;
+         }
+         if (handlerEnabled == true) {
+            if (type == "all") {
                if (typeof (currentHandler.handler) == "object") {
                   try {
                      currentHandler.handler.destroy();
@@ -1291,7 +1307,8 @@ async function loadHandlers(type="all") {
                   delete currentHandler.handler;
                }
                var handlerClass = require(currentHandler.handlerClass);
-               var handler = new handlerClass(rpc_options.exposed_library_objects);
+               var handler = new handlerClass(rpc_options.exposed_library_objects, currentHandler);
+               console.log ("   Loaded handler: "+handlerName);
                if (typeof(handler.initialize) == "function") {
                   try {
                      var initResult = await handler.initialize();
@@ -1299,9 +1316,32 @@ async function loadHandlers(type="all") {
                      console.error(err);
                   }
                }
-               console.log ("   Loaded handler: "+handlerName);
                currentHandler.handler = handler;
+            } else {
+               if (handlerType == type) {
+                  if (typeof (currentHandler.handler) == "object") {
+                     try {
+                        currentHandler.handler.destroy();
+                     } catch (err) {
+                        //probably no "destroy" function
+                     }
+                     delete currentHandler.handler;
+                  }
+                  var handlerClass = require(currentHandler.handlerClass);
+                  var handler = new handlerClass(rpc_options.exposed_library_objects);
+                  if (typeof(handler.initialize) == "function") {
+                     try {
+                        var initResult = await handler.initialize();
+                     } catch (err) {
+                        console.error(err);
+                     }
+                  }
+                  console.log ("   Loaded handler: "+handlerName);
+                  currentHandler.handler = handler;
+               }
             }
+         } else {
+               console.log ("   Skipped disabled handler: "+handlerName);
          }
       } catch (err) {
          console.error (err);
