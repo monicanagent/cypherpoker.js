@@ -329,7 +329,6 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
          return (null);
       }
       var result = await rpc.importAddress(toAddress, "", true); //import and rescan all transactions
-      //console.log ("Address import result: "+result);
       var result = await rpc.generateToAddress(numBlocks, toAddress);
       return (result);
    }
@@ -432,10 +431,12 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
    * Either "main" (default), or "test". <code></code>
    * @param {Boolean} [addressOnly=false] If true, only the address is returned otherwise
    * the wallet object is returned (in this case use the <code>address</code> property).
+   * @param {Boolean} [cashAddress=false] If true and <code>addressOnly=true</code>, the returned
+   * address is a Bitcoin Cash style one, otherwise a standard Base58 encoded address is returned.
    *
    * @return (Object|String) The derived wallet object or its address property if <code>addressOnly=true</code>.
    */
-   getDerivedWallet(path, network="main", addressOnly=false) {
+   getDerivedWallet(path, network="main", addressOnly=false, cashAddress=false) {
       if (network == "main") {
          var walletObj = this.server.namespace.cp.wallets.bitcoincash.main;
       } else {
@@ -443,7 +444,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
       }
       var wallet = walletObj.derivePath(path);
       if (addressOnly == true) {
-         var address = this.getAddress(wallet, network);
+         var address = this.getAddress(wallet, network, cashAddress);
          return (address);
       } else {
          return (wallet);
@@ -455,15 +456,49 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
    *
    * @param {Object} walletObj A Bitcoin wallet data object.
    * @param {String} [network="main"] The sub-network for which to get the address.
-   * Either "main" (default), or "test".
+   * Either "main" (default), "test", "regtest", or any common BCH variant of these.
+   * @param {Boolean} [cashAddress=false] If true, a Bitcoin Cash address is returned instead
+   * of a standard (legacy) Bitcoin Base58 address.
    *
    */
-   getAddress(walletObj, network="main") {
-      if (network == "main") {
-         return (this.server.bitcoincash.payments.p2pkh({pubkey:walletObj.publicKey}).address);
+   getAddress(walletObj, network="main", cashAddress=false) {
+      network = network.toLowerCase();
+      if (cashAddress == true) {
+         var publicKey = bitcoreCash.PublicKey(walletObj.publicKey);
+         switch (network) {
+            case "main":
+               var address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.livenet);
+               break;
+            case "mainnet":
+               address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.livenet);
+               break;
+            case "livenet":
+               address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.livenet);
+               break;
+            case "test":               
+               address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.testnet);
+               break;
+            case "test3":
+               address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.testnet);
+               break;
+            case "testnet":
+               address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.testnet);
+               break;
+            case "regtest":
+               address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.regtest);
+               break;
+            default:
+               throw (new Error("Unrecognized network \""+network+"\"."));
+               break;
+         }
+         return (address.toString());
       } else {
-         var subNet = this.server.bitcoincash.networks.testnet;
-         return (this.server.bitcoincash.payments.p2pkh({pubkey:walletObj.publicKey, network:subNet}).address);
+         if ((network == "main") || (network == "mainnet") || (network == "livenet")) {
+            return (this.server.bitcoincash.payments.p2pkh({pubkey:walletObj.publicKey}).address);
+         } else {
+            var subNet = this.server.bitcoincash.networks.testnet;
+            return (this.server.bitcoincash.payments.p2pkh({pubkey:walletObj.publicKey, network:subNet}).address);
+         }
       }
    }
 
@@ -545,8 +580,6 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
    * @return (Promise) The promise resolves with a JSON object containing information about
    * the address or derived wallet. Refer to the <a href="https://www.blockcypher.com/dev/bitcoin/#address-full-endpoint">BlockCypher API reference</a>
    * for the properties of this object. The promise ends with a rejection if the API returns an error.
-   *
-   * @see https://www.blockcypher.com/dev/bitcoin/#address-full-endpoint
    */
    getBlockchainBalance(addressOrPath, APIType="bitcoincash", network=null) {
       if (typeof(addressOrPath) != "string") {
@@ -577,38 +610,10 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
          var rpc = this.nativeRPC(network);
          var totalConfirmed = this.server.bigInt(0);
          var totalUnconfirmed = this.server.bigInt(0);
-         /*
-         rpc.importAddress(address, "", false).then (result => {
-            console.log ("Import result:");
-            console.dir(result);
-            rpc.listReceivedByAddress(0, true, true).then (utxoList => {
-               for (var count=0; count < utxoList.length; count++) {
-                  var currentUTXO = utxoList[count];
-                  console.log ("currentUTXO:");
-                  console.dir (currentUTXO);
-                  var confirmations = currentUTXO.confirmations;
-                  var amount = this.convertDenom(String(currentUTXO.amount), "bitcoin", "satoshis");
-                  amount = this.server.bigInt(amount);
-                  if (confirmations > 0) {
-                     totalConfirmed = totalConfirmed.plus(amount);
-                  } else {
-                     totalUnconfirmed = totalUnconfirmed.plus(amount);
-                  }
-               }
-               resultObj.balance = parseInt(totalConfirmed.toString(10), 10);
-               resultObj.unconfirmed_balance = parseInt(totalUnconfirmed.toString(10), 10);
-               resultObj.final_balance = parseInt(totalConfirmed.plus(totalUnconfirmed).toString(10), 10);
-               console.log ("Resolving...");
-               resolve (resultObj);
-            });
-         });
-         */
          rpc.importAddress(address, "", false).then (result => {
             rpc.listUnspent(0, 999999999, [address]).then (utxoList => {
                for (var count=0; count < utxoList.length; count++) {
                   var currentUTXO = utxoList[count];
-               //   console.log ("currentUTXO:");
-               //   console.dir (currentUTXO);
                   var confirmations = currentUTXO.confirmations;
                   var amount = this.convertDenom(String(currentUTXO.amount), "bitcoin", "satoshis");
                   amount = this.server.bigInt(amount);
@@ -719,7 +724,6 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
       if (network == "main") {
          var fromAddress = this.getAddress(fromWallet);
       } else {
-         //fromAddress = this.getAddress(fromWallet, this.server.bitcoincash.networks.testnet);
          fromAddress = this.getAddress(fromWallet, "test");
       }
       switch (APIType) {
@@ -727,7 +731,6 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
             var UTXOList = await this.getUTXOList(fromAddress, network);
             var signingKey = new bitcoreCash.PrivateKey(fromWallet.toWIF());
             var txHex = await this.buildRawTransaction(UTXOList, fromAddress, toAddress, signingKey, network, amount, fee);
-            console.log ("Built transaction: "+txHex);
             try {
                var txHash = await this.nativeRPC(network).sendRawTransaction(txHex, true); //alow high transaction fees (if included)
             } catch (err) {
@@ -738,7 +741,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
             txObject.tx = new Object();
             txObject.hash = txHash;
             if (network == "regtest") {
-               //"mine" a block immediately to push the transaction into the chain
+               //"mine" a block immediately to push the transaction onto the chain
                var mineAddress = this.getDerivedWallet(this.server.config.CP.API.bitcoincash.default.test.cashOutAddrPath, "regtest", true);
                var result = await this.generateRegBlocks(mineAddress, 10); //mine a block
             }
@@ -918,19 +921,19 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
         var result = this.nativeRPC("main").stop();
         this._exitOnProcessClose.main = true;
      } catch (err) {
-        console.log (err);
+        console.error (err);
      }
      try {
         var result = this.nativeRPC("test").stop();
         this._exitOnProcessClose.test = true;
      } catch (err) {
-        console.log (err);
+        console.error (err);
      }
      try {
         var result = this.nativeRPC("regtest").stop();
         this._exitOnProcessClose.regtest = true;
      } catch (err) {
-        console.log (err);
+        console.error (err);
      }
   }
 

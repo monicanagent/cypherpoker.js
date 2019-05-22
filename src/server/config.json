@@ -64,7 +64,15 @@
                "type": "cryptocurrency",
                "name": "BlockCypher API Cryptocurrency Handler",
                "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
-               "handlerClass": "./libs/adapters/BlockCypherAPI.js"
+               "handlerClass": "./libs/adapters/BlockCypherAPI.js",
+               "enabled": true
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "Bitcoin.com Bitcoin Cash Handler",
+               "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "handlerClass": "./libs/adapters/BitcoinComAPI.js",
+               "enabled": true
             },
             {
                "type": "cryptocurrency",
@@ -95,6 +103,13 @@
                "handlerClass": "./libs/adapters/BitcoinCashNative.js",
                "showOutput": true,
                "enabled": false
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "CryptoAPIs Bitcoin Cash Handler",
+               "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "handlerClass": "./libs/adapters/CryptoAPIs.js",
+               "enabled": false
             }
          ],
          "wallets":{
@@ -120,7 +135,8 @@
             }
          },
          "tokens": {
-            "blockcypher":"BLOCKCYPHER_TOKEN"
+            "blockcypher":"BLOCKCYPHER_TOKEN",
+            "cryptoapis":"CRYPTOAPIS_TOKEN"
          },
          "bitcoin":{
             "networks":{
@@ -181,6 +197,18 @@
                }
             },
             "urls": {
+               "bitcoincom": {
+                  "balance": "https://%network%.bitcoin.com/v2/address/details/%address%",
+                  "gettxs": "https://%network%.bitcoin.com/v2/address/utxo/%address%",
+                  "sendtx": "https://%network%.bitcoin.com/v2/rawtransactions/sendRawTransaction",
+                  "fees": ""
+               },
+               "cryptoapis": {
+                  "balance": "https://api.cryptoapis.io/v1/bc/bch/%network%/address/%address%",
+                  "gettxs": "https://api.cryptoapis.io/v1/bc/bch/%network%/address/%address%/transactions?index=0&limit=100000000",
+                  "sendtx": "https://api.cryptoapis.io/v1/bc/bch/%network%/txs/send",
+                  "fees": ""
+               }
             }
          },
          "contract":{

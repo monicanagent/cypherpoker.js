@@ -491,7 +491,7 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
             method: "POST",
             body: txObject,
             json: true
-     	}, (error, response, body) => {
+     	   }, (error, response, body) => {
            if ((body == undefined) || (body == null)) {
               reject (response);
               return;
@@ -502,7 +502,7 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
               //do we want to catch and reject JSON-RPC errors here?
               resolve(body);
            }
-     	});
+       });
      });
   	return (promise);
   }

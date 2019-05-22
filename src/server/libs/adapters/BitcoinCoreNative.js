@@ -693,8 +693,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
       }
       if (network == "main") {
          var fromAddress = this.getAddress(fromWallet);
-      } else {
-         //fromAddress = this.getAddress(fromWallet, this.server.bitcoin.networks.testnet);
+      } else {         
          fromAddress = this.getAddress(fromWallet, "test3");
       }
       var result = null;
