@@ -10,7 +10,7 @@
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle}.
 */
-var appVersion = "0.4.1";
+var appVersion = "0.5.0";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle}.

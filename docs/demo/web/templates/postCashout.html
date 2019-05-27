@@ -4,7 +4,7 @@
 
       %txHash%<br/><br/>
 
-      You can check the status of the transaction at these URLs:<br/><br/>
+      You can check the status of the transaction at any Bitcoin block explorer including these URLs:<br/><br/>
 
       <a href="https://live.blockcypher.com/btc/tx/%txHash%" target="_blank">https://live.blockcypher.com/btc/tx/%txHash%</a><br/>
       <a href="https://blockexplorer.com/tx/%txHash%" target="_blank">https://blockexplorer.com/tx/%txHash%</a><br/><br/>
@@ -16,11 +16,36 @@
 
       %txHash%<br/><br/>
 
-      You can check the status of the transaction at these URLs:<br/><br/>
+      You can check the status of the transaction at any Testnet Bitcoin block explorer including these URLs:<br/><br/>
 
       <a href="https://live.blockcypher.com/btc-testnet/tx/%txHash%" target="_blank">https://live.blockcypher.com/btc-testnet/tx/%txHash%</a><br/>
       <a href="https://testnet.blockexplorer.com/tx/%txHash%" target="_blank">https://testnet.blockexplorer.com/tx/%txHash%</a><br/><br/>
 
       <button id="clipboardButton" onclick="ui.copyToClipboard('%txHash%')">Copy hash to clipboard</button>&nbsp;&nbsp;<button id="okButton" onclick="ui.onPostCashoutOkayClick()">Okay</button>
    </div>
+   <div id="cashout_bch" hidden="true">
+      Cashout processed. The transaction hash is:<br/><br/>
+
+      %txHash%<br/><br/>
+
+      You can check the status of the transaction at any Bitcoin Cash block explorer including these URLs:<br/><br/>
+
+      <a href="https://explorer.bitcoin.com/bch/tx/%txHash%" target="_blank">https://explorer.bitcoin.com/bch/tx/%txHash%</a><br/>
+      <a href="https://blockdozer.com/tx/%txHash%" target="_blank">https://blockdozer.com/tx/%txHash%</a><br/>
+
+      <button id="clipboardButton" onclick="ui.copyToClipboard('%txHash%')">Copy transaction hash to clipboard</button>&nbsp;&nbsp;<button id="okButton" onclick="ui.onPostCashoutOkayClick()">Okay</button>
+   </div>
+   <div id="cashout_bchtest" hidden="true">
+      Cashout processed. The transaction hash is:<br/><br/>
+
+      %txHash%<br/><br/>
+
+      You can check the status of the transaction at any testnet Bitcoin Cash block explorer including these URLs:<br/><br/>
+
+      <a href="https://blockexplorer.one/bitcoin-cash/testnet/tx/%txHash%" target="_blank">https://blockexplorer.one/bitcoin-cash/testnet/tx/%txHash%</a><br/>
+      <a href="https://explorer.bitcoin.com/tbch/tx/%txHash%" target="_blank">https://explorer.bitcoin.com/tbch/tx/%txHash%</a><br/><br/>
+
+      <button id="clipboardButton" onclick="ui.copyToClipboard('%txHash%')">Copy hash to clipboard</button>&nbsp;&nbsp;<button id="okButton" onclick="ui.onPostCashoutOkayClick()">Okay</button>
+   </div>
+
 </div>

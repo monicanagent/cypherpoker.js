@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.4.1
+* @version 0.5.0
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -979,10 +979,18 @@ class CypherPokerUI {
             this.cypherpoker.createAccount(typeSplit[0], password, typeSplit[1]).then(newAccount => {
                this.hide(element);
                element = this.getTemplateByName("help").elements[0];
-               if (typeSplit[1] == "test3") {
-                  var helpElement = element.querySelector("#new_account_btc_test3");
-               } else {
-                  helpElement = element.querySelector("#new_account_btc");
+               if (typeSplit[0] == "bitcoin") {
+                  if (typeSplit[1] == "test3") {
+                     var helpElement = element.querySelector("#new_account_btc_test3");
+                  } else {
+                     helpElement = element.querySelector("#new_account_btc");
+                  }
+               } else if (typeSplit[0] == "bitcoincash") {
+                  if (typeSplit[1] == "test") {
+                     var helpElement = element.querySelector("#new_account_bch_test");
+                  } else {
+                     helpElement = element.querySelector("#new_account_bch");
+                  }
                }
                helpElement.innerHTML = helpElement.innerHTML.split("%address%").join(newAccount.address);
                helpElement.innerHTML = helpElement.innerHTML.split("%depositfee%").join(newAccount.fees.deposit);
@@ -1132,16 +1140,32 @@ class CypherPokerUI {
                var clone = this.cloneElement(postCashoutElement, true);
                var btcElement = clone.querySelector("#cashout_btc");
                var test3Element = clone.querySelector("#cashout_test3");
-               if (this.selectedAccount.network == "test3") {
-                  //testnet
-                  test3Element.innerHTML = test3Element.innerHTML.split("%txHash%").join(cashoutResult.txHash);
-                  this.hide(btcElement);
-                  this.show(test3Element);
-               } else {
-                  //mainnet
-                  btcElement.innerHTML = btcElement.innerHTML.split("%txHash%").join(cashoutResult.txHash);
-                  this.hide(test3Element);
-                  this.show(btcElement);
+               var bchElement = clone.querySelector("#cashout_bth");
+               var bchTestElement = clone.querySelector("#cashout_bchtest");
+               if (this.selectedAccount.type == "bitcoin") {
+                  if (this.selectedAccount.network == "test3") {
+                     //testnet
+                     test3Element.innerHTML = test3Element.innerHTML.split("%txHash%").join(cashoutResult.txHash);
+                     this.hide(btcElement);
+                     this.show(test3Element);
+                  } else {
+                     //mainnet
+                     btcElement.innerHTML = btcElement.innerHTML.split("%txHash%").join(cashoutResult.txHash);
+                     this.hide(test3Element);
+                     this.show(btcElement);
+                  }
+               } else if (this.selectedAccount.type == "bitcoincash") {
+                  if (this.selectedAccount.network == "test") {
+                     //testnet
+                     bchTestElement.innerHTML = bchTestElement.innerHTML.split("%txHash%").join(cashoutResult.txHash);
+                     this.hide(bchElement);
+                     this.show(bchTestElement);
+                  } else {
+                     //mainnet
+                     bchElement.innerHTML = bchElement.innerHTML.split("%txHash%").join(cashoutResult.txHash);
+                     this.hide(bchTestElement);
+                     this.show(bchElement);
+                  }
                }
                this.show(clone);
                this.showDialog();
@@ -2357,8 +2381,8 @@ class CypherPokerUI {
                   whole = amountSplit[0];
                   decimal = amountSplit[1].padEnd(8, "0");
                } else {
-                  whole = "0";
-                  decimal = amountSplit[0].padEnd(8, "0");
+                  whole = amountSplit[0].padEnd((amountSplit[0].length + 8), "0");
+                  decimal = "";
                }
                if (decimal.length > 8) {
                   decimal = decimal.substring(0, 7);
@@ -2370,6 +2394,9 @@ class CypherPokerUI {
                   }
                }
                amount = whole + decimal;
+               if (amount == "") {
+                  amount = "0";
+               }
             } else {
                throw (new Error("Unrecognized target denomination \""+toDenom+"\""));
             }
