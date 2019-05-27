@@ -426,10 +426,11 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    * Either "main" (default), or "test3". <code></code>
    * @param {Boolean} [addressOnly=false] If true, only the address is returned otherwise
    * the wallet object is returned (in this case use the <code>address</code> property).
+   * @param {Boolean} [nativeAddress=false] Not used.
    *
    * @return (Object|String) The derived wallet object or its address property if <code>addressOnly=true</code>.
    */
-   getDerivedWallet(path, network="main", addressOnly=false) {
+   getDerivedWallet(path, network="main", addressOnly=false, nativeAddress=false) {
       if (network == "main") {
          var walletObj = this.server.namespace.cp.wallets.bitcoin.main;
       } else {
@@ -693,7 +694,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
       }
       if (network == "main") {
          var fromAddress = this.getAddress(fromWallet);
-      } else {         
+      } else {
          fromAddress = this.getAddress(fromWallet, "test3");
       }
       var result = null;
@@ -712,7 +713,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
             //create expected response object
             var txObject = new Object();
             txObject.tx = new Object();
-            txObject.hash = txHash;
+            txObject.tx.hash = txHash;
             if (network == "regtest") {
                //"mine" a block immediately to push the transaction into the chain
                var mineAddress = this.getDerivedWallet(this.server.config.CP.API.bitcoin.default.test3.cashOutAddrPath, "regtest", true);

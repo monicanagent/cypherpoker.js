@@ -368,16 +368,16 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
             var startChain = this.server.config.CP.API.wallets.bitcoincash.startChain;
             var startIndex = this.server.config.CP.API.wallets.bitcoincash.startIndex;
          } else if ((network == "test") && (this.server.namespace.cp.wallets.bitcoincash.test != null)) {
-            if (this.server.config.CP.API.wallets.bitcoincash.test.startChain < 0) {
-               this.server.config.CP.API.wallets.bitcoincash.test.startChain = 0;
+            if (this.server.config.CP.API.wallets.bchtest.startChain < 0) {
+               this.server.config.CP.API.wallets.bchtest.startChain = 0;
             }
             //address index 0 is reserved for the cashout address
             if (this.server.config.CP.API.wallets.bchtest.startIndex < 0) {
                this.server.config.CP.API.wallets.bchtest.startIndex = 0;
             }
             this.server.config.CP.API.wallets.bchtest.startIndex++;
-            startChain = this.server.config.CP.API.wallets.bitcoincash.test.startChain;
-            startIndex = this.server.config.CP.API.wallets.bitcoincash.test.startIndex;
+            startChain = this.server.config.CP.API.wallets.bchtest.startChain;
+            startIndex = this.server.config.CP.API.wallets.bchtest.startIndex;
          } else {
             reject(new Error("Wallet for \""+APIType+"\", network \""+network+"\" not defined."));
             return;
@@ -475,7 +475,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
             case "livenet":
                address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.livenet);
                break;
-            case "test":               
+            case "test":
                address = new bitcoreCash.Address(publicKey, bitcoreCash.Networks.testnet);
                break;
             case "test3":
@@ -739,7 +739,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
             //create expected response object
             var txObject = new Object();
             txObject.tx = new Object();
-            txObject.hash = txHash;
+            txObject.tx.hash = txHash;
             if (network == "regtest") {
                //"mine" a block immediately to push the transaction onto the chain
                var mineAddress = this.getDerivedWallet(this.server.config.CP.API.bitcoincash.default.test.cashOutAddrPath, "regtest", true);

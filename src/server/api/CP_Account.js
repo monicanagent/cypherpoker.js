@@ -2,7 +2,7 @@
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
 *
-* @version 0.4.1
+* @version 0.5.0
 */
 async function CP_Account (sessionObj) {
    if ((namespace.wss == null) || (namespace.wss == undefined)) {
@@ -68,33 +68,45 @@ async function CP_Account (sessionObj) {
             var pwHash = hash.digest("hex");
             fullAccountObj.type = requestParams.type;
             fullAccountObj.network = requestParams.network;
-            //is there a more elegant / agnostic way to do this? ...
-            if (requestParams.type == "bitcoin") {
-               if (requestParams.network == "main") {
-                  fullAccountObj.chain = config.CP.API.wallets.bitcoin.startChain;
-                  fullAccountObj.addressIndex = config.CP.API.wallets.bitcoin.startIndex;
-                  fullAccountObj.address = ccHandler.getAddress(newWalletResult);
-               } else {
-                  fullAccountObj.chain = config.CP.API.wallets.test3.startChain;
-                  fullAccountObj.addressIndex = config.CP.API.wallets.test3.startIndex;
-                  fullAccountObj.address = ccHandler.getAddress(newWalletResult, requestParams.network);
-               }
+            var walletType = null;
+            switch (requestParams.type) {
+               case "bitcoin":
+                  if (requestParams.network == "main") {
+                     walletType = "bitcoin";
+                  } else {
+                     walletType = "test3";
+                  }
+                  break;
+               case "bitcoincash":
+                  if (requestParams.network == "main") {
+                     walletType = "bitcoincash";
+                  } else {
+                     walletType = "bchtest";
+                  }
+                  break;
+               default:
+                  sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Cryptocurrency \""+requestParams.type+"\" not supported.", sessionObj);
+                  return(false);
+                  break;
             }
-            fullAccountObj.address = ccHandler.getAddress(newWalletResult, requestParams.network);
+            fullAccountObj.chain = config.CP.API.wallets[walletType].startChain;
+            fullAccountObj.addressIndex = config.CP.API.wallets[walletType].startIndex;
+            if ((requestParams.type == "bitcoin") || (requestParams.type == "bitcoincash")) {
+               //use BIP44 derivation path for Bitcoin related addresses
+               var derivationPath = "m/"+String(fullAccountObj.chain)+"/"+String(fullAccountObj.addressIndex);
+            } else {
+               sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Cryptocurrency \""+requestParams.type+"\" not supported.", sessionObj);
+               return(false);
+            }
+            fullAccountObj.address = ccHandler.getDerivedWallet(derivationPath, requestParams.network, true, true);
             fullAccountObj.pwhash = pwHash;
             fullAccountObj.balance = "0";
             fullAccountObj.updated = MySQLDateTime(new Date()); //make sure to store local date/time (db may differ)
             accountObj.type = requestParams.type;
             accountObj.network = requestParams.network;
-            accountObj.chain = config.CP.API.wallets.bitcoin.startChain;
-            accountObj.addressIndex = config.CP.API.wallets.bitcoin.startIndex;
-            if (requestParams.type == "bitcoin") {
-               if (requestParams.network == "main") {
-                  accountObj.address = ccHandler.getAddress(newWalletResult);
-               } else {
-                  accountObj.address = ccHandler.getAddress(newWalletResult, requestParams.network);
-               }
-            }
+            accountObj.chain = config.CP.API.wallets[walletType].startChain;
+            accountObj.addressIndex = config.CP.API.wallets[walletType].startIndex;
+            accountObj.address = fullAccountObj.address;
             accountObj.pwhash = pwHash;
             accountObj.balance = bigInt("0");
             var feesObj = resultObj.fees; //save reference to previously created fees object
@@ -124,6 +136,7 @@ async function CP_Account (sessionObj) {
                return (false);
             }
             if (accountResults.length < 1) {
+               console.log ("No results...");
                sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Account does not exist.", sessionObj);
                return (false);
             }

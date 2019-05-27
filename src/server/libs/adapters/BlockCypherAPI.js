@@ -125,10 +125,13 @@ module.exports = class BlockCypherAPI extends CryptocurrencyHandler {
    * Either "main" (default), or "test3". <code></code>
    * @param {Boolean} [addressOnly=false] If true, only the address is returned otherwise
    * the wallet object is returned (in this case use the <code>address</code> property).
+   * @param {Boolean} [nativeAddress=false] Used when a derivative cryptocurrency can return
+   * an address (when <code>addressOnly=true</code>) in a native/derivative format from
+   * the original cryptoccurrency. Currently ignored.
    *
    * @return (Object|String) The derived wallet object or its address property if <code>addressOnly=true</code>.
    */
-   getDerivedWallet(path, network="main", addressOnly=false) {
+   getDerivedWallet(path, network="main", addressOnly=false, nativeAddress=false) {
       if (network == "main") {
          var walletObj = this.server.namespace.cp.wallets.bitcoin.main;
       } else {

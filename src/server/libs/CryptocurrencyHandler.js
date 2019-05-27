@@ -99,10 +99,14 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
    * @param {String} [network="*"] The sub-network for which to get the address.
    * @param {Boolean} [addressOnly=false] If true, only the address is returned otherwise
    * the wallet object is returned.
+   * @param {Boolean} [nativeAddress=false] Used with derivative cryptocurrencies such as
+   * Bitcoin Cash where the returned address may standard (legacy), or native to the
+   * derived cryptocurrency (if true). This parameter is is only used when when
+   * <code>addressOnly=true</code> is implementation specific (it may be be ignored).
    *
    * @return (Object|String) The derived wallet object or its address property if <code>addressOnly=true</code>.
    */
-   getDerivedWallet(path, network="*", addressOnly=false) {
+   getDerivedWallet(path, network="*", addressOnly=false, nativeAddress=false) {
       throw (new Error ("getDerivedWallet function not implemented in extending class."));
    }
 

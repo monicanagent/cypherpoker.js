@@ -452,7 +452,7 @@ class WSSClient extends EventDispatcher {
    *
    * @async
    */
-   async request(requestObj, responseMsgID=null) {
+   async request(requestObj, responseMsgID=null) {      
       if (responseMsgID != null) {
          var promise = new Promise((resolve, reject) => {
             this.handleRequestResponse(responseMsgID, resolve, reject);

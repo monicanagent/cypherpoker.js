@@ -39,7 +39,6 @@ module.exports = class BitcoinComAPI extends BitcoinCashNative {
    * @async
    */
    async initialize() {
-      setTimeout(this.test.bind(this), 3000);
       return (true);
    }
 
@@ -222,7 +221,7 @@ module.exports = class BitcoinComAPI extends BitcoinCashNative {
       var fromAddress = this.getAddress(fromWallet, network);
       switch (APIType) {
          case "bitcoincash":
-            var UTXOList = await this.getUTXOList(fromAddress, network);            
+            var UTXOList = await this.getUTXOList(fromAddress, network);
             var signingKey = new bitcoreCash.PrivateKey(fromWallet.toWIF());
             var txHex = await this.buildRawTransaction(UTXOList, fromAddress, toAddress, signingKey, network, amount, fee);
             var API = this.server.config.CP.API.bitcoincash;
@@ -255,10 +254,10 @@ module.exports = class BitcoinComAPI extends BitcoinCashNative {
                   }
                   if (error) {
                      reject(error);
-                  } else {
+                  } else {                     
                      var txObject = new Object();
                      txObject.tx = new Object();
-                     txObject.hash = body[0];
+                     txObject.tx.hash = body[0];
                      resolve(txObject)
                   }
                });

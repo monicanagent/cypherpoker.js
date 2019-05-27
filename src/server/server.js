@@ -1127,8 +1127,8 @@ async function createAccountSystem(onCreateCB=null) {
             break;
       }
    }
-   var ccHandler = getHandler("cryptocurrency", "bitcoin");
    //Bitcoin (standard) wallets
+   var ccHandler = getHandler("cryptocurrency", "bitcoin");
    namespace.cp.wallets.bitcoin.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
    if (namespace.cp.wallets.bitcoin.main != null) {
       var walletPath = config.CP.API.bitcoin.default.main.cashOutAddrPath;
@@ -1141,16 +1141,17 @@ async function createAccountSystem(onCreateCB=null) {
    if (namespace.cp.wallets.bitcoin.test3 != null) {
       walletPath = config.CP.API.bitcoin.default.test3.cashOutAddrPath;
       cashoutWallet = namespace.cp.wallets.bitcoin.test3.derivePath(walletPath);
-      console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, bitcoin.networks.testnet));
+      console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "test3"));
    } else {
       console.log ("Could not configure Bitcoin testnet wallet.");
    }
    //Bitcoin Cash wallets
-   namespace.cp.wallets.bitcoincash.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
+   ccHandler = getHandler("cryptocurrency", "bitcoincash");
+   namespace.cp.wallets.bitcoincash.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoincash.xprv);
    if (namespace.cp.wallets.bitcoincash.main != null) {
       var walletPath = config.CP.API.bitcoincash.default.main.cashOutAddrPath;
       var cashoutWallet = namespace.cp.wallets.bitcoincash.main.derivePath(walletPath);
-      console.log ("Bitcoin Cash HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet));
+      console.log ("Bitcoin Cash HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "main", true));
    } else {
       console.log ("Could not configure Bitcoin Cash wallet.");
    }
@@ -1158,11 +1159,10 @@ async function createAccountSystem(onCreateCB=null) {
    if (namespace.cp.wallets.bitcoincash.test != null) {
       walletPath = config.CP.API.bitcoincash.default.test.cashOutAddrPath;
       cashoutWallet = namespace.cp.wallets.bitcoincash.test.derivePath(walletPath);
-      console.log ("Bitcoin Cash testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, bitcoin.networks.testnet));
+      console.log ("Bitcoin Cash testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "test", true));
    } else {
       console.log ("Could not configure Bitcoin Cash testnet wallet.");
    }
-
    var wallets = config.CP.API.wallets;
    if (config.CP.API.database.enabled == true) {
       console.log ("Database functionality is ENABLED.");
@@ -1194,11 +1194,30 @@ async function createAccountSystem(onCreateCB=null) {
       if (test3StartIndex > wallets.test3.startIndex) {
          wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
       }
+      //force-convert values in case the database returned them as strings
+      var bchStartChain = Number(String(resultObj.bitcoincash.main.startChain));
+      var bchStartIndex = Number(String(resultObj.bitcoincash.main.startIndex));
+      var bchTestStartChain = Number(String(resultObj.bitcoincash.test.startChain));
+      var bchTestStartIndex = Number(String(resultObj.bitcoincash.test.startIndex));
+      if (bchStartChain > wallets.bitcoincash.startChain) {
+         wallets.bitcoincash.startChain = Number(String(resultObj.bitcoincash.main.startChain));
+      }
+      if (btcStartIndex > wallets.bitcoin.startIndex) {
+         wallets.bitcoincash.startIndex = Number(String(resultObj.bitcoincash.main.startIndex));
+      }
+      if (bchTestStartChain > wallets.bchtest.startChain) {
+         wallets.bchtest.startChain = Number(String(resultObj.bitcoincash.test.startChain));
+      }
+      if (bchTestStartIndex > wallets.bchtest.startIndex) {
+         wallets.bchtest.startIndex = Number(String(resultObj.bitcoincash.test.startIndex));
+      }
    } else {
       console.log ("Database functionality is DISABLED.");
    }
-   console.log ("Initial Bitcoin account derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
-   console.log ("Initial Bitcoin testnet account derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
+   console.log ("Initial (next) Bitcoin account derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
+   console.log ("Initial (next) Bitcoin testnet account derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
+   console.log ("Initial (next) Bitcoin Cash account derivation path: m/"+wallets.bitcoincash.startChain+"/"+(wallets.bitcoincash.startIndex+1));
+   console.log ("Initial (next) Bitcoin Cash testnet account derivation path: m/"+wallets.bchtest.startChain+"/"+(wallets.bchtest.startIndex+1));
    if (config.CP.API.database.enabled == true) {
       if (hostEnv.embedded == true) {
          console.log ("Local database size: "+resultObj.db.sizeMB+" megabytes");
@@ -1376,10 +1395,8 @@ function getHandler(handlerType, subType, caseSensitive=false) {
             subType = subType.toLowerCase();
          }
          if ((currentType == subType) || (subType == "*") || (subType == "any")) {
-            if (typeof(currentHandler.handler) == "object") {
+            if ((typeof(currentHandler.handler) == "object") && (currentHandler.enabled == true)) {
                return (currentHandler.handler);
-            } else {
-               //keep looking
             }
          }
       }

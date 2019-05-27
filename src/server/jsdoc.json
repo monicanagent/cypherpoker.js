@@ -1,5 +1,10 @@
 {
-    "source": {
-        "excludePattern": "(node_modules)"
+    "source": {        
+        "exclude": [
+           "node_modules",
+           "libs",
+           "bin",
+           "db"
+        ]
     }
 }

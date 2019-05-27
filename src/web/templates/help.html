@@ -14,9 +14,6 @@
    <div id="create_account_type" hidden="true">
       Select the cryptocurrency type for the new account.<br/>
       <br/>
-      Choose "Bitcoin" to create a live (real) Bitcoin account<br/>
-      or "Test Bitcoin" to create a Testnet3 account.<br/>
-      <br/>
       <button id="helpClose" class="helpContentButton" onclick="ui.onHelpButtonClick('close')">OKAY</button>
    </div>
    <div id="new_account_btc_test3" hidden="true">
@@ -45,6 +42,31 @@
       <br/>
       Any help button (<button class="helpButton">?</button>) elsewhere in the interface will display related help information.<br/>
    </div>
+   <div id="new_account_bch_test" hidden="true">
+      A new Bitcoin Cash testnet address / account has been created:<br/>
+      <br/>
+      <b>%address%</b><br/>
+      <br/>
+      You now need to deposit some funds to this address / account before you can begin playing.<br/>
+      <br/>
+      <button id="" onclick="ui.copyToClipboard('%address%')">Click here to copy the address to the clipboard... </button><br/>
+      <br/>
+      ... then deposit to the new address from one of the following faucets:<br/>
+      <br/>
+      <a href="https://developer.bitcoin.com/faucets/bch/" target="_blank">https://developer.bitcoin.com/faucets/bch/</a><br/>
+      <a href="https://coinfaucet.eu/en/bch-testnet/" target="_blank">https://coinfaucet.eu/en/bch-testnet/</a><br/>
+      <br/>
+      <b>A deposit transfer fee of %depositfee% satoshis will be deducted from the deposit.</><br/>
+      <br/>
+      You can check the status of the deposit using blockchain explorers such as:<br/>
+      <br/>
+      <a href="https://explorer.bitcoin.com/tbch/address/%address%" target="_blank">https://explorer.bitcoin.com/tbch/address/%address%</a><br/>
+      <a href="https://blockexplorer.one/bitcoin-cash/testnet/address/%address%" target="_blank">https://blockexplorer.one/bitcoin-cash/testnet/address/%address%</a><br/>
+      <br/>
+      When the transaction is confirmed, <button onclick="location.reload()">refresh/reload</button> this page to complete the deposit.<br/>
+      <br/>
+      Any help button (<button class="helpButton">?</button>) elsewhere in the interface will display related help information.<br/>
+   </div>
    <div id="new_account_btc" hidden="true">
       A new Bitcoin address / account has been created:<br/>
       <br/>
@@ -60,6 +82,29 @@
       <br/>
       <a href="https://www.blockchain.com/btc/address/%address%" target="_blank">https://www.blockchain.com/btc/address/%address%</a><br/>
       <a href="https://live.blockcypher.com/btc/address/%address%" target="_blank">https://live.blockcypher.com/btc/address/%address%</a><br/>
+      <br/>
+      <b>A deposit transfer fee of %depositfee% satoshis will be deducted from the deposit.</>
+      <br/>
+      <br/>
+      When the transaction is confirmed, <button onclick="location.reload()">refresh</button> this page to complete the deposit.<br/>
+      <br/>
+      Any help button (<button class="helpButton">?</button>) elsewhere in the interface will display related help information.<br/>
+   </div>
+   <div id="new_account_bch" hidden="true">
+      A new Bitcoin address / account has been created:<br/>
+      <br/>
+      <b>%address%</b><br/>
+      <br/>
+      You now need to deposit some funds to this address / account before you can begin playing.<br/>
+      <br/>
+      <button id="" onclick="ui.copyToClipboard('%address%')">Click here to copy the address to the clipboard... </button><br/>
+      <br/>
+      ... then deposit to the new address from your Bitcoin Cash wallet or wallet service.<br/>
+      <br/>
+      You can check the status of the deposit using blockchain explorers such as:<br/>
+      <br/>
+      <a href="https://explorer.bitcoin.com/bch/address/%address%" target="_blank">https://explorer.bitcoin.com/bch/address/%address%</a><br/>
+      <a href="https://blockdozer.com/address/%address%" target="_blank">https://blockdozer.com/address/%address%</a><br/>
       <br/>
       <b>A deposit transfer fee of %depositfee% satoshis will be deducted from the deposit.</>
       <br/>

@@ -262,7 +262,7 @@ module.exports = class CryptoAPI extends BitcoinCashNative {
                   } else {
                      var txObject = new Object();
                      txObject.tx = new Object();
-                     txObject.hash = body.payload.txid;
+                     txObject.tx.hash = body.payload.txid;
                      resolve(txObject)
                   }
                });
