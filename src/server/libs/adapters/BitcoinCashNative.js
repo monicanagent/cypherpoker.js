@@ -167,7 +167,6 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
       if (result == false) {
          return (false);
       }
-      /*
       //mainnet
       var mainParameters = new Array();
       mainParameters.push("-server");
@@ -199,7 +198,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
       this.nativeProcess["test"].stderr.on('data', this.onClientSTDERR.bind(this, "test"));
       this.nativeProcess["test"].on('close', this.onProcessClose.bind(this, "test"));
       var result = await this.waitForOutput("test");
-      */
+      /*
       //regtest (local developer testnet)
       var regParameters = new Array();
       regParameters.push("-server");
@@ -216,7 +215,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
       this.nativeProcess["regtest"].stderr.on('data', this.onClientSTDERR.bind(this, "regtest"));
       this.nativeProcess["regtest"].on('close', this.onProcessClose.bind(this, "regtest"));
       var result = await this.waitForOutput("regtest");
-      setTimeout(this.test.bind(this), 8000);
+      */
    }
 
    /**

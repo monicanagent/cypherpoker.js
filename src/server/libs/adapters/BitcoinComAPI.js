@@ -254,7 +254,7 @@ module.exports = class BitcoinComAPI extends BitcoinCashNative {
                   }
                   if (error) {
                      reject(error);
-                  } else {                     
+                  } else {
                      var txObject = new Object();
                      txObject.tx = new Object();
                      txObject.tx.hash = body[0];

@@ -1058,178 +1058,185 @@ function adjustEnvironment() {
 * @private
 */
 async function createAccountSystem(onCreateCB=null) {
-   if (typeof(process.env["BLOCKCYPHER_TOKEN"]) == "string") {
-      config.CP.API.tokens.blockcypher = process.env["BLOCKCYPHER_TOKEN"];
-   }
-   if (typeof(process.env["DB_URL"]) == "string") {
-      config.CP.API.database.url = process.env["DB_URL"];
-   }
-   if (typeof(process.env["DB_HOST"]) == "string") {
-      config.CP.API.database.host = process.env["DB_HOST"];
-   }
-   if (typeof(process.env["DB_ACCESS_KEY"]) == "string") {
-      config.CP.API.database.accessKey = process.env["DB_ACCESS_KEY"];
-   }
-   if (typeof(process.env["WALLET_XPRV"]) == "string") {
-      config.CP.API.wallets.bitcoin.xprv = process.env["WALLET_XPRV"];
-   }
-   if (typeof(process.env["WALLET_TPRV"]) == "string") {
-      config.CP.API.wallets.test3.tprv = process.env["WALLET_TPRV"];
-   }
-   if (typeof(process.env["BCHWALLET_XPRV"]) == "string") {
-      config.CP.API.wallets.bitcoincash.xprv = process.env["WALLET_XPRV"];
-   }
-   if (typeof(process.env["BCHWALLET_TPRV"]) == "string") {
-      config.CP.API.wallets.bchtest.tprv = process.env["WALLET_TPRV"];
-   }
-   //try updating via command line arguments:
-   for (var count = 2; count < process.argv.length; count++) {
-      var currentArg = process.argv[count];
-      var splitArg = currentArg.split("=");
-      if (splitArg.length < 2) {
-         throw (new Error("Malformed command line argument: "+currentArg));
+   console.log ("Initializing account system...")
+   try {
+      if (typeof(process.env["BLOCKCYPHER_TOKEN"]) == "string") {
+         config.CP.API.tokens.blockcypher = process.env["BLOCKCYPHER_TOKEN"];
       }
-      var argName = new String(splitArg[0]);
-      var joinedArr = new Array();
-      joinedArr.push (splitArg[1]);
-      //there may have been more than one "=" in the argument
-      for (count2 = 2; count2 < splitArg.length; count2++) {
-         joinedArr.push(splitArg[count2]);
+      if (typeof(process.env["DB_URL"]) == "string") {
+         config.CP.API.database.url = process.env["DB_URL"];
       }
-      var argValue = joinedArr.join("=");
-      switch (argName.toLowerCase()) {
-         case "blockcypher_token":
-            config.CP.API.tokens.blockcypher = argValue;
-            break;
-         case "db_url":
-            config.CP.API.database.url = argValue;
-            break;
-         case "db_host":
-            config.CP.API.database.host = argValue;
-            break;
-         case "db_access_key":
-            config.CP.API.database.accessKey = argValue;
-            break;
-         case "wallet_xprv":
-            config.CP.API.wallets.bitcoin.xprv = argValue;
-            break;
-         case "wallet_tprv":
-            config.CP.API.wallets.test3.tprv = argValue;
-            break;
-         case "bchwallet_xprv":
-            config.CP.API.wallets.bitcoin.xprv = argValue;
-            break;
-         case "bchwallet_tprv":
-            config.CP.API.wallets.bchtest.tprv = argValue;
-            break;
-         default:
-            //unrecognized command line parameter
-            break;
+      if (typeof(process.env["DB_HOST"]) == "string") {
+         config.CP.API.database.host = process.env["DB_HOST"];
       }
-   }
-   //Bitcoin (standard) wallets
-   var ccHandler = getHandler("cryptocurrency", "bitcoin");
-   namespace.cp.wallets.bitcoin.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
-   if (namespace.cp.wallets.bitcoin.main != null) {
-      var walletPath = config.CP.API.bitcoin.default.main.cashOutAddrPath;
-      var cashoutWallet = namespace.cp.wallets.bitcoin.main.derivePath(walletPath);
-      console.log ("Bitcoin HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet));
-   } else {
-      console.log ("Could not configure Bitcoin wallet.");
-   }
-   namespace.cp.wallets.bitcoin.test3 = ccHandler.makeHDWallet(config.CP.API.wallets.test3.tprv);
-   if (namespace.cp.wallets.bitcoin.test3 != null) {
-      walletPath = config.CP.API.bitcoin.default.test3.cashOutAddrPath;
-      cashoutWallet = namespace.cp.wallets.bitcoin.test3.derivePath(walletPath);
-      console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "test3"));
-   } else {
-      console.log ("Could not configure Bitcoin testnet wallet.");
-   }
-   //Bitcoin Cash wallets
-   ccHandler = getHandler("cryptocurrency", "bitcoincash");
-   namespace.cp.wallets.bitcoincash.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoincash.xprv);
-   if (namespace.cp.wallets.bitcoincash.main != null) {
-      var walletPath = config.CP.API.bitcoincash.default.main.cashOutAddrPath;
-      var cashoutWallet = namespace.cp.wallets.bitcoincash.main.derivePath(walletPath);
-      console.log ("Bitcoin Cash HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "main", true));
-   } else {
-      console.log ("Could not configure Bitcoin Cash wallet.");
-   }
-   namespace.cp.wallets.bitcoincash.test = ccHandler.makeHDWallet(config.CP.API.wallets.bchtest.tprv);
-   if (namespace.cp.wallets.bitcoincash.test != null) {
-      walletPath = config.CP.API.bitcoincash.default.test.cashOutAddrPath;
-      cashoutWallet = namespace.cp.wallets.bitcoincash.test.derivePath(walletPath);
-      console.log ("Bitcoin Cash testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "test", true));
-   } else {
-      console.log ("Could not configure Bitcoin Cash testnet wallet.");
-   }
-   var wallets = config.CP.API.wallets;
-   if (config.CP.API.database.enabled == true) {
-      console.log ("Database functionality is ENABLED.");
-      //the second parameter is there to provide a value for the HMAC
-      try {
-         var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
-      } catch (err) {
-         console.error ("Could not get current wallet status.");
-         console.error (err);
-         console.error ("Trying again in 5 seconds...");
-         setTimeout(5000, createAccountSystem, onCreateCB);
-         return (false);
+      if (typeof(process.env["DB_ACCESS_KEY"]) == "string") {
+         config.CP.API.database.accessKey = process.env["DB_ACCESS_KEY"];
       }
-      var resultObj = walletStatusObj.result;
-      //force-convert values in case the database returned them as strings
-      var btcStartChain = Number(String(resultObj.bitcoin.main.startChain));
-      var btcStartIndex = Number(String(resultObj.bitcoin.main.startIndex));
-      var test3StartChain = Number(String(resultObj.bitcoin.test3.startChain));
-      var test3StartIndex = Number(String(resultObj.bitcoin.test3.startIndex));
-      if (btcStartChain > wallets.bitcoin.startChain) {
-         wallets.bitcoin.startChain = Number(String(resultObj.bitcoin.main.startChain));
+      if (typeof(process.env["WALLET_XPRV"]) == "string") {
+         config.CP.API.wallets.bitcoin.xprv = process.env["WALLET_XPRV"];
       }
-      if (btcStartIndex > wallets.bitcoin.startIndex) {
-         wallets.bitcoin.startIndex = Number(String(resultObj.bitcoin.main.startIndex));
+      if (typeof(process.env["WALLET_TPRV"]) == "string") {
+         config.CP.API.wallets.test3.tprv = process.env["WALLET_TPRV"];
       }
-      if (test3StartChain > wallets.test3.startChain) {
-         wallets.test3.startChain = Number(String(resultObj.bitcoin.test3.startChain));
+      if (typeof(process.env["BCHWALLET_XPRV"]) == "string") {
+         config.CP.API.wallets.bitcoincash.xprv = process.env["BCHWALLET_XPRV"];
       }
-      if (test3StartIndex > wallets.test3.startIndex) {
-         wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
+      if (typeof(process.env["BCHWALLET_TPRV"]) == "string") {
+         config.CP.API.wallets.bchtest.tprv = process.env["BCHWALLET_TPRV"];
       }
-      //force-convert values in case the database returned them as strings
-      var bchStartChain = Number(String(resultObj.bitcoincash.main.startChain));
-      var bchStartIndex = Number(String(resultObj.bitcoincash.main.startIndex));
-      var bchTestStartChain = Number(String(resultObj.bitcoincash.test.startChain));
-      var bchTestStartIndex = Number(String(resultObj.bitcoincash.test.startIndex));
-      if (bchStartChain > wallets.bitcoincash.startChain) {
-         wallets.bitcoincash.startChain = Number(String(resultObj.bitcoincash.main.startChain));
+      //try updating via command line arguments:
+      for (var count = 2; count < process.argv.length; count++) {
+         var currentArg = process.argv[count];
+         var splitArg = currentArg.split("=");
+         if (splitArg.length < 2) {
+            throw (new Error("Malformed command line argument: "+currentArg));
+         }
+         var argName = new String(splitArg[0]);
+         var joinedArr = new Array();
+         joinedArr.push (splitArg[1]);
+         //there may have been more than one "=" in the argument
+         for (count2 = 2; count2 < splitArg.length; count2++) {
+            joinedArr.push(splitArg[count2]);
+         }
+         var argValue = joinedArr.join("=");
+         switch (argName.toLowerCase()) {
+            case "blockcypher_token":
+               config.CP.API.tokens.blockcypher = argValue;
+               break;
+            case "db_url":
+               config.CP.API.database.url = argValue;
+               break;
+            case "db_host":
+               config.CP.API.database.host = argValue;
+               break;
+            case "db_access_key":
+               config.CP.API.database.accessKey = argValue;
+               break;
+            case "wallet_xprv":
+               config.CP.API.wallets.bitcoin.xprv = argValue;
+               break;
+            case "wallet_tprv":
+               config.CP.API.wallets.test3.tprv = argValue;
+               break;
+            case "bchwallet_xprv":
+               config.CP.API.wallets.bitcoincash.xprv = argValue;
+               break;
+            case "bchwallet_tprv":
+               config.CP.API.wallets.bchtest.tprv = argValue;
+               break;
+            default:
+               //unrecognized command line parameter
+               break;
+         }
       }
-      if (btcStartIndex > wallets.bitcoin.startIndex) {
-         wallets.bitcoincash.startIndex = Number(String(resultObj.bitcoincash.main.startIndex));
-      }
-      if (bchTestStartChain > wallets.bchtest.startChain) {
-         wallets.bchtest.startChain = Number(String(resultObj.bitcoincash.test.startChain));
-      }
-      if (bchTestStartIndex > wallets.bchtest.startIndex) {
-         wallets.bchtest.startIndex = Number(String(resultObj.bitcoincash.test.startIndex));
-      }
-   } else {
-      console.log ("Database functionality is DISABLED.");
-   }
-   console.log ("Initial (next) Bitcoin account derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
-   console.log ("Initial (next) Bitcoin testnet account derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
-   console.log ("Initial (next) Bitcoin Cash account derivation path: m/"+wallets.bitcoincash.startChain+"/"+(wallets.bitcoincash.startIndex+1));
-   console.log ("Initial (next) Bitcoin Cash testnet account derivation path: m/"+wallets.bchtest.startChain+"/"+(wallets.bchtest.startIndex+1));
-   if (config.CP.API.database.enabled == true) {
-      if (hostEnv.embedded == true) {
-         console.log ("Local database size: "+resultObj.db.sizeMB+" megabytes");
-         console.log ("Local database limit: "+resultObj.db.maxMB+" megabytes");
+      //Bitcoin (standard) wallets
+      var ccHandler = getHandler("cryptocurrency", "bitcoin");
+      namespace.cp.wallets.bitcoin.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoin.xprv);
+      if (namespace.cp.wallets.bitcoin.main != null) {
+         var walletPath = config.CP.API.bitcoin.default.main.cashOutAddrPath;
+         var cashoutWallet = namespace.cp.wallets.bitcoin.main.derivePath(walletPath);
+         console.log ("Bitcoin HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet));
       } else {
-         console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
-         console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
+         console.log ("Could not configure Bitcoin wallet.");
       }
-      console.log ("Database last updated "+resultObj.db.elapsedUpdateSeconds+" seconds ago");
-   } else {
-      console.log ("Using in-memory storage instead of database.");
+      namespace.cp.wallets.bitcoin.test3 = ccHandler.makeHDWallet(config.CP.API.wallets.test3.tprv);
+      if (namespace.cp.wallets.bitcoin.test3 != null) {
+         walletPath = config.CP.API.bitcoin.default.test3.cashOutAddrPath;
+         cashoutWallet = namespace.cp.wallets.bitcoin.test3.derivePath(walletPath);
+         console.log ("Bitcoin testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "test3"));
+      } else {
+         console.log ("Could not configure Bitcoin testnet wallet.");
+      }
+      //Bitcoin Cash wallets
+      ccHandler = getHandler("cryptocurrency", "bitcoincash");
+      namespace.cp.wallets.bitcoincash.main = ccHandler.makeHDWallet(config.CP.API.wallets.bitcoincash.xprv);
+      if (namespace.cp.wallets.bitcoincash.main != null) {
+         var walletPath = config.CP.API.bitcoincash.default.main.cashOutAddrPath;
+         var cashoutWallet = namespace.cp.wallets.bitcoincash.main.derivePath(walletPath);
+         console.log ("Bitcoin Cash HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "main", true));
+      } else {
+         console.log ("Could not configure Bitcoin Cash wallet.");
+      }
+      namespace.cp.wallets.bitcoincash.test = ccHandler.makeHDWallet(config.CP.API.wallets.bchtest.tprv);
+      if (namespace.cp.wallets.bitcoincash.test != null) {
+         walletPath = config.CP.API.bitcoincash.default.test.cashOutAddrPath;
+         cashoutWallet = namespace.cp.wallets.bitcoincash.test.derivePath(walletPath);
+         console.log ("Bitcoin Cash testnet HD wallet (\""+walletPath+"\") configured @ "+ccHandler.getAddress(cashoutWallet, "test", true));
+      } else {
+         console.log ("Could not configure Bitcoin Cash testnet wallet.");
+      }
+      var wallets = config.CP.API.wallets;
+      if (config.CP.API.database.enabled == true) {
+         console.log ("Database functionality is ENABLED.");
+         //the second parameter is there to provide a value for the HMAC
+         try {
+            var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
+         } catch (err) {
+            console.error ("Could not get current wallet status.");
+            console.error (err);
+            console.error ("Trying again in 5 seconds...");
+            setTimeout(5000, createAccountSystem, onCreateCB);
+            return (false);
+         }
+         var resultObj = walletStatusObj.result;
+         //force-convert values in case the database returned them as strings
+         var btcStartChain = Number(String(resultObj.bitcoin.main.startChain));
+         var btcStartIndex = Number(String(resultObj.bitcoin.main.startIndex));
+         var test3StartChain = Number(String(resultObj.bitcoin.test3.startChain));
+         var test3StartIndex = Number(String(resultObj.bitcoin.test3.startIndex));
+         if (btcStartChain > wallets.bitcoin.startChain) {
+            wallets.bitcoin.startChain = Number(String(resultObj.bitcoin.main.startChain));
+         }
+         if (btcStartIndex > wallets.bitcoin.startIndex) {
+            wallets.bitcoin.startIndex = Number(String(resultObj.bitcoin.main.startIndex));
+         }
+         if (test3StartChain > wallets.test3.startChain) {
+            wallets.test3.startChain = Number(String(resultObj.bitcoin.test3.startChain));
+         }
+         if (test3StartIndex > wallets.test3.startIndex) {
+            wallets.test3.startIndex = Number(String(resultObj.bitcoin.test3.startIndex));
+         }
+         //force-convert values in case the database returned them as strings
+         var bchStartChain = Number(String(resultObj.bitcoincash.main.startChain));
+         var bchStartIndex = Number(String(resultObj.bitcoincash.main.startIndex));
+         var bchTestStartChain = Number(String(resultObj.bitcoincash.test.startChain));
+         var bchTestStartIndex = Number(String(resultObj.bitcoincash.test.startIndex));
+         if (bchStartChain > wallets.bitcoincash.startChain) {
+            wallets.bitcoincash.startChain = Number(String(resultObj.bitcoincash.main.startChain));
+         }
+         if (btcStartIndex > wallets.bitcoin.startIndex) {
+            wallets.bitcoincash.startIndex = Number(String(resultObj.bitcoincash.main.startIndex));
+         }
+         if (bchTestStartChain > wallets.bchtest.startChain) {
+            wallets.bchtest.startChain = Number(String(resultObj.bitcoincash.test.startChain));
+         }
+         if (bchTestStartIndex > wallets.bchtest.startIndex) {
+            wallets.bchtest.startIndex = Number(String(resultObj.bitcoincash.test.startIndex));
+         }
+      } else {
+         console.log ("Database functionality is DISABLED.");
+      }
+      console.log ("Initial (next) Bitcoin account derivation path: m/"+wallets.bitcoin.startChain+"/"+(wallets.bitcoin.startIndex+1));
+      console.log ("Initial (next) Bitcoin testnet account derivation path: m/"+wallets.test3.startChain+"/"+(wallets.test3.startIndex+1));
+      console.log ("Initial (next) Bitcoin Cash account derivation path: m/"+wallets.bitcoincash.startChain+"/"+(wallets.bitcoincash.startIndex+1));
+      console.log ("Initial (next) Bitcoin Cash testnet account derivation path: m/"+wallets.bchtest.startChain+"/"+(wallets.bchtest.startIndex+1));
+      if (config.CP.API.database.enabled == true) {
+         if (hostEnv.embedded == true) {
+            console.log ("Local database size: "+resultObj.db.sizeMB+" megabytes");
+            console.log ("Local database limit: "+resultObj.db.maxMB+" megabytes");
+         } else {
+            console.log ("Remote database size: "+resultObj.db.sizeMB+" megabytes");
+            console.log ("Remote database limit: "+resultObj.db.maxMB+" megabytes");
+         }
+         console.log ("Database last updated "+resultObj.db.elapsedUpdateSeconds+" seconds ago");
+      } else {
+         console.log ("Using in-memory storage instead of database.");
+      }
+   } catch (err) {
+      console.error (err);
+      return (false);
    }
+   console.log ("... account system initialized.");
    onCreateCB();
    return (true);
 }

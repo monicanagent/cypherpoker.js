@@ -689,6 +689,8 @@ function callAccountDatabase(method, message) {
                   json: true
                }, (error, response, body) => {
                   if (error) {
+                     console.error ("Account database error:");
+                     console.error (error);
                      reject(error);
                   } else {
                      resolve(body);
