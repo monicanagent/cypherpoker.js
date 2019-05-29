@@ -4,12 +4,16 @@
   "description": "CypherPoker.JS standalone desktop (Electron) application",
   "main": "main.js",
   "homepage": "https://github.com/monicanagent/cypherpoker.js",
-  "repository": "https://github.com/monicanagent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monicanagent/cypherpoker.js"
+  },
   "bugs": {
     "url": "https://github.com/monicanagent/cypherpoker.js/issues"
   },
   "scripts": {
     "start": "electron .",
+    "preinstall": "cd .. && cd server && npm install && cd .. && cd desktop",
     "postinstall": "node postinstall.js",
     "doc": "jsdoc . -r -c ./jsdoc.json -d ./docs/",
     "docs": "jsdoc . -r -c ./jsdoc.json -d ./docs/"
@@ -51,11 +55,17 @@
   "dependencies": {
     "electron": "^4.0.4",
     "request": "^2.87.0",
+    "request-progress": "^3.0.0",
     "ws": "^5.2.0",
     "big-integer": "^1.6.36",
     "bitcoinjs-lib": "^4.0.1",
+    "bitcoin-core": "^2.0.0",
+    "bitcore-lib-cash": "^8.3.0",
     "secp256k1": "^3.5.2",
     "bip32": "^1.0.2",
-    "bip39": "^2.5.0"
+    "bip39": "^2.5.0",
+    "sdb-node": "^0.2.2",
+    "jszip": "^3.2.1",
+    "tar": "^4.4.8"
   }
 }
