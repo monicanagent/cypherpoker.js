@@ -138,7 +138,7 @@ process.on("unhandledRejection", (reason, p) => {
 */
 async function createServer() {
    electronEnv.server.exposed_objects.electronEnv = electronEnv; //add internal self-reference(!)
-   var scriptPath = path.resolve(electronEnv.dir.server, "server.js");
+   var scriptPath = electronEnv.dir.server+"server.js";
    var serverScript = fs.readFileSync(scriptPath, {encoding:"UTF-8"});
    var vmContext = new Object();
    vmContext = Object.assign(electronEnv.server.exposed_objects, vmContext);
@@ -175,7 +175,7 @@ async function createClient(script="index.html", windowName=appTitle, openDevToo
       height:electronEnv.client.height,
       nodeIntegration:true
    });
-   windowObj.win.loadFile(path.resolve(electronEnv.dir.client, script));
+   windowObj.win.loadFile(electronEnv.dir.client + script);
    windowObj.win.setTitle(appTitle);
    if (openDevTools) {
       windowObj.win.webContents.openDevTools();
