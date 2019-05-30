@@ -100,6 +100,7 @@
 *  buildJSONRPC:{@link buildJSONRPC},&lt;br/>
 *  paramExists:{@link paramExists},&lt;br/>
 *  getConfigByPath:{@link getConfigByPath},&lt;br/>
+*  mkdirSync:{@link mkdirSync},&lt;br/>
 *  validateJSONRPC:{@link validateJSONRPC},&lt;br/>
 *  handleHTTPRequest:{@link handleHTTPRequest}
 ,&lt;br/>
@@ -282,6 +283,7 @@ var rpc_options = {
     bigInt:bigInt,
     crypto:crypto,
     getHandler:getHandler,
+    mkdirSync:mkdirSync,
     bitcoin:bitcoin,
     bitcoincash:bitcoincash,
     secp256k1:secp256k1,
@@ -1060,6 +1062,41 @@ function handleHTTPRequest(requestObj, responseObj){
 }
 
 /**
+* Utility function to recursively create a directory structure. This is a drop-in
+* replacement function to use when &lt;code>fs.mkdirSync&lt;/code> with the &lt;code>mkdirSync&lt;/code>
+* option fails (typically when running as an Electron app where the version is &lt; 5.0.0).
+* Adapted from [https://stackoverflow.com/a/40686853](https://stackoverflow.com/a/40686853).
+*
+* @param {String} targetDir The target directory structure to synchronously and recursively create.
+*
+* @see https://stackoverflow.com/a/40686853
+*/
+function mkdirSync(targetDir) {
+   const sep = path.sep;
+   const initDir = path.isAbsolute(targetDir) ? sep : "";
+   const baseDir = ".";
+   return targetDir.split(sep).reduce((parentDir, childDir) => {
+      const curDir = path.resolve(baseDir, parentDir, childDir);
+      try {
+         fs.mkdirSync(curDir);
+      } catch (err) {
+         if (err.code === "EEXIST") { // curDir already exists!
+            return curDir;
+         }
+         // To avoid `EISDIR` error on Mac and `EACCES`-->`ENOENT` and `EPERM` on Windows.
+         if (err.code === "ENOENT") { // Throw the original parentDir error on curDir `ENOENT` failure.
+            throw new Error(`EACCES: permission denied, mkdir '${parentDir}'`);
+         }
+         const caughtErr = ["EACCES", "EPERM", "EISDIR"].indexOf(err.code) > -1;
+         if (!caughtErr || caughtErr &amp;&amp; curDir === path.resolve(targetDir)) {
+            throw err; // Throw if it's just the last created dir.
+         }
+      }
+      return curDir;
+   }, initDir);
+}
+
+/**
 * Adjusts various settings and properties based on the detected runtime environment. For example,
 * Zeit (NOW) deployments require only a single WebSocket connection that must be on port 80 (this
 * may change).
@@ -1301,7 +1338,6 @@ async function startDatabase(dbAdapter=null) {
    }
    console.log ("Starting database adapter: "+dbAdapter);
    var adapterConfig = config.CP.API.database.adapters[dbAdapter];
-   //var adapterData = electronEnv.database[dbAdapter];
    var scriptPath = adapterConfig.script;
    var binPath = adapterConfig.bin;
    var dbFilePath = config.CP.API.database.url.split(dbAdapter+"://")[1];
@@ -1310,6 +1346,25 @@ async function startDatabase(dbAdapter=null) {
       adapterConfig.bin = path.resolve(hostEnv.dir.server + adapterConfig.bin);
       dbFilePath = path.resolve(hostEnv.dir.server + dbFilePath);
       dbFilePath = dbFilePath.split("\\").join("\\\\"); //fix windows path
+      var dbFileName = path.basename(dbFilePath);
+      var desktopDBPath = path.join(hostEnv.dir.data, "sqlite3");
+      var desktopDBFile = path.join(desktopDBPath, dbFileName);
+      console.log ("Using desktop mode database file location: "+desktopDBFile);
+      if (fs.existsSync(desktopDBPath) == false) {
+         console.log ("Creating target directory: "+desktopDBPath);
+         fs.mkdirSync(desktopDBPath);
+      }
+      if (fs.existsSync(desktopDBFile) == false) {
+         console.log ("Copying default database file from: "+dbFilePath);
+         console.log ("                                To: "+desktopDBFile);
+         try {
+            fs.copyFileSync(dbFilePath, desktopDBFile);
+         } catch (err) {
+            console.error (err);
+         }
+      } else {
+         console.log ("Desktop database file exists in target location.")
+      }
    }
    var DatabaseAdapter = require(scriptPath);
    var adapter = new DatabaseAdapter(rpc_options.exposed_library_objects);
@@ -1317,7 +1372,11 @@ async function startDatabase(dbAdapter=null) {
    try {
       var result = await adapter.initialize(adapterConfig);
       if (result == true) {
-         var opened = await adapter.openDBFile(dbFilePath);
+         if (hostEnv.embedded == true) {
+            var opened = await adapter.openDBFile(desktopDBFile);
+         } else {
+            opened = await adapter.openDBFile(dbFilePath);
+         }
       }
       console.log ("Database adapter successfully started.");
       return (true);
@@ -1537,13 +1596,13 @@ loadConfig().then (configObj => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#connectTunnel">connectTunnel</a></li><li><a href="global.html#disconnectTunnel">disconnectTunnel</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getConnectionByAlias">getConnectionByAlias</a></li><li><a href="global.html#getConnectionByCID">getConnectionByCID</a></li><li><a href="global.html#getConnectionByPID">getConnectionByPID</a></li><li><a href="global.html#getConnectionBySocket">getConnectionBySocket</a></li><li><a href="global.html#getHandler">getHandler</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#loadHandlers">loadHandlers</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onTunnelClose">onTunnelClose</a></li><li><a href="global.html#onTunnelMessage">onTunnelMessage</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendIntercept">sendIntercept</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTunnelMessage">sendTunnelMessage</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startDatabase">startDatabase</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#connectTunnel">connectTunnel</a></li><li><a href="global.html#disconnectTunnel">disconnectTunnel</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getConnectionByAlias">getConnectionByAlias</a></li><li><a href="global.html#getConnectionByCID">getConnectionByCID</a></li><li><a href="global.html#getConnectionByPID">getConnectionByPID</a></li><li><a href="global.html#getConnectionBySocket">getConnectionBySocket</a></li><li><a href="global.html#getHandler">getHandler</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#loadHandlers">loadHandlers</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#mkdirSync">mkdirSync</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onTunnelClose">onTunnelClose</a></li><li><a href="global.html#onTunnelMessage">onTunnelMessage</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendIntercept">sendIntercept</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTunnelMessage">sendTunnelMessage</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startDatabase">startDatabase</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed May 29 2019 21:56:45 GMT-0500 (GMT-05:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu May 30 2019 09:12:54 GMT-0500 (GMT-05:00)
 </footer>
 
 <script> prettyPrint(); </script>
