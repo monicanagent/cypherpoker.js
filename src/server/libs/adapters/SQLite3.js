@@ -92,7 +92,7 @@ module.exports = class SQLite3 {
    * @readonly
    */
    get EORDelimiter() {
-      return ("<!--END RESULT -->");
+      return ("<!--ENDOFRESULTS-->");
    }
 
    /**
@@ -171,7 +171,13 @@ module.exports = class SQLite3 {
          this._initData.bin = filesystem.realpathSync.native(this._initData.bin); //convert to native path
          console.log ("SQLite3 > Executing SQLite 3 binary: "+this._initData.bin);
          var options = new Object();
-         options.cwd = "."; //process working directory
+         if (this.server.hostEnv.embedded == true) {
+            //run in / output to temp directory
+            options.cwd = this.server.hostEnv.dir.temp;
+         } else {
+            //run in / output to current (process) directory
+            options.cwd = ".";
+         }
          options.shell = true; //hide console window
          options.windowsHide = true; //hide console window
          //add quotes to work with paths containing spaces
@@ -226,10 +232,6 @@ module.exports = class SQLite3 {
       if (this.logErrors) {
          console.error ("SQLite3 > "+data.toString());
       }
-      if (this._firstCapture == false) {
-         this.currentPromise.reject.call(this, data.toString());
-         this.currentPromise = null;
-      }
    }
 
    /**
@@ -249,11 +251,12 @@ module.exports = class SQLite3 {
    * Issues a file open command to the running SQLite 3 binary. Note that the binary
    * automatically updates the opened file so no "save" function is provided.
    *
-   * @param {String} dbFilePath The filesystem path to the SQLite 3 database file to
+   * @param {String} dbFilePath The filesystem path to the default SQLite 3 database file to
    * open. If the file doesn't exist it will be created if possible.
    */
    openDBFile(dbFilePath) {
       console.log ("SQLite3 > Opening database file: "+dbFilePath);
+      dbFilePath = dbFilePath.split("\\").join("/"); //sqlite requires all paths to use forward slashes (even Windows)
       this._initData.dbFilePath = dbFilePath;
       var promise = new Promise((resolve, reject) => {
          this._sqlite3.stdin.write(".open "+this._initData.dbFilePath+"\n"); //issue ".open" command
@@ -703,10 +706,12 @@ module.exports = class SQLite3 {
          if (typeof(this._outputID) != "number") {
             this._outputID = 0;
          }
-         var outputFile = baseFileName.split("%id%").join(String(this._outputID));
+         var baseOutputFile = baseFileName.split("%id%").join(String(this._outputID));
          if (this.server.hostEnv.embedded == true) {
-            outputFile = path.resolve(this.server.hostEnv.dir.server + outputFile);
-            outputFile = outputFile.split("\\").join("\\\\"); //fix windows path
+            //use writeable temp directory
+            var outputFile = path.resolve(this.server.hostEnv.dir.temp, baseOutputFile);
+         } else {
+            outputFile = baseOutputFile;
          }
          var queryObject = new Object();
          queryObject.schema = schemaArray;
@@ -717,7 +722,7 @@ module.exports = class SQLite3 {
          queryObject.reject = reject;
          filesystem.writeFileSync(outputFile, ">"); //create file before starting to watch it
          queryObject.watch = filesystem.watch(outputFile, {persistent:true}, this.onResultFileChange.bind(this, queryObject));
-         this._sqlite3.stdin.write(".output "+outputFile+"\n"); //send asynchronous result output to file
+         this._sqlite3.stdin.write(".output "+baseOutputFile+"\n"); //send asynchronous result output to file
          this._sqlite3.stdin.write(SQL+";\nSELECT \""+this.EORDelimiter+"\";\n"); //append end result delimter so even empty results can be detected
          this._outputID++; //ensure file indexing / naming is unique for each request / result
       });
@@ -757,7 +762,6 @@ module.exports = class SQLite3 {
          }
       } catch (err) {
          //file still open / being written to
-         console.error(err);
       }
    }
 

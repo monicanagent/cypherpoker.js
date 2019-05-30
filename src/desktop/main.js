@@ -27,6 +27,7 @@
 const {app, BrowserWindow, ipcMain, Menu} = require("electron");
 const vm = require("vm");
 const fs = require("fs");
+const path = require("path");
 
 /**
 * @property {String} appVersion The version of the application. This information
@@ -57,6 +58,8 @@ const appTitle = appName+" v"+appVersion;
 * web/browser client functionality and data.
 * @property {String} electronEnv.dir.bin="./bin/" Directory containing additional
 * platform-specific binaries used by CypherPoker.JS desktop.
+* @property {String} electronEnv.dir.data The application's writeable data storage directory.
+* @property {String} electronEnv.dir.temp The default system temp directory.
 * @property {Object} electronEnv.client Contains references and information
 * about the web/browser client portion of the application. This information is made
 * available to any child windows created by the main process.
@@ -79,7 +82,9 @@ const appTitle = appName+" v"+appVersion;
 var electronEnv = {
    dir: {
       server:"../server/",
-      client:"../web/"
+      client:"../web/",
+      data: app.getPath("userData"),
+      temp: app.getPath("temp")
    },
    client: {
       version:appVersion,
@@ -133,7 +138,7 @@ process.on("unhandledRejection", (reason, p) => {
 */
 async function createServer() {
    electronEnv.server.exposed_objects.electronEnv = electronEnv; //add internal self-reference(!)
-   var scriptPath = electronEnv.dir.server + "server.js";
+   var scriptPath = path.resolve(electronEnv.dir.server, "server.js");
    var serverScript = fs.readFileSync(scriptPath, {encoding:"UTF-8"});
    var vmContext = new Object();
    vmContext = Object.assign(electronEnv.server.exposed_objects, vmContext);
@@ -170,7 +175,7 @@ async function createClient(script="index.html", windowName=appTitle, openDevToo
       height:electronEnv.client.height,
       nodeIntegration:true
    });
-   windowObj.win.loadFile(electronEnv.dir.client + script);
+   windowObj.win.loadFile(path.resolve(electronEnv.dir.client, script));
    windowObj.win.setTitle(appTitle);
    if (openDevTools) {
       windowObj.win.webContents.openDevTools();

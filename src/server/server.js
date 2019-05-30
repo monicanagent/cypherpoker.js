@@ -20,7 +20,7 @@
 * @default {
 *  namespace:namespace,<br/>
 *  config:{@link config},<br/>
-*  getConfigByPath:{@link getConfigByPath),<br/>
+*  getConfigByPath:{@link getConfigByPath},<br/>
 *  require:require,<br/>
 *  process:process,<br/>
 *  Buffer:Buffer,<br/>
@@ -72,6 +72,7 @@
 *  buildJSONRPC:{@link buildJSONRPC},<br/>
 *  paramExists:{@link paramExists},<br/>
 *  getConfigByPath:{@link getConfigByPath},<br/>
+*  mkdirSync:{@link mkdirSync},<br/>
 *  validateJSONRPC:{@link validateJSONRPC},<br/>
 *  handleHTTPRequest:{@link handleHTTPRequest}
 ,<br/>
@@ -254,6 +255,7 @@ var rpc_options = {
     bigInt:bigInt,
     crypto:crypto,
     getHandler:getHandler,
+    mkdirSync:mkdirSync,
     bitcoin:bitcoin,
     bitcoincash:bitcoincash,
     secp256k1:secp256k1,
@@ -1032,6 +1034,41 @@ function handleHTTPRequest(requestObj, responseObj){
 }
 
 /**
+* Utility function to recursively create a directory structure. This is a drop-in
+* replacement function to use when <code>fs.mkdirSync</code> with the <code>mkdirSync</code>
+* option fails (typically when running as an Electron app where the version is < 5.0.0).
+* Adapted from [https://stackoverflow.com/a/40686853](https://stackoverflow.com/a/40686853).
+*
+* @param {String} targetDir The target directory structure to synchronously and recursively create.
+*
+* @see https://stackoverflow.com/a/40686853
+*/
+function mkdirSync(targetDir) {
+   const sep = path.sep;
+   const initDir = path.isAbsolute(targetDir) ? sep : "";
+   const baseDir = ".";
+   return targetDir.split(sep).reduce((parentDir, childDir) => {
+      const curDir = path.resolve(baseDir, parentDir, childDir);
+      try {
+         fs.mkdirSync(curDir);
+      } catch (err) {
+         if (err.code === "EEXIST") { // curDir already exists!
+            return curDir;
+         }
+         // To avoid `EISDIR` error on Mac and `EACCES`-->`ENOENT` and `EPERM` on Windows.
+         if (err.code === "ENOENT") { // Throw the original parentDir error on curDir `ENOENT` failure.
+            throw new Error(`EACCES: permission denied, mkdir '${parentDir}'`);
+         }
+         const caughtErr = ["EACCES", "EPERM", "EISDIR"].indexOf(err.code) > -1;
+         if (!caughtErr || caughtErr && curDir === path.resolve(targetDir)) {
+            throw err; // Throw if it's just the last created dir.
+         }
+      }
+      return curDir;
+   }, initDir);
+}
+
+/**
 * Adjusts various settings and properties based on the detected runtime environment. For example,
 * Zeit (NOW) deployments require only a single WebSocket connection that must be on port 80 (this
 * may change).
@@ -1170,7 +1207,7 @@ async function createAccountSystem(onCreateCB=null) {
          console.log ("Database functionality is ENABLED.");
          //the second parameter is there to provide a value for the HMAC
          try {
-            var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});            
+            var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
          } catch (err) {
             console.error ("Could not get current wallet status.");
             console.error (err);
@@ -1273,7 +1310,6 @@ async function startDatabase(dbAdapter=null) {
    }
    console.log ("Starting database adapter: "+dbAdapter);
    var adapterConfig = config.CP.API.database.adapters[dbAdapter];
-   //var adapterData = electronEnv.database[dbAdapter];
    var scriptPath = adapterConfig.script;
    var binPath = adapterConfig.bin;
    var dbFilePath = config.CP.API.database.url.split(dbAdapter+"://")[1];
@@ -1282,6 +1318,25 @@ async function startDatabase(dbAdapter=null) {
       adapterConfig.bin = path.resolve(hostEnv.dir.server + adapterConfig.bin);
       dbFilePath = path.resolve(hostEnv.dir.server + dbFilePath);
       dbFilePath = dbFilePath.split("\\").join("\\\\"); //fix windows path
+      var dbFileName = path.basename(dbFilePath);
+      var desktopDBPath = path.join(hostEnv.dir.data, "sqlite3");
+      var desktopDBFile = path.join(desktopDBPath, dbFileName);
+      console.log ("Using desktop mode database file location: "+desktopDBFile);
+      if (fs.existsSync(desktopDBPath) == false) {
+         console.log ("Creating target directory: "+desktopDBPath);
+         fs.mkdirSync(desktopDBPath);
+      }
+      if (fs.existsSync(desktopDBFile) == false) {
+         console.log ("Copying default database file from: "+dbFilePath);
+         console.log ("                                To: "+desktopDBFile);
+         try {
+            fs.copyFileSync(dbFilePath, desktopDBFile);
+         } catch (err) {
+            console.error (err);
+         }
+      } else {
+         console.log ("Desktop database file exists in target location.")
+      }
    }
    var DatabaseAdapter = require(scriptPath);
    var adapter = new DatabaseAdapter(rpc_options.exposed_library_objects);
@@ -1289,7 +1344,11 @@ async function startDatabase(dbAdapter=null) {
    try {
       var result = await adapter.initialize(adapterConfig);
       if (result == true) {
-         var opened = await adapter.openDBFile(dbFilePath);
+         if (hostEnv.embedded == true) {
+            var opened = await adapter.openDBFile(desktopDBFile);
+         } else {
+            opened = await adapter.openDBFile(dbFilePath);
+         }
       }
       console.log ("Database adapter successfully started.");
       return (true);

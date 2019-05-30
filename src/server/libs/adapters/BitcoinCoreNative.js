@@ -10,6 +10,7 @@
 const CryptocurrencyHandler = require("../CryptocurrencyHandler");
 const BTCClient = require('bitcoin-core');
 const path = require("path");
+const filesystem = require("fs");
 
 /**
 * @class Bitcoin Core native adapter (bitcoind) for blockchain interactions.
@@ -140,10 +141,25 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    */
    async initialize() {
       var installDirectory = this.handlerConfig.installDir;
-      if (this.server.hostEnv.embedded == true) {
-         var dataDirectory = path.resolve(this.server.hostEnv.dir.server + this.handlerConfig.dataDir);
+      if (this.server.hostEnv.embedded == true) {         
+         var dataDirectory = path.resolve(this.server.hostEnv.dir.data, this.handlerConfig.dataDir);
+         if (filesystem.existsSync(dataDirectory) == false) {
+            try {
+               filesystem.mkdirSync(dataDirectory, {recursive:true});
+            } catch (err) {
+               //use drop-in (probably using Electron v4.x.x or earlier)
+               this.server.mkdirSync(dataDirectory);
+            }
+         }
       } else {
          dataDirectory = path.resolve(this.handlerConfig.dataDir);
+         if (filesystem.existsSync(dataDirectory) == false) {
+            try {
+               filesystem.mkdirSync(dataDirectory, {recursive:true});
+            } catch (err) {
+               this.server.mkdirSync(dataDirectory);
+            }
+         }
       }
       process.stdin.resume();
       process.on("SIGINT", this.onServerExit.bind(this));
