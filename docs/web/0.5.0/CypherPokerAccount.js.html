@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: CypherPokerAccount.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: CypherPokerAccount.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Contains information and functionality associated with a single managed account.
+*
+* @version 0.4.1
+* @author Patrick Bay
+* @copyright MIT License
+*/
+
+/**
+* @class Information and functionality associated with a single managed account.
+* The account is independently managed by either a TTP service or a smart contract
+* and represents a deposit by the player that can be used to provide a balance
+* in games.
+*/
+class CypherPokerAccount extends EventDispatcher {
+
+   /**
+   * Creates a new player account instance.
+   *
+   * @param {CypherPoker} cypherpokerRef A reference to a {@link CypherPoker}
+   * instance through which managed account requests can be made.
+   * @param {Object} [initData=null] Data with which to initialize the new instance.
+   */
+   constructor(cypherpokerRef, initData=null) {
+      super();
+      this._cypherpoker = cypherpokerRef;
+      if (initData != null) {
+         for (var item in initData) {
+            try {
+               this[item] = initData[item];
+            } catch (err) {
+            }
+         }
+      }
+   }
+
+   /**
+   * @property {CypherPoker} cypherpoker A reference to the active {@link CypherPoker}
+   * instance through which API functions can be invoked.
+   *
+   * @readonly
+   */
+   get cypherpoker() {
+      return (this._cypherpoker);
+   }
+
+   /**
+   * @property {String} address The managed cryptocurrency deposit address
+   * associated with the account. Typically the address is also the unique account
+   * identifier ({@link CypherPokerAccount#id}), but may differ.
+   */
+   set address(addrSet) {
+      this._address = addrSet;
+   }
+
+   get address() {
+      if (this._address == undefined) {
+         this._address = null;
+      }
+      return (this._address);
+   }
+
+   /**
+   * @property {String} type The type of cryptocurrency associated with the
+   * {@link CypherPokerAccount#address}. Valid types include: "bitcoin"
+   */
+   set type(typeSet) {
+      this._type = typeSet;
+   }
+
+   get type() {
+      if (this._type == undefined) {
+         this._type = null;
+      }
+      return (this._type);
+   }
+
+   /**
+   * @property {String} network The network sub-type, if applicable.
+   * For example, if {@link CypherPokerAccount#type} is "bitcoin",
+   * the &lt;code>network&lt;/code> may be "main" or "test3".
+   */
+   set network(networkSet) {
+      this._network = networkSet;
+   }
+
+   get network() {
+      if (this._network == undefined) {
+         this._network = null;
+      }
+      return (this._network);
+   }
+
+   /**
+   * @property {Array} domains Each element in this indexed array is a domain,
+   * URL, API, or other service identifier with which this account is associated.
+   * Using this account with other domains / services will most likely result in
+   * an "account not found" error.
+   */
+   set domains(domainsSet) {
+      this._domains = domainsSet;
+   }
+
+   get domains() {
+      if (this._domains == undefined) {
+         this._domains = new Array();
+      }
+      return (this._domains);
+   }
+
+   /**
+   * @property {BigInteger} balance="0" The current total account balance. Note that
+   * this is different than the {@link CypherPokerPlayer#balance} property
+   * which reflects the player balance for a single game (e.g. buy-in).
+   */
+   set balance(balanceSet) {
+      this._balance = bigInt(balanceSet);
+   }
+
+   get balance() {
+      if (this._balance == undefined) {
+         this._balance = bigInt(0);
+      }
+      return (this._balance);
+   }
+
+   /**
+   * @property {Object} fees Any fees (e.g. miner) associated with the account,
+   * usually--but not always--returned with the most recent the API call.
+   * Some fees may be mandatory while others are simply suggested/default.
+   */
+   get fees() {
+      if (this._fees == undefined) {
+         this._fees = new Object();
+      }
+      return (this._fees);
+   }
+
+   /**
+   * @property {Boolean} cashoutPending=false True if a cashout operation is
+   * currently pending (incomplete), false otherwise.
+   */
+   get cashoutPending() {
+      if (this._cashoutPending == undefined) {
+         this._cashoutPending = false;
+      }
+      return (this._cashoutPending);
+   }
+
+   /**
+   * @property {String} password=null The password associated with the account.
+   */
+   set password(pwSet) {
+      this._password = pwSet;
+   }
+
+   get password() {
+      if (this._password == undefined) {
+         this._password = null;
+      }
+      return (this._password);
+   }
+
+   /**
+   * Returns a condensed data object with copies of most of the properties of this
+   * instance. Use the returned data from this function rathen than using
+   * &lt;code>JSON.stringify&lt;/code> on the instance as this may cause
+   * a circular reference error.
+   *
+   * @param {Boolean} [includePassword=false] If true, the account password
+   * is included in the returned data.
+   *
+   * @return {Object} A condensed data object containing copies of the
+   * most properties of this instance.
+   */
+   toObject(includePassword=false) {
+      var returnObj = new Object();
+      returnObj.address = this.address;
+      returnObj.type = this.type;
+      returnObj.network = this.network;
+      returnObj.balance = this.balance.toString(10);
+      returnObj.domains = this.domains;
+      if (includePassword) {
+         returnObj.password = this.password;
+      }
+      return (returnObj);
+   }
+
+   /**
+   * Creates a new account by calling the &lt;code>CP_Account/new&lt;/code> RPC service using
+   * the properties of this instance.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the account was succcessfully created, &lt;code>false&lt;/code> otherwise.
+   * @async
+   */
+   async create() {
+      if ((this.password == null) || (this.password == null)) {
+         return (false);
+      }
+      var params = new Object();
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      var JSONObj = await this.callAccountAPI("new", params);
+      if (JSONObj.error != undefined) {
+         console.error (JSONObj.error);
+         return (false);
+      }
+      this._fees = JSONObj.result.fees;
+      this._address = JSONObj.result.address;
+      return (true);
+   }
+
+   /**
+   * Updates this account's properties by calling the &lt;code>CP_Account/info&lt;/code> RPC service.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the account was succcessfully updated. An &lt;code>Error&lt;/code> object
+   * is included with a rejection.
+   * @async
+   */
+   async update() {
+      if ((this.password == null) || (this.password == null)) {
+         return (false);
+      }
+      var params = new Object();
+      params.address = this.address;
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      var JSONObj = await this.callAccountAPI("info", params);
+      if (JSONObj.error != undefined) {
+         this.balance = 0;
+         throw(new Error(JSONObj.error.message));
+      }
+      this._fees = JSONObj.result.fees;
+      //balance confirmed = JSONObj.result.confirmed
+      this.balance = JSONObj.result.balance;
+      return (true);
+   }
+
+   /**
+   * Partially or fully cashes out the account, sending the funds to a
+   * specified address.
+   *
+   * @param {String|Number|BigInteger} amount The full amount to send to
+   * &lt;code>toAddress&lt;/code>, including miner &lt;code>fees&lt;/code>. This value is in the
+   * smallest denominition of the associated cryptocurrency (e.g. satoshis if
+   * &lt;code>type="bitcoin&lt;/code>").
+   * @param {String} toAddress The target or receiving address. This address
+   * must be of the same cryptocurrency &lt;code>type&lt;/code> and on the same
+   * &lt;code>network&lt;/code> as this account.
+   * @param {String|Number|BigInteger} [fees=null] The miner fee to include
+   * in this transaction in the smallest denomination of the associated cryptocurrency.
+   * If &lt;code>null&lt;/code>, the default miner fee is used. The amount that
+   * will be received by &lt;code>toAddress&lt;/code> will be the sending &lt;code>amount&lt;/code>
+   * minus this value.
+   *
+   * @return {Promise} The promise resolves with a an object containing information
+   * about the transaction or rejects with a standard &lt;code>Error&lt;/code> object.
+   * @async
+   */
+   async cashout(amount, toAddress, fees=null) {
+      if ((this.password == "") || (this.password == null)) {
+         throw(new Error("Account password not set."));
+      }
+      if (toAddress == this.address) {
+         throw(new Error("Sending and receiving addresses can't be the same."));
+      }
+      if (this.cashoutPending) {
+         throw(new Error("A cashout request is currently pending. Only one request can be active at a time."));
+      }
+      this._cashoutPending = true;
+      var params = new Object();
+      params.address = this.address;
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      params.toAddress = toAddress;
+      if (bigInt.isInstance(amount)) {
+         params.amount = amount.toString(10);
+      } else {
+         params.amount = String(amount);
+      }
+      if (fees != null) {
+         if (bigInt.isInstance(fees)) {
+            params.feeAmount = fees.toString(10);
+         } else {
+            params.feeAmount = String(fees);
+         }
+      }
+      var JSONObj = await this.callAccountAPI("cashout", params);
+      this._cashoutPending = false;
+      if (JSONObj.error != undefined) {
+         throw (new Error(JSONObj.error.message));
+      }
+      this.balance = JSONObj.result.balance;
+      return (JSONObj.result);
+   }
+
+   /**
+   * Partially or fully transfers the account balance to another account.
+   *
+   * @param {String|Number|BigInteger} amount The full amount to transfer to
+   * &lt;code>toAccount&lt;/code>. This value is in the smallest denominition of the
+   * associated cryptocurrency (e.g. satoshis if &lt;code>type="bitcoin&lt;/code>").
+   * @param {String} toAccount The target or receiving account. This account
+   * must be of the same cryptocurrency &lt;code>type&lt;/code> and on the same
+   * &lt;code>network&lt;/code> as this account.
+   *
+   * @return {Promise} The promise resolves with a &lt;code>true&lt;/code> value
+   * if the transfer was successfully completed. An &lt;code>Error&lt;/code>
+   * object is included with a rejection.
+   * @async
+   */
+   async transfer(amount, toAccount) {
+      if ((this.password == "") || (this.password == null)) {
+         throw(new Error("Account password not set."));
+      }
+      var params = new Object();
+      params.address = this.address;
+      params.password = this.password;
+      params.type = this.type;
+      params.network = this.network;
+      params.toAccount = toAccount;
+      if (bigInt.isInstance(amount)) {
+         params.amount = amount.toString(10);
+      } else {
+         params.amount = String(amount);
+      }
+      var JSONObj = await this.callAccountAPI("transfer", params);
+      if (JSONObj.error != undefined) {
+         throw (new Error(JSONObj.error.message));
+      }
+      this.balance = JSONObj.result.balance;
+      return (true);
+   }
+
+   /**
+   * Asynchronously calls the account API and returns the JSON-RPC 2.0 result / error
+   * of the call.
+   *
+   * @param {String} action The account action to apply to the &lt;code>APIFunc&lt;/code> call.
+   * This value is automatically appended to the &lt;code>params&lt;/code> object as an
+   * &lt;code>action&lt;/code> property and will override any existing &lt;code>action&lt;/code> property.
+   * @param {Object} [params=null] The parameters to include with the remote function call.
+   * If &lt;code>null&lt;/code>, an empty params object is created.
+   * @param {String} [APIFunc="CP_Account"] The remote API function to invoke.
+   *
+   * @return {Promise} The promise resolves with the parsed JSON-RPC 2.0 result or
+   * error (native object) of the call. Currently there is no rejection state.
+   */
+   async callAccountAPI(action, params=null, APIFunc="CP_Account") {
+      if (params == null) {
+         params = new Object();
+      }
+      var sendObj = new Object();
+      for (var item in params) {
+         sendObj[item] = params[item];
+      }
+      sendObj.action = action;
+      sendObj.user_token = this.cypherpoker.api.userToken;
+      sendObj.server_token = this.cypherpoker.api.serverToken;
+      var requestID = "CP" + String(Math.random()).split(".")[1];
+      var rpc_result = await RPC(APIFunc, sendObj, this.cypherpoker.api, false, requestID);
+      var result = JSON.parse(rpc_result.data);
+      //since messages over web sockets are asynchronous the next immediate message may not be ours so:
+      while (requestID != result.id) {
+         rpc_result = await this.cypherpoker.api.rawConnection.onEventPromise("message");
+         result = JSON.parse(rpc_result.data);
+         //we could include a max wait limit here
+      }
+      return (result);
+   }
+
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li><li><a href="WSSTunnel.html">WSSTunnel</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:close">close</a></li><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:peerpid">peerpid</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li><li><a href="WSSTunnel.html#event:message">message</a></li><li><a href="WSSTunnel.html#event:peerconnect">peerconnect</a></li><li><a href="WSSTunnel.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSTunnel.html#event:peerpid">peerpid</a></li><li><a href="WSSTunnel.html#event:privateid">privateid</a></li><li><a href="WSSTunnel.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleRPCResponses">handleRPCResponses</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed May 29 2019 21:51:57 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

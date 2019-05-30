@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: libs/P2PRouter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: libs/P2PRouter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file Peer-to-peer message routing interface.
+*
+* @version 0.4.1
+*/
+/**
+* @class Transparently routes messages to/from available peer-to-peer interfaces.
+* @extends EventDispatcher
+* @see {@link WSSClient}
+* @see {@link WSSTunnel}
+* @see {@link WebRTCClient}
+*/
+class P2PRouter extends EventDispatcher {
+
+   /**
+   * A peer-to-peer message has been received on one of the routed transports
+   * being handled by this instance. Both "direct" and "message" types emit
+   * the same event (examine the &lt;code>data&lt;/code> property to differentiate).
+   *
+   * @event P2PRouter#message
+   * @type {Event}
+   * @property {Object} data A native JSON-RPC 2.0 result or notification object.
+   * @property {String} transportType The transport type through which the message
+   * was received. This should match one of the &lt;code>PeerConnectionObject.options&lt;/code>.
+   * @property {Object} transport A reference to the transport interface that initially
+   * handled the receipt of the message.
+   */
+   /**
+   * A server-originating "update" message has been received on one of the routed transports
+   * being handled by this instance.
+   *
+   * @event P2PRouter#update
+   * @type {Event}
+   * @property {Object} data A native JSON-RPC 2.0 result or notification object.
+   * @property {String} transportType The transport type through which the message
+   * was received. This should match one of the &lt;code>PeerConnectionObject.options&lt;/code>.
+   * @property {Object} transport A reference to the transport interface that initially
+   * handled the receipt of the message.
+   */
+   /**
+   * A new peer-to-peer connection has been established.
+   *
+   * @event P2PRouter#peerconnect
+   * @type {Event}
+   * @property {Object} data A native JSON-RPC 2.0 result or notification object.
+   * @property {String} transportType The transport type on which the new connection was
+   * established. This should match one of the &lt;code>PeerConnectionObject.options&lt;/code>.
+   * @property {Object} transport A reference to the transport interface on which the
+   * new connection was established.
+   */
+   /**
+   * A connected peer has changed private IDs.
+   *
+   * @event P2PRouter#peerpid
+   * @type {Event}
+   * @property {String} oldPrivateID The old / previous private ID for the peer.
+   * @property {String} newPrivateID The new / changed private ID for the peer.
+   */
+   /**
+   * A  peer-to-peer connection has closed.
+   *
+   * @event P2PRouter#peerdisconnect
+   * @type {Event}
+   * @property {Object} data A native JSON-RPC 2.0 result or notification object.
+   * @property {String} transportType The transport type on which the connection was
+   * previously active established. This should match one of the &lt;code>PeerConnectionObject.options&lt;/code>.
+   * @property {Object} transport A reference to the transport interface on which the
+   * connection was previously active
+   */
+
+   /**
+   * An object containing information and references to connectivity
+   * options for an individual peer.
+   *
+   * @typedef {Object} PeerConnectionObject
+   * @property {Object} options Contains the transport options (supported connectivity)
+   * for the peer.
+   * @property {Boolean} options.wss=false Does the peer support WebSocket Sessions connecivity?
+   * @property {Boolean} options.webrtc=false Does the peer support WebRTC connecivity?
+   * @property {Boolean} options.ortc=false Does the peer support ORTC connecivity?
+   * @property {Object} status Contains the connection status of each transport &lt;code>option&lt;/code>
+   * @property {String} status.wss="closed" The WebSocket Sessions transport may either be &lt;code>"closed"&lt;/code>,
+   * the connection may be &lt;code>"pending"&lt;/code>, it may be &lt;code>"open"&lt;/code> for bi-directional
+   * communication, or a connection attempt may have &lt;code>"failed"&lt;/code>.
+   * @property {String} status.webrtc="closed" The WebRTC transport may either be &lt;code>"closed"&lt;/code>,
+   * the connection may be &lt;code>"pending"&lt;/code>, it may be &lt;code>"open"&lt;/code> for bi-directional
+   * communication, or a connection attempt may have &lt;code>"failed"&lt;/code>.
+   * @property {String} status.ortc="closed" The ORTC transport may either be &lt;code>"closed"&lt;/code>,
+   * the connection may be &lt;code>"pending"&lt;/code>, it may be &lt;code>"open"&lt;/code> for bi-directional
+   * communication, or a connection attempt may have &lt;code>"failed"&lt;/code>.
+   * @property {Object} transport Contains references to any transports defined in
+   * the conectivity &lt;code>options&lt;/code>.
+   * @property {Object} transport.wss=null A reference to the WebSocket Sessions / Tunnel transport
+   * with which to communicate with the peer.
+   * @property {Object} transport.webrtc=null] A reference to the WebRTC transport
+   * with which to communicate with the peer.
+   * @property {Object} transport.ortc=null A reference to the ORTC transport
+   * with which to communicate with the peer.
+   * @property {Object} connectTimeout References to &lt;code>Timeout&lt;/code> objects
+   * used when attempting to establish a connection to the peer.
+   * @property {Object} connectTimeout.wss=null The &lt;code>Timeout&lt;/code> object
+   * used when attempting to establish a WebSocket Sessions connection.
+   * @property {Object} connectTimeout.webrtc=null The &lt;code>Timeout&lt;/code> object
+   * used when attempting to establish a WebRTC connection.
+   * @property {Object} connectTimeout.ortc=null The &lt;code>Timeout&lt;/code> object
+   * used when attempting to establish a ORTC connection.
+   * @property {Object} connectPromise References to &lt;code>Promise&lt;/code> function
+   * references that are resolved or rejected when the associated transport is attempting
+   * a connection.
+   * @property {Object} connectPromise.wss The &lt;code>Promise&lt;/code> functions that resolve
+   * or reject when the WebSocket Sessions / Tunnel transport connects or fails to connect.
+   * @property {Function} connectPromise.wss.resolve=null The &lt;code>Promise.resolve&lt;/code>
+   * function invoked on a successfull WebSocket Sessions connection.
+   * @property {Function} connectPromise.wss.reject=null The &lt;code>Promise.reject&lt;/code>
+   * function invoked on a failed WebSocket Sessions connection.
+   * @property {Object} connectPromise.webrtc The &lt;code>Promise&lt;/code> functions that resolve
+   * or reject when the WebRTC transport connects or fails to connect.
+   * @property {Function} connectPromise.webrtc.resolve=null The &lt;code>Promise.resolve&lt;/code>
+   * function invoked on a successfull WebRTC connection.
+   * @property {Function} connectPromise.webrtc.reject=null The &lt;code>Promise.reject&lt;/code>
+   * function invoked on a failed WebRTC connection.
+   * @property {Object} connectPromise.ortc The &lt;code>Promise&lt;/code> functions that resolve
+   * or reject when the ObjectRTC transport connects or fails to connect.
+   * @property {Function} connectPromise.ortc.resolve=null The &lt;code>Promise.resolve&lt;/code>
+   * function invoked on a successfull ObjectRTC connection.
+   * @property {Function} connectPromise.ortc.reject=null The &lt;code>Promise.reject&lt;/code>
+   * function invoked on a failed ObjectRTC connection.
+   */
+
+   /**
+   * Creates an instance of P2PRouter.
+   *
+   * @param {Object} [configData=null] Application configuration data, usually as loaded at
+   * startup.
+   */
+   constructor(configData=null) {
+      super();
+      this._config = configData;
+      try {
+         P2PRouter.supportedTransportspreferred = this.config.p2p.transports.preferred;
+      } catch (err) {
+         //this is not a fatal error and doesn't requite a warning
+         console.log ("Preferred peer-to-peer transport(s) not specified in application configuration. Using default.");
+      }
+   }
+
+   /**
+   * @property {Object} config Application configuration data, usually loaded
+   * at application startup (&lt;code>settings.json&lt;/code> file).
+   * @readonly
+   */
+   get config() {
+      return (this._config);
+   }
+
+   /**
+   * Contains information on all the transports currently supported or recognized by P2PRouter.
+   * @property {Array} [preferred=["webrtc","wss","ortc"]] Indexed list of transports in the order of default preference
+   * (i.e. index 0 is most preferred). The first &lt;i>available&lt;/i> preferred transport will be used
+   * when communicating with peers unless another order is specified when sending. If defined in the
+   * application [config]{@link P2Prouter#config}, the &lt;code>p2p.transports.preferred&lt;/code> array
+   * will be used instead of the internal default.
+   * @property {Object} options Name-value pairs of transports
+   * and their availabilities.
+   * @property {Boolean} options.webrtc WebRTC
+   * connectivity is available.
+   * @property {Boolean} options.wss WebSocket Sessions
+   * connectivity is available.
+   * @property {Boolean} options.ortc ObjectRTC
+   * connectivity is available.
+   * @property {Object} sendModel Describes how messages
+   * sent to multiple recipients should be treated, either "single"
+   * (single transport per recipient), or "multi" (shared transport for
+   * multiple recipients). Unavailable transports will have a model of "none".
+   * @property {String} sendModel.webrtc WebRTC
+   * message sending model. Usually "single".
+   * @property {String} sendModel.wss WebSocket Sessions
+   * message sending model. Usually "multi".
+   * @property {String} sendModel.ortc ObjectRTC
+   * message sending model. Usually "single".
+   *
+   * @type {Object}
+   * @static
+   */
+   static get supportedTransports() {
+      if (P2PRouter._supportedTransports == undefined) {
+         P2PRouter._supportedTransports =  new Object();
+         P2PRouter._supportedTransports.preferred = ["webrtc", "wss", "ortc"];
+         P2PRouter._supportedTransports.options = new Object();
+         P2PRouter._supportedTransports.sendModel = new Object();
+         if (DetectRTC.isWebRTCSupported == true) {
+            P2PRouter._supportedTransports.options.webrtc = true;
+            P2PRouter._supportedTransports.sendModel.webrtc = "single";
+         } else {
+            P2PRouter._supportedTransports.options.webrtc = false;
+            P2PRouter._supportedTransports.sendModel.webrtc = "none";
+         }
+         if ((WSSClient != undefined) &amp;&amp; (WSSClient != null)) {
+            P2PRouter._supportedTransports.options.wss = true;
+            P2PRouter._supportedTransports.sendModel.wss = "multi";
+         } else {
+            P2PRouter._supportedTransports.options.wss = false;
+            P2PRouter._supportedTransports.sendModel.wss = "none";
+         }
+         if (DetectRTC.isORTCSupported == true) {
+            P2PRouter._supportedTransports.options.ortc = true;
+            P2PRouter._supportedTransports.sendModel.ortc = "single";
+         } else {
+            P2PRouter._supportedTransports.options.ortc = false;
+            P2PRouter._supportedTransports.sendModel.ortc = "none";
+         }
+      }
+      return (P2PRouter._supportedTransports);
+   }
+
+   /**
+   * The privateID assigned to the session by the [rendezvous]{@link P2PRouter#rendezvous}.
+   * This value will be &lt;code>null&lt;/code> if no session has been established.
+   * @type {String}
+   */
+   get privateID() {
+      if ((this.rendezvous == null) &amp;&amp; (this._privateID == undefined)) {
+         this._privateID = null;
+      } else {
+         if (this._privateID == undefined) {
+            this._privateID = this.rendezvous.privateID;
+         }
+      }
+      return (this._privateID);
+   }
+
+   set privateID(pidSet) {
+      this._privateID = pidSet;
+   }
+
+   /**
+   * Internally-generated user token required by the [rendezvous]{@link P2PRouter#rendezvous}.
+   * @type {String}
+   */
+   get userToken() {
+      if ((this.rendezvous == null) &amp;&amp; (this._userToken == undefined)) {
+         this._userToken = null;
+      } else {
+         if (this._userToken == undefined) {
+            this._userToken = this.rendezvous.userToken;
+         }
+      }
+      return (this._userToken);
+   }
+
+   set userToken(utSet) {
+      this._userToken = utSet;
+   }
+
+   /**
+   * Server-generated token required by the [rendezvous]{@link P2PRouter#rendezvous}.
+   * @type {String}
+   */
+   get serverToken() {
+      if ((this.rendezvous == null) &amp;&amp; (this._serverToken == undefined)) {
+         this._serverToken = null;
+      } else {
+         if (this._serverToken == undefined) {
+            this._serverToken = this.rendezvous.serverToken;
+         }
+      }
+      return (this._serverToken);
+   }
+
+   set serverToken(stSet) {
+      this._userToken = stSet;
+   }
+
+   /**
+   * A list of currently connected peer IDs gathered from [peerConnections]{@link P2PRouter#peerConnections}.
+   * @type {Array}
+   * @readonly
+   */
+   get peers() {
+      if (this.rendezvous == null) {
+         return (null);
+      }
+      var returnPeers = new Array();
+      for (var privateID in this.peerConnections) {
+         returnPeers.push(privateID);
+      }
+      return (returnPeers);
+   }
+
+   /**
+   * A reference to the P2P rendezvous, signalling, and fallback connection handler, or &lt;code>null&lt;/code>
+   * if no such connection exists or is invalid.
+   * @type {*}
+   */
+   get rendezvous() {
+      if (this._rendezvous == undefined) {
+         return (null);
+      }
+      return (this._rendezvous);
+   }
+
+   set rendezvous(rendSet) {
+      this._rendezvous = rendSet;
+      //remove any existing listeners
+      this._rendezvous.removeEventListener("message", this.onMessage);
+      this._rendezvous.removeEventListener("update", this.onUpdate);
+      this._rendezvous.removeEventListener("peerconnect", this.onPeerConnect);
+      this._rendezvous.removeEventListener("peerpid", this.onPeerPIDUpdate);
+      this._rendezvous.removeEventListener("peerdisconnect", this.onPeerDisconnect);
+      //add new listeners
+      this._rendezvous.addEventListener("message", this.onMessage, this);
+      this._rendezvous.addEventListener("update", this.onUpdate, this);
+      this._rendezvous.addEventListener("peerconnect", this.onPeerConnect, this);
+      this._rendezvous.addEventListener("peerpid", this.onPeerPIDUpdate, this);
+      this._rendezvous.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
+      switch (this._rendezvous.toString()) {
+         case "WSSClient":
+            this.updatePeerConnections(["wss"],[this._rendezvous]);
+            break;
+         case "WSSTunnel":
+            this.updatePeerConnections(["wss"],[this._rendezvous]);
+            break;
+         default:
+            break;
+      }
+   }
+
+   /**
+   * Contains {@link PeerConnectionObject} for any connected or desired peers, stored by private ID.
+   * That is:&lt;br/>
+   * &lt;code>peerConnections[&lt;i>privateID&lt;/i>]=&lt;/code>{@link PeerConnectionObject}
+   * @type {Object}
+   * @readonly
+   */
+   get peerConnections() {
+      if (this._peerConnections == undefined) {
+         this._peerConnections = new Object();
+      }
+      return (this._peerConnections);
+   }
+
+   /**
+   * Returns a {@link PeerConnectionObject} contained in [peerConnections]{@link P2PRouter#peerConnections}
+   * by one of its transport references.
+   *
+   * @param {Object} transport A reference to a specific transport instance for which
+   * to return a [peerConnections]{@link P2PRouter#peerConnections}. If this is a shared transport such
+   * as WebSocket Sessions instance, the first matching [peerConnections]{@link P2PRouter#peerConnections}
+   * object will be returned.
+   *
+   * @return {PeerConnectionObject} The first object in [peerConnections]{@link P2PRouter#peerConnections} containing a matching
+   * &lt;code>transport&lt;/code> reference. &lt;code>null&lt;/code> is returned if no match can be found.
+   */
+   getPCOByTransport(transport) {
+      for (var privateID in this.peerConnections) {
+         var peerTransports = this.peerConnections[privateID].transport;
+         for (var peerTransport in peerTransports) {
+            if (peerTransports[peerTransport] === transport) {
+               return (this.peerConnections[privateID]);
+            }
+         }
+      }
+      return (null);
+   }
+
+   /**
+   * Returns a private ID associated with a {@link PeerConnectionObject} in
+   * [peerConnections]{@link P2PRouter#peerConnections}.
+   *
+   * @param {Object} transport A reference to a specific transport instance for which
+   * to return a private ID. If this is a shared transport such as WebSocket Sessions instance,
+   * the first matching [peerConnections]{@link P2PRouter#peerConnections}'s private ID will be returned.
+   *
+   * @return {Object} The private ID of the first [peerConnections]{@link P2PRouter#peerConnections} containing
+   * a matching &lt;code>transport&lt;/code> reference. &lt;code>null&lt;/code> is returned if no match can be found.
+   */
+   getPIDByTransport(transport) {
+      for (var privateID in this.peerConnections) {
+         var peerTransports = this.peerConnections[privateID].transport;
+         for (var peerTransport in peerTransports) {
+            if (peerTransports[peerTransport] === transport) {
+               return (privateID);
+            }
+         }
+      }
+      return (null);
+   }
+
+   /**
+   * Establishes a connection to a main / default rendezvous and fallback server.
+   * If no such connection is established, the local [privateID]{@link P2PRouter#privateID} must be
+   * set manually prior to establishing any peer-to-peer connections.
+   *
+   * @param {Object} connectInfo An object containing information about the
+   * rendezvous/fallback server to connect to. The object must contain at least a
+   * &lt;code>type&lt;/code> property.
+   * @param {String} connectInfo.transport Specifies the type of transport defined
+   * by the &lt;code>connectInfo&lt;/code> object. This parameter is case-sensitive.
+   * Valid types include:&lt;br/>
+   * &lt;ul>
+   * &lt;li>&lt;code>wss&lt;/code>: WebSocket Sessions&lt;/li>
+   * &lt;li>&lt;code>wsst&lt;/code>: WebSocket Sessions Tunnel&lt;/li>
+   * &lt;/ul>
+   * @param {Object} [connectInfo.tunnelParams] Tunneling parameters such as a list of
+   * possible endpoints for use with the tunneling connection (if &lt;code>connectInfo.transport="wsst"&lt;/code>,
+   * for example).
+   * @throws {Error} Thrown when the specified server could not be contacted or
+   * if there is a problem with the &lt;code>connectioInfo&lt;/code> parameter.
+   */
+   async connectRendezvous(connectionInfo) {
+      if (connectionInfo == null) {
+         throw (new Error("No connection info object provided."));
+      }
+      if (typeof(connectionInfo.transport) != "string") {
+         throw (new Error("The connection info \"transport\" property must be a string."));
+      }
+      var connectData = new Object();
+      connectData.options = P2PRouter.supportedTransports.options;
+      switch (connectionInfo.transport) {
+         case "wss":
+            try {
+               this.rendezvous = new WSSClient(connectionInfo.url);
+               var result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
+               this.updatePeerConnections(["wss"],[this.rendezvous]);
+            } catch (err) {
+               this._rendezvous.destroy();
+               this._rendezvous = null;
+               throw(err);
+            }
+            return (result);
+            break;
+         case "wsst":
+            try {
+               this.rendezvous = new WSSTunnel(connectionInfo.url);
+               connectData.tunnelParams = JSON.parse(connectionInfo.parameters);
+               result = await this.rendezvous.connect(connectionInfo.url, false, connectData);
+               this.updatePeerConnections(["wss"],[this.rendezvous]);
+            } catch (err) {
+               this._rendezvous.destroy();
+               this._rendezvous = null;
+            }
+            return (result);
+            break;
+         default:
+            throw (new Error("Unrecognized transport type \""+connectInfo.transport+"\""));
+            break;
+      }
+   }
+
+   /**
+   * Updates the [peerConnections]{@link P2PRouter#peerConnections} object with the connectivity options
+   * stored in [peerOptions]{@link P2PRouter#connection.peerOptions}.
+   *
+   * @param {Array} [openTypes=null] Indexed array of any connectivity types
+   * to set as "open" (connected). The status of any types not appearing in this array
+   * will be set as "closed" (disconnected).
+   * @param {Array} [transports=null] Indexed array of any open transport references
+   * matching the &lt;code>openTypes&lt;/code> array.
+   * @private
+   */
+   updatePeerConnections(openTypes=null, transports=null) {
+      for (var privateID in this.rendezvous.peerOptions) {
+         var options = this.rendezvous.peerOptions[privateID];
+         this.insertPeerConnectionObject(privateID, options);
+         //overwrite any defines open types
+         if (openTypes != null) {
+            if (openTypes.length != transports.length) {
+               throw(new Error("Number of open connection types must match number of connections."));
+            }
+            for (var count=0; count &lt; openTypes.length; count++) {
+               this.peerConnections[privateID].status[openTypes[count]] = "open";
+               this.peerConnections[privateID].transport[openTypes[count]] = transports[count];
+            }
+         }
+         this.peerConnections[privateID].options = options;
+      }
+   }
+
+   /**
+   * Inserts a {@link PeerConnectionObject} for a peer into the [peerConnections]{@link P2PRouter#peerConnections} array
+   * if one does not already exist.
+   *
+   * @param {String} privateID The private ID of the peer for which to inert a {@link PeerConnectionObject}.
+   * @param {Object} options Name-value pairs defining the transports that the peer has advertised
+   * as being available for them to use.
+   * @param {String} defaultStatus The default &lt;code>status&lt;/code> to set within the {@link PeerConnectionObject}
+   * for each &lt;code>option&lt;/code>.
+   */
+   insertPeerConnectionObject(privateID, options, defaultStatus="closed") {
+      if ((this.peerConnections[privateID] == undefined) || (this.peerConnections[privateID] == null)) {
+         this.peerConnections[privateID] = new Object();
+         this.peerConnections[privateID].status = new Object();
+         this.peerConnections[privateID].options = options;
+         this.peerConnections[privateID].transport = new Object();
+         this.peerConnections[privateID].connectTimeout = new Object();
+         this.peerConnections[privateID].connectPromise = new Object();
+         for (var option in options) {
+            this.peerConnections[privateID].status[option] = defaultStatus;
+            if (this.peerConnections[privateID].transport[option] == undefined) {
+               this.peerConnections[privateID].transport[option] = null;
+            }
+            if (this.peerConnections[privateID].connectTimeout[option] == undefined) {
+               this.peerConnections[privateID].connectTimeout[option] = new Object();
+               if (this.peerConnections[privateID].connectTimeout[option] == undefined) {
+                  this.peerConnections[privateID].connectTimeout[option] = null;
+               }
+               if (this.peerConnections[privateID].connectTimeout[option] == undefined) {
+                  this.peerConnections[privateID].connectTimeout[option] = null;
+               }
+            }
+            if (this.peerConnections[privateID].connectPromise[option] == undefined) {
+               this.peerConnections[privateID].connectPromise[option] = new Object();
+               if (this.peerConnections[privateID].connectPromise[option].resolve == undefined) {
+                  this.peerConnections[privateID].connectPromise[option].resolve = null;
+               }
+               if (this.peerConnections[privateID].connectPromise[option].reject == undefined) {
+                  this.peerConnections[privateID].connectPromise[option].reject = null;
+               }
+            }
+         }
+      }
+   }
+
+   /**
+   * Changes the private ID associated with this instance. Any connected peers
+   * are notified of this change.
+   *
+   * @param {String} newPrivateID The new private ID to set for this instance.
+   * @param {Boolean} [allSuccess=false] If true, all attached peers must
+   * be successfully notified of the change in order for the returned promise
+   * to resolve with &lt;code>true&lt;/code>. If false, only the &lt;code>rendezvous&lt;/code>
+   * server must be successfully updated.
+   *
+   * @return {Promise} The promise resolves with &lt;code>true&lt;/code> if the private
+   * ID was successfully changed, otherwise it rejects with
+   * &lt;code>false&lt;/code>. If &lt;code>allSuccess&lt;/code> is true, all connected peers
+   * must be successfully notified of the change for the promise to resolve
+   * with &lt;code>true&lt;/code>, otherwise only the [rendezvous]{@link P2PRouter#rendezvous}
+   * server needs to be successfully updated.
+   *
+   * @async
+   */
+   async changePrivateID(newPrivateID, allSuccess=false) {
+      var sentTransports = new Array();
+      var updated = await this.rendezvous.changePrivateID(newPrivateID);
+      if (updated == true) {
+         this._privateID = newPrivateID;
+      }
+      sentTransports.push(this.rendezvous);
+      for (var PID in this.peerConnections) {
+         var connectionObj = this.peerConnections[PID];
+         for (var transportType in connectionObj.status) {
+            var status = connectionObj.status[transportType];
+            var transport = connectionObj.transport[transportType];
+            if (status == "open") {
+               var sent = false;
+               for (var count=0; count &lt; sentTransports.length; count++) {
+                  if (sentTransports[count] === transport) {
+                     sent = true;
+                     break;
+                  }
+               }
+               if (sent == false) {
+                  var changed = await transport.changePrivateID(newPrivateID);
+                  sentTransports.push(transport);
+                  if (changed == false) {
+                     if (allSuccess == true) {
+                        updated = false;
+                     }
+                     if (P2PRouter.supportedTransports[transportType].sendModel == "single") {
+                        console.warn ("Could not send private ID change notification to: "+transport.peerID);
+                     } else if (P2PRouter.supportedTransports[transportType].sendModel == "multi") {
+                        console.warn ("Could not broadcast private ID change notification via: "+transport.toString());
+                     } else {
+                        console.warn ("Could not broadcast private ID change notification via unsupported transport.");
+                     }
+                  }
+               }
+            }
+         }
+      }
+      return (updated);
+   }
+
+   /**
+   * Requests a direct connection to a peer with a specific transport.
+   *
+   * @param {String} privateID The private ID of the peer to request the connection to.
+   * @param {String} transportType The transport type to request the direct connection on. This
+   * should be one of the supported transports listed in {@link P2PRouter.supportedTransports}.
+   * @param {Number} requestTimeout=20 The number of seconds to wait before considering the request
+   * timed out and invalid. The connection status will be set to "failed" after this timer
+   * elapses without a successfull connection.
+   */
+   connectPeer(privateID, transportType, requestTimeout=20) {
+      var promise = new Promise((resolve, reject) => {
+         if (P2PRouter.supportedTransports.options[transportType] == false) {
+            reject(new Error("Requested peer transport not locally supported."));
+            return (false);
+         }
+         this.insertPeerConnectionObject(privateID, P2PRouter.supportedTransports.options); //if not exist
+         if (this.peerConnections[privateID].status[transportType] == "open") {
+            //already connected
+            resolve(true);
+            return(true);
+         }
+         switch (transportType) {
+            case "webrtc":
+               if (this.peerConnections[privateID].options[transportType] == false) {
+                  reject (new Error("Peer does not support \""+transportType+"\" transport type."));
+                  return (false);
+               }
+               var wrtcInst = new WebRTCClient(this);
+               wrtcInst.addEventListener("peerconnect", this.onPeerConnect, this);
+               wrtcInst.addEventListener("message", this.onMessage, this);
+               wrtcInst.addEventListener("update", this.onUpdate, this);
+               wrtcInst.addEventListener("peerpid", this.onPeerPIDUpdate, this);
+               wrtcInst.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
+               this.peerConnections[privateID].transport[transportType] = wrtcInst;
+               this.peerConnections[privateID].connectPromise[transportType].resolve = resolve;
+               this.peerConnections[privateID].connectPromise[transportType].reject = reject;
+               this.setPeerConnectTimeout(privateID, transportType, reject, requestTimeout);
+               this.setConnectionStatus(privateID, "pending", transportType, wrtcInst);
+               wrtcInst.connect(privateID);
+               break;
+            case "wss":
+               //assume connection already exists so do nothing
+               break;
+            default:
+               break;
+         }
+      });
+      return (promise);
+   }
+
+   /**
+   * Sets / starts a peer connection timeout.
+   *
+   * @param {String} privateID The private ID of the peer to whom the connection attempt is being made.
+   * @param {String} transportType The transport connection type associated with the attempt. This should match
+   * one of the {@link P2PRouter.supportedTransports}&lt;code>.options&lt;/code>.
+   * @param {Function} reject A &lt;code>Promise&lt;/code> reject function or callback to invoke if the timeout completes.
+   * @param {Number} [timeout=20] The number of seconds to delay before the timeout completes and &lt;code>reject&lt;/code>
+   * is called.
+   *
+   * @private
+   */
+   setPeerConnectTimeout(privateID, transportType, reject, timeout=20) {
+      var timeoutID = setTimeout(this.onPeerConnectTimeout, (timeout*1000), privateID, transportType, reject, this);
+      this.peerConnections[privateID].connectTimeout[transportType] = timeoutID;
+   }
+
+   /**
+   * Sets the connection status and transport for a peer within the [peerConnections]{@link P2PRouter#peerConnections}
+   * object, stopping any timeout time associated with a pending connection and optionally removing
+   * the {@link PeerConnectionObject} entirely if no connection on any transport is open.
+   *
+   * @param {String} privateID The private ID of the peer for which to set the connection status and transport
+   * reference.
+   * @param {String} status The status to set for the &lt;code>transportType&lt;/code>. Valid types include:
+   * &lt;ul>
+   * &lt;li>&lt;b>"closed"&lt;/b>: The transport is closed and and unavailable.&lt;/li>
+   * &lt;li>&lt;b>"pending"&lt;/b>: The transport is connection is pending / being established.&lt;/li>
+   * &lt;li>&lt;b>"open"&lt;/b>: The transport is open and available for bi-directional communication.&lt;/li>
+   * &lt;li>&lt;b>"failed"&lt;/b>: An attempt to open the transport for communication has failed.&lt;/li>
+   * &lt;/ul>
+   * @param {String} transportType The transport type to set the &lt;code>status&lt;/code> for. Valid types
+   * include:
+   * &lt;ul>
+   * &lt;li>&lt;b>"wss"&lt;/b>&lt;/li>
+   * &lt;li>&lt;b>"webrtc"&lt;/b>&lt;/li>
+   * &lt;li>&lt;b>"ortc"&lt;/b>&lt;/li>
+   * &lt;li>&lt;b>"failed"&lt;/b>&lt;/li>
+   * &lt;/ul>
+   * @param {Object} [transport=null] A reference to the transport associated with the &lt;code>transportType&lt;/code>.
+   * This reference is assigned to the &lt;code>transport[transportType]&lt;/code> property of the {@link PeerConnectionObject}.
+   * @param {Boolean} [removeOnDisconnect=true] If true, the {@link PeerConnectionObject} is automatically removed
+   * from the [peerConnections]{@link P2PRouter#peerConnections} object and any event listeners removed if no transport
+   * is "open" or "pending".
+   */
+   setConnectionStatus(privateID, status, transportType, transport=null, removeOnDisconnect=true) {
+      var currentTransport = this.peerConnections[privateID].transport[transportType]; //save for possible event listener removal
+      this.peerConnections[privateID].status[transportType] = status;
+      this.peerConnections[privateID].transport[transportType] = transport;
+      if ((status == "open") || (status == "failed")) {
+         //stop timeout timer
+         try {
+            var timerID = this.peerConnections[privateID].connectTimeout[transportType];
+            clearTimeout(timerID);
+            this.peerConnections[privateID].connectTimeout[transportType] = null;
+            delete this.peerConnections[privateID].connectTimeout[transportType];
+         } catch (err) {
+         }
+         try {
+            if (status == "open") {
+               var resolveFunc = this.peerConnections[privateID].connectPromise[transportType].resolve;
+               if (typeof(resolveFunc) == "function") {
+                  var resolveObj = new Object();
+                  resolveObj.transportType = transportType;
+                  resolveObj.peerConnectionObject = this.peerConnections[privateID];
+                  resolveFunc(resolveObj);
+               }
+               this.peerConnections[privateID].connectPromise[transportType].resolve = null;
+               this.peerConnections[privateID].connectPromise[transportType].reject = null;
+            } else if (status == "failed") {
+               var rejectFunc = this.peerConnections[privateID].connectPromise[transportType].resolve;
+               if (typeof(rejectFunc) == "function") {
+                  var rejectObj = new Error("Connection failed.");
+                  rejectObj.transportType = transportType;
+                  rejectObj.peerConnectionObject = this.peerConnections[privateID];
+                  rejectFunc(rejectObj);
+               }
+               this.peerConnections[privateID].connectPromise[transportType].resolve = null;
+               this.peerConnections[privateID].connectPromise[transportType].reject = null;
+            }
+         } catch (err) {
+            console.error (err);
+         }
+      }
+      if (removeOnDisconnect == true) {
+         var connected = false; //is peer connected on any transport?
+         for (var transportTypeStr in this.peerConnections[privateID].status) {
+            var transportStatus = this.peerConnections[privateID].status[transportTypeStr];
+            if ((transportStatus != "closed") &amp;&amp; (transportStatus != "failed")) {
+               connected = true;
+            }
+         }
+         //don't remove listeners if connected ot transport is a shared connection
+         if (connected == false) {
+            if (currentTransport != this.rendezvous) {
+               //remove event listeners
+               currentTransport.removeEventListener("message", this.onMessage, this);
+               currentTransport.removeEventListener("update", this.onUpdate, this);
+               currentTransport.removeEventListener("peerconnect", this.onPeerConnect, this);
+               currentTransport.removeEventListener("peerpid", this.onPeerPIDUpdate, this);
+               currentTransport.removeEventListener("peerdisconnect", this.onPeerDisconnect, this);
+            }
+            //remove entry
+            this.peerConnections[privateID] = null;
+            delete this.peerConnections[privateID];
+         }
+      }
+   }
+
+   /**
+   * Creates an internal P2PRouter message. Since the format of this message
+   * may change, this is the preferred way to create a message rather than
+   * creating your own object.
+   *
+   * @param {String} messageType The P2PRouter message type to create.
+   *
+   * @return {Object} A formatted P2PRouter table message. Additional data
+   * can be appended to this object before sending it to other peers.
+   * @private
+   */
+   buildRouterMessage(messageType) {
+      var messageObj=new Object();
+      messageObj.routerMsg = messageType;
+      return (messageObj);
+   }
+
+   /**
+   * Sends a routed broadcast message to all connected peers using the
+   * first preferred and available peer-to-peer communication transport foe each
+   * peer as efficiently as possible.
+   *
+   * @param {*} data The data / message to send.
+   * @param {Array} [prefTransports=P2PRouter.supportedTransports.preferred] Indexed
+   * array of preferred transports to use to send the data / message. Each recipient
+   * is evaluated and the first available (lowest index), transport matching this
+   * list is used. Shared transports such as WebSocket Sessions are used as
+   * efficiently as possible (e.g. sending to multiple recipients with one request).
+
+   *
+   * @return {Promise} An asynchronous Promise that will contain the results of
+   * all send operations or will throw an error on failure.
+   */
+   async broadcast(data, prefTransports=P2PRouter.supportedTransports.preferred) {
+      var transportGroups = this.createTransportGroups(this.peers, prefTransports);
+      var results = new Array();
+      for (var transportType in transportGroups) {
+         try {
+            var transportObj = transportGroups[transportType];
+            var recipientsArr = transportObj.recipients;
+            var transportsArr = transportObj.transports;
+            var excludeArr = transportObj.exclude;
+            var sendModel = P2PRouter.supportedTransports.sendModel[transportType];
+            if (sendModel == "single") {
+               for (var count = 0; count &lt; recipientsArr.length; count++) {
+                  var recipient = recipientsArr[count];
+                  var transport = transportsArr[count];
+                  var exclude = excludeArr.some(element => {
+                     return (element == recipient);
+                  });
+                  if (exclude == false) {
+                     var result = await transport.broadcast(data);
+                  }
+                  results.push(result);
+               }
+            } else if (sendModel == "multi") {
+               //further break down shared transports
+               var sharedGroups = this.createSharedTransportGroups(recipientsArr, transportsArr, excludeArr);
+               for (count = 0; count &lt; sharedGroups.length; count++) {
+                  var sharedRecipients = sharedGroups[count].recipients;
+                  var sharedTransport = sharedGroups[count].transport;
+                  var sharedExclude = excludeArr.concat(sharedGroups[count].exclude);
+                  result = await sharedTransport.broadcast(data, sharedExclude);
+                  results.push(result);
+               }
+            } else if (sendModel == "none") {
+               //try fallback connection as a last resort
+               result = await this.rendezvous.broadcast(data, excludeArr);
+               results.push(result);
+            }
+         } catch (err) {
+            console.error (err);
+         }
+      }
+      return (results);
+   }
+
+   /**
+   * Sends a routed direct message to one or more connected peers using the
+   * first preferred and available peer-to-peer communication transport for
+   * each peer as efficiently as possible.
+   *
+   * @param {*} data The data / message to send.
+   * @param {(Object|Array)} recipients An object or an array of recipient private
+   * IDs. If this parameter is an object, one or more additional properties are
+   * expected:
+   * @param {Array} [recipients.rcp] An indexed array of recipient private IDs.
+   * If this list is provided as the &lt;code>recipients&lt;/code> parameter this
+   * structure is dynamicaly generated before sending.
+   * @param {Array} [prefTransports=P2PRouter.supportedTransports.preferred] Indexed
+   * array of preferred transports to use to send the data / message. Each recipient
+   * is evaluated and the first available (lowest index), transport matching this
+   * list is used. Shared transports such as WebSocket Sessions are used as
+   * efficiently as possible (e.g. sending to multiple recipients with one request).
+   *
+   * @return {Promise} An asynchronous Promise that will contain the results of
+   * all send operations or will throw an error on failure.
+   */
+   async send(data, recipients, prefTransports=P2PRouter.supportedTransports.preferred) {
+      if (typeof(recipients) != "object") {
+         throw (new Error(`"recipients" parameter must be an array!`));
+      }
+      if (typeof(recipients["length"]) == "number") {
+         var transportGroups = this.createTransportGroups(recipients, prefTransports);
+      } else {
+         transportGroups = this.createTransportGroups(recipients.rcp, prefTransports);
+      }
+      var results = new Array();
+      for (var transportType in transportGroups) {
+         try {
+            var transportObj = transportGroups[transportType];
+            var recipientsArr = transportObj.recipients;
+            var transportsArr = transportObj.transports;
+            var sendModel = P2PRouter.supportedTransports.sendModel[transportType];
+            if (sendModel == "single") {
+               for (var count = 0; count &lt; recipientsArr.length; count++) {
+                  var recipient = recipientsArr[count];
+                  var transport = transportsArr[count];
+                  var result = await transport.send(data, [recipient]);
+                  results.push(result);
+               }
+            } else if (sendModel == "multi") {
+               //further break down shared transports
+               var sharedGroups = this.createSharedTransportGroups(recipientsArr, transportsArr);
+               for (count = 0; count &lt; sharedGroups.length; count++) {
+                  var sharedRecipients = sharedGroups[count].recipients;
+                  var sharedTransport = sharedGroups[count].transport;
+                  result = await sharedTransport.send(data, sharedRecipients);
+                  results.push(result);
+               }
+            } else if (sendModel == "none") {
+               //try fallback connection as a last resort
+               result = await this.rendezvous.send(data, recipients);
+               results.push(result);
+            }
+         } catch (err) {
+            console.error (err);
+         }
+      }
+   }
+
+   /**
+   * Groups private IDs by their preferred or first available transports.
+   *
+   * @param {Array} recipients Indexed array of recipient private IDs to group
+   * by preferred / available transport.
+   * @param {Array} [preferred=P2PRouter.supportedTransports.preferred] Indexed array
+   * of preferred transport ordering to use for creating groups.
+   * @param {Boolean} [onlyAvail=true] If true, only private IDs with available
+   * transports are returned. If false, a special &lt;code>none&lt;/code> transport type
+   * array is included with all private IDs that have no available transport.
+   *
+   * @return {Object} Contains child objects accessible via their transport types (names),
+   * with each object containing an indexed &lt;code>recipients&lt;/code> array and accompanying
+   * &lt;code>transports&lt;/code> array. A special object named &lt;code>none&lt;/code> contains any
+   * &lt;code>recipients&lt;/code> without available &lt;code>transports&lt;/code> (all null),
+   * if &lt;code>onlyAvail=false&lt;/code>.
+   */
+   createTransportGroups(recipients, preferred=P2PRouter.supportedTransports.preferred, onlyAvail=true) {
+      var groups = new Object();
+      if (onlyAvail == false) {
+         groups.none = new Array();
+         groups.none.recipients = new Array();
+         groups.none.transports = new Array();
+      }
+      for (var count=0; count &lt; recipients.length; count++) {
+         var privateID = recipients[count];
+         var transportObj = this.getPreferredTransport(privateID, preferred);
+         if (transportObj != null) {
+            var transport = transportObj.transport;
+            var type = transportObj.transportType;
+            if (groups[type] == undefined) {
+               groups[type] = new Object();
+               groups[type].recipients = new Array();
+               groups[type].transports = new Array();
+            }
+            groups[type].recipients.push(privateID);
+            groups[type].transports.push(transport);
+            this.addGroupsExclusion(privateID, type, groups);
+         } else {
+            if (onlyAvail == false) {
+               groups.none.recipients.push(privateID);
+               groups.none.transports.push(null);
+               this.addGroupsExclusion(privateID, "none", groups);
+            }
+         }
+      }
+      return (groups);
+   }
+
+   /**
+   * Creates exclusion groups for various transport types for a
+   * specific private ID.
+   *
+   * @param {String} privateID The private ID to exclude from all
+   * transport &lt;code>groups&lt;/code>, except those specified by the
+   * &lt;code>includedTransportType&lt;/code>.
+   * @param {String} includedTransportType The transport group type
+   * within the &lt;code>groups&lt;/code> array to &lt;b>not&lt;/b> exclude
+   * &lt;code>privateID&lt;/code> from.
+   * @param {Object} groups Named transport groups containing the
+   * indexed arrays &lt;code>recipients&lt;/code> and &lt;code>transports&lt;/code>.
+   * Each group will have a new &lt;code>exclude&lt;/code> array created, if
+   * one doesn't exist, and the &lt;code>privateID&lt;/code> appended to it
+   * unless the group is in an &lt;code>includedTransportType&lt;/code>.
+   *
+   * @private
+   */
+   addGroupsExclusion(privateID, includedTransportType, groups) {
+      for (var type in groups) {
+         if (groups[type].exclude == undefined) {
+            groups[type].exclude = new Array();
+         }
+         if (type != includedTransportType) {
+            groups[type].exclude.push(privateID);
+         }
+      }
+   }
+
+   /**
+   * Creates arrays of privateIDs based on their shared transports.
+   *
+   * @param {Array} recipients An indexed array of recipient private IDs. The length
+   * of this array &lt;b&lt;must&lt;/b> match the length of the &lt;code>transports&lt;/code> one.
+   * @param {Array} transports References to the transports used by the private IDs
+   * of the &lt;code>recipients&lt;/code> array.
+   *
+   * @return {Array} The returned indexed array contains objects, each
+   * containing a unique &lt;code>transport&lt;/code> reference shared by the private IDs
+   * in a &lt;code>recipients&lt;/code> array. A null object is returned if the
+   * &lt;code>recipients&lt;/code> and &lt;code>transports&lt;/code> parameter lengths don't match.
+   */
+   createSharedTransportGroups(recipients, transports, exclusions) {
+      if (recipients.length != transports.length) {
+         return (null);
+      }
+      var sharedGroups = new Array();
+      var groupExists;
+      for (var count=0; count &lt; recipients.length; count++) {
+         var privateID = recipients[count];
+         var transport = transports[count];
+         groupExists = false;
+         for (var groupNum=0; groupNum &lt; sharedGroups.length; groupNum++) {
+            var groupObj = sharedGroups[groupNum];
+            if (groupObj.transport === transport) {
+               groupObj.recipients.push(privateID);
+               groupExists = true;
+            }
+         }
+         if (groupExists == false) {
+            groupObj = new Object();
+            groupObj.transport = transport;
+            groupObj.recipients = new Array();
+            groupObj.recipients.push(privateID);
+            sharedGroups.push(groupObj);
+         }
+      }
+      for (count=0; count &lt; recipients.length; count++) {
+         privateID = recipients[count];
+         for (groupNum=0; groupNum &lt; sharedGroups.length; groupNum++) {
+            groupObj = sharedGroups[groupNum];
+            this.addSharedGroupsExclusion(privateID, groupObj, sharedGroups);
+         }
+      }
+      return (sharedGroups);
+   }
+
+   /**
+   * Add exclusions in shared transport groups for a private ID.
+   *
+   * @param {String} privateID The private ID to add exclusions for.
+   * @param {Object} includeGroup The group in which &lt;code>privateID&lt;/code>
+   * is included. The &lt;code>privateID&lt;/code> will be excluded out of all
+   * the other &lt;code>sharedGroups&lt;/code>.
+   * @param {Array} sharedGroups An indexed array of shared transport groups
+   * to exclude the &lt;code>privateID&lt;/code> from, except the &lt;code>includeGroup&lt;/code>.
+   * Each object in this array will have an &lt;code>exclude&lt;/code> array added, if
+   * it doesn't already exist, and the &lt;code>privateID&lt;/code> appended if unless
+   * included.
+   *
+   * @private
+   */
+   addSharedGroupsExclusion(privateID, includeGroup, sharedGroups) {
+      for (var count = 0; count &lt; sharedGroups.length; count++) {
+         if (sharedGroups[count].exclude == undefined) {
+            sharedGroups[count].exclude = new Array();
+         }
+         if (sharedGroups[count] !== includeGroup) {
+            sharedGroups[count].exclude.push(privateID);
+         }
+      }
+   }
+
+   /**
+   * Returns the preferred or next available transport for a peer.
+   *
+   * @param {String} privateID The private ID of the peer for which to
+   * retrieve the transport.
+   * @param {Array} [preferred=["webrtc","wss","ortc"]] The preferred transport
+   * order with the first transport being the most preferred. Any transports
+   * not included in this list will not be considered.
+   *
+   * @return {Object} An object containing a reference to the first preferred
+   * &lt;code>transport&lt;/code> with an "open" status and its &lt;code>type&lt;/code>. If no
+   * transport is open then &lt;code>null&lt;/code> is returned.
+   */
+   getPreferredTransport(privateID, preferred=P2PRouter.supportedTransports.preferred) {
+      var status = this.peerConnections[privateID].status;
+      for (var count=0; count &lt; preferred.length; count++) {
+         var transportType = preferred[count];
+         if (status[transportType] == "open") {
+            var returnObj = new Object();
+            returnObj.transport = this.peerConnections[privateID].transport[transportType];
+            returnObj.transportType = transportType;
+            return (returnObj);
+         }
+      }
+      return (null);
+   }
+
+   /**
+   * Verifies if a supplied message event object contains a valid P2PRouter message.
+   *
+   * @param {Event} event The "message" event, as usually dispatched by the
+   * peer-to-peer interface, to examine.
+   *
+   * @return {Boolean} True if the event contains a valid P2PRouter message
+   * (though its type may not be supported).
+   * @private
+   */
+   isRouterMsgEvent(event) {
+      try {
+         if (typeof(event["data"]) != "object") {
+            //not sure what this is
+            return (false);
+         }
+         if (typeof(event.data["result"]) != "object") {
+            //may not be a JSON-RPC message
+            return (false);
+         }
+         if (typeof(event.data.result["data"]) != "object") {
+            //not a router-formatted message
+            return (false);
+         }
+         return (this.isRouterMessage(event.data.result.data));
+      } catch (err) {
+         return (false);
+      }
+   }
+
+   /**
+   * Verifies if a supplied object is a valid P2PRouter message.
+   *
+   * @param {Object} message The object to examine.
+   *
+   * @return {Boolean} True if the object seems to be a valid P2PRouter message
+   * (though it may not be supported).
+   * @private
+   */
+   isRouterMessage(message) {
+      if ((message["routerMsg"] == undefined) || (message["routerMsg"] == null) || (message["routerMsg"] == "")) {
+         //not a P2PRouter message or it's blank (mo message type)
+         return (false);
+      }
+      return (true);
+   }
+
+   /**
+   * Handles any "message" events received on routed transports. Any P2PRouter messages are intercepted,
+   * otherwise "message" events are propagated to onward listeners.
+   *
+   * @param {Event} event A message event received from a supported transport.
+   *
+   * @fires P2PRouter#message
+   * @private
+   */
+   async onMessage(event) {
+      if (this.isRouterMsgEvent(event)) {
+         //TODO: add check for "from" property and add (if being sent via WebRTC, for example)
+         var fromPID = event.data.result.from;
+         var msgData = event.data.result.data;
+         var messageType = msgData.routerMsg;
+         var transportType = msgData.transportType;
+         switch (messageType) {
+            case "peerconnectreq":
+               this.onConnectPeerRequest(fromPID, msgData).catch(err => {
+                  console.warn(err);
+               })
+               break;
+            default:
+               //not a recognized P2PRouter message
+               break;
+         }
+      } else {
+         var source = event.target.toString();
+         var newEvent = new Event("message");
+         if ((source == "WSSClient") || (source == "WSSTunnel")) {
+            newEvent.data = event.data;
+            newEvent.data.result.transport = "wss";
+            newEvent.transport = event.target;
+         } else if (source == "WebRTCClient") {
+            var jsonObj = buildJSONRPC("notification");
+            jsonObj.data = event.data;
+            jsonObj.data.result.from = this.getPIDByTransport(event.target);
+            jsonObj.data.result.transport = "webrtc";
+            newEvent.data = jsonObj.data;
+            newEvent.transport = event.target;
+         }
+         this.dispatchEvent(newEvent);
+      }
+   }
+
+   /**
+   * Handles any "update" message events received on routed transports.
+   *
+   * @param {Event} event An update message event received from a supported transport.
+   *
+   * @fires P2PRouter#update
+   * @private
+   */
+   async onUpdate(event) {
+      if (this.isRouterMsgEvent(event)) {
+         var fromPID = event.data.result.from;
+         var msgData = event.data.result.data;
+         var messageType = msgData.routerMsg;
+         switch (messageType) {
+            default:
+               //not a recognized P2PRouter update
+               break;
+         }
+      } else {
+         var source = event.target.toString();
+         var newEvent = new Event("update");
+         newEvent.data = event.data;
+         newEvent.transport = event.target;
+         if ((source == "WSSClient") || (source == "WSSTunnel")) {
+            newEvent.transportType = "wss";
+         } else if (source == "WebRTCClient") {
+            newEvent.transportType = "webrtc";
+         }
+         this.dispatchEvent(newEvent);
+      }
+   }
+
+   /**
+   * Handles any "peerpid" message events received on routed transports. The
+   * [peerConnections]{@link P2PRouter#peerConnections} is automatically
+   * updated to reflect the changed private ID.
+   *
+   * @param {Event} event An update message event received from a supported transport.
+   *
+   * @fires P2PRouter#peerpid
+   * @private
+   */
+   async onPeerPIDUpdate(event) {
+      var oldPID = event.data.result.change.oldPrivateID;
+      var newPID = event.data.result.change.newPrivateID;
+      if (oldPID == newPID) {
+         return;
+      }
+      if ((this.peerConnections[oldPID] == undefined) || (this.peerConnections[oldPID] == null)) {
+         //may ne a duplicated notification
+         return;
+      }
+      //update peerConnections object
+      this.peerConnections[newPID] = this.peerConnections[oldPID];
+      delete this.peerConnections[oldPID];
+      var newEvent = new Event("peerpid");
+      newEvent.oldPrivateID = oldPID;
+      newEvent.newPrivateID = newPID;
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
+   * Invoked when peer requests a direct peer-to-peer connection.
+   *
+   * @param {String} privateID The private ID of the peer requesting the connection.
+   * @param {Object} requestObj An object containing the details of the connection request.
+   * @param {String} requestObj.transportType The transport type on which the direct connection is
+   * being requested. The request will be rejected or ignored if the transport doesn't match
+   * an available one specified in {@link P2PRouter.supportedTransports}.
+   * @param {Number} [requestTimeout=20] The number of seconds to wait for this connection to
+   * be established before considering it failed (timed out).
+   *
+   * @private
+   */
+   onConnectPeerRequest(privateID, requestObj, requestTimeout=20) {
+      var promise = new Promise((resolve, reject) => {
+         var transportType = requestObj.transportType;
+         switch (transportType) {
+            case "webrtc":
+               if (this.peerConnections[privateID].options[transportType] == false) {
+                  reject (new Error("Peer does not support \""+transportType+"\" transport type."));
+                  return (false);
+               }
+               var wrtcInst = new WebRTCClient(this);
+               wrtcInst.addEventListener("peerconnect", this.onPeerConnect, this);
+               wrtcInst.addEventListener("message", this.onMessage, this);
+               wrtcInst.addEventListener("update", this.onUpdate, this);
+               wrtcInst.addEventListener("peerpid", this.onPeerPIDUpdate, this);
+               wrtcInst.addEventListener("peerdisconnect", this.onPeerDisconnect, this);
+               this.insertPeerConnectionObject(privateID, P2PRouter.supportedTransports.options); //if not exist
+               this.peerConnections[privateID].transport[transportType] = wrtcInst;
+               this.peerConnections[privateID].connectPromise[transportType].resolve = resolve;
+               this.peerConnections[privateID].connectPromise[transportType].reject = reject;
+               this.setPeerConnectTimeout(privateID, transportType, reject, requestTimeout);
+               this.setConnectionStatus(privateID, "pending", transportType, wrtcInst);
+               wrtcInst.setRemoteOffer(privateID, requestObj.offer);
+               break;
+            case "wss":
+               //assume connection already exists so do nothing
+               break;
+            default:
+               this.setConnectionStatus(privateID, "failed", transportType);
+               reject (new Error("Unrecognized connection type \""+transportType+"\""));
+               break;
+         }
+      });
+      return (promise);
+   }
+
+   /**
+   * Handles any new peer connection events on routed transports.
+   *
+   * @param {Event} event A peer connect event received from a supported transport.
+   *
+   * @fires P2PRouter#peerconnect
+   * @private
+   */
+   async onPeerConnect(event) {
+      var source = event.target.toString();
+      var newEvent = new Event("peerconnect");
+      newEvent.transport = event.target;
+      if ((source == "WSSClient") || (source == "WSSTunnel")) {
+         console.dir (event.data);
+         var privateID = event.data.result.connect;
+         console.log ("A new peer has connected on ("+source+"): "+privateID);
+         if ((event.data.result.options == undefined) || (event.data.result.options == null)) {
+            //added for pre-v0.4.1 compatibility
+            event.data.result.options = {"wss":true,"webrtc":false,"ortc":false};
+         }
+         this.insertPeerConnectionObject(privateID, event.data.result.options);
+         this.setConnectionStatus(privateID, "open", "wss", event.target);
+         newEvent.data = event.data;
+         newEvent.transportType = "wss";
+      } else if (source == "WebRTCClient") {
+         var privateID = this.getPIDByTransport(event.target);
+         this.setConnectionStatus(privateID, "open", "webrtc", event.target);
+         newEvent.data = buildJSONRPC("notification");
+         newEvent.data.result.connect = privateID;
+         newEvent.data.result.options = this.peerConnections[privateID].options;
+         newEvent.data.result.type = "session";
+         newEvent.transportType = "webrtc";
+
+      }
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
+   * Handles any peer disconnection events on routed transports.
+   *
+   * @param {Event} event A peer disconnect event received from a supported transport.
+   *
+   * @fires P2PRouter#peerdisconnect
+   * @private
+   */
+   async onPeerDisconnect(event) {
+      var source = event.target.toString();
+      var newEvent = new Event("peerdisconnect");
+      newEvent.transport = event.target;
+      if ((source == "WSSClient") || (source == "WSSTunnel")) {
+         var privateID = event.data.result.disconnect;
+         this.setConnectionStatus(privateID, "closed", "wss");
+         newEvent.data = event.data;
+         newEvent.transportType = "wss";
+         newEvent._event = event._event;
+         this.dispatchEvent(newEvent);
+      } else if (source == "WebRTCClient") {
+         var privateID = this.getPIDByTransport(event.target);
+         this.setConnectionStatus(privateID, "closed", "webrtc");
+         newEvent.data = buildJSONRPC("notification");
+         newEvent.data.result.disconnect = privateID;
+         newEvent.data.result.type = "session";
+         newEvent.transportType = "webrtc";
+      }
+      this.dispatchEvent(newEvent);
+   }
+
+   /**
+   * Handles a peer connection timeout started by [setPeerConnectTimeout]{@link P2PRouter#setPeerConnectTimeout}.
+   *
+   * @param {String} privateID The private ID of the peer to whom the connection attempt failed.
+   * @param {String} transportType The transport connection type associated with the attempt. This should match
+   * one of the {@link P2PRouter.supportedTransports}&lt;code>.options&lt;/code>.
+   * @param {Function} reject A &lt;code>Promise&lt;/code> reject function or callback to invoke.
+   * @param {P2PRouter} conext The execution context to use in place of the &lt;code>this&lt;/code> reference.
+   *
+   * @private
+   */
+   onPeerConnectTimeout(privateID, transportType, reject, context) {
+      console.error ("Attempt to establish peer connection using \""+transportType+"\" transport to \""+privateID+"\" has timed out.");
+      console.error ("Using fallback transport \""+context.getPreferredTransport(privateID).transportType+"\".");
+      context.peerConnections[privateID].connectTimeout[transportType] = null;
+      context.setConnectionStatus(privateID, "failed", transportType);
+   }
+
+   /**
+   * Prepares the instance for destruction by closing any open transports, = null;
+   * removing references and event listeners, and otherwise cleaning up.
+   *
+   * @async
+   */
+   async destroy() {
+         console.log ("P2PRouter.destroy()");
+      if (this.rendezvous != null) {
+         this.rendezvous.removeEventListener("message", this.onMessage);
+         this.rendezvous.removeEventListener("update", this.onUpdate);
+         this.rendezvous.removeEventListener("peerconnect", this.onPeerConnect);
+         this.rendezvous.removeEventListener("peerpid", this.onPeerPIDUpdate);
+         this.rendezvous.removeEventListener("peerdisconnect", this.onPeerDisconnect);
+         try {
+            var result = await this.rendezvous.disconnect();
+         } catch (err) {
+         }
+         this._rendezvous = null;
+      }
+      for (var privateID in this.peerConnections) {
+         try {
+            this.peerConnections[privateID].transport.removeEventListener("peerconnect", this.onPeerConnect);
+            this.peerConnections[privateID].transport.removeEventListener("message", this.onMessage);
+            this.peerConnections[privateID].transport.removeEventListener("update", this.onUpdate);
+            this.peerConnections[privateID].transport.removeEventListener("peerpid", this.onPeerPIDUpdate);
+            this.peerConnections[privateID].transport.removeEventListener("peerdisconnect", this.onPeerDisconnect);
+            if (this.peerConnections[privateID].connectTimeout[transportType] != null) {
+               this.clearTimeout(this.peerConnections[privateID].connectTimeout[transportType]);
+               this.peerConnections[privateID].connectTimeout[transportType] = null;
+            }
+            var result = await this.peerConnections[privateID].transport.disconnect();
+         } catch (err) {
+         } finally {
+            this.peerConnections[privateID].transport = null;
+            this.peerConnections[privateID].status = "closed";
+         }
+      }
+   }
+
+   toString() {
+      return ("P2PRouter");
+   }
+
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="APIRouter.html">APIRouter</a></li><li><a href="ConnectivityManager.html">ConnectivityManager</a></li><li><a href="CypherPoker.html">CypherPoker</a></li><li><a href="CypherPokerAccount.html">CypherPokerAccount</a></li><li><a href="CypherPokerAnalyzer.html">CypherPokerAnalyzer</a></li><li><a href="CypherPokerCard.html">CypherPokerCard</a></li><li><a href="CypherPokerContract.html">CypherPokerContract</a></li><li><a href="CypherPokerGame.html">CypherPokerGame</a></li><li><a href="CypherPokerPlayer.html">CypherPokerPlayer</a></li><li><a href="CypherPokerUI.html">CypherPokerUI</a></li><li><a href="P2PRouter.html">P2PRouter</a></li><li><a href="SDB.html">SDB</a></li><li><a href="SRACrypto.html">SRACrypto</a></li><li><a href="SRACryptoWorker.html">SRACryptoWorker</a></li><li><a href="WebRTCClient.html">WebRTCClient</a></li><li><a href="WorkerHost.html">WorkerHost</a></li><li><a href="WSSClient.html">WSSClient</a></li><li><a href="WSSTunnel.html">WSSTunnel</a></li></ul><h3>Events</h3><ul><li><a href="APIRouter.html#event:close">close</a></li><li><a href="APIRouter.html#event:message">message</a></li><li><a href="APIRouter.html#event:peerpid">peerpid</a></li><li><a href="APIRouter.html#event:update">update</a></li><li><a href="CypherPoker.html#event:newgame">newgame</a></li><li><a href="CypherPoker.html#event:start">start</a></li><li><a href="CypherPoker.html#event:tablejoin">tablejoin</a></li><li><a href="CypherPoker.html#event:tablejoinrequest">tablejoinrequest</a></li><li><a href="CypherPoker.html#event:tablejointimeout">tablejointimeout</a></li><li><a href="CypherPoker.html#event:tableleave">tableleave</a></li><li><a href="CypherPoker.html#event:tablemsg">tablemsg</a></li><li><a href="CypherPoker.html#event:tablenew">tablenew</a></li><li><a href="CypherPoker.html#event:tableready">tableready</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzed">analyzed</a></li><li><a href="CypherPokerAnalyzer.html#event:analyzing">analyzing</a></li><li><a href="CypherPokerAnalyzer.html#event:scored">scored</a></li><li><a href="CypherPokerContract.html#event:timeout">timeout</a></li><li><a href="CypherPokerContract.html#event:timeoutinvalid">timeoutinvalid</a></li><li><a href="CypherPokerContract.html#event:timeoutstart">timeoutstart</a></li><li><a href="CypherPokerGame.html#event:gameanalyze">gameanalyze</a></li><li><a href="CypherPokerGame.html#event:gamebet">gamebet</a></li><li><a href="CypherPokerGame.html#event:gamebetplaced">gamebetplaced</a></li><li><a href="CypherPokerGame.html#event:gamecardsencrypt">gamecardsencrypt</a></li><li><a href="CypherPokerGame.html#event:gamedeal">gamedeal</a></li><li><a href="CypherPokerGame.html#event:gamedealmsg">gamedealmsg</a></li><li><a href="CypherPokerGame.html#event:gamedealprivate">gamedealprivate</a></li><li><a href="CypherPokerGame.html#event:gamedealpublic">gamedealpublic</a></li><li><a href="CypherPokerGame.html#event:gamedeck">gamedeck</a></li><li><a href="CypherPokerGame.html#event:gamedecrypt">gamedecrypt</a></li><li><a href="CypherPokerGame.html#event:gameend">gameend</a></li><li><a href="CypherPokerGame.html#event:gamehello">gamehello</a></li><li><a href="CypherPokerGame.html#event:gamekeypair">gamekeypair</a></li><li><a href="CypherPokerGame.html#event:gamekill">gamekill</a></li><li><a href="CypherPokerGame.html#event:gameparams">gameparams</a></li><li><a href="CypherPokerGame.html#event:gameplayerkeychain">gameplayerkeychain</a></li><li><a href="CypherPokerGame.html#event:gameplayerready">gameplayerready</a></li><li><a href="CypherPokerGame.html#event:gameready">gameready</a></li><li><a href="CypherPokerGame.html#event:gamerestart">gamerestart</a></li><li><a href="CypherPokerGame.html#event:gamescored">gamescored</a></li><li><a href="P2PRouter.html#event:message">message</a></li><li><a href="P2PRouter.html#event:peerconnect">peerconnect</a></li><li><a href="P2PRouter.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="P2PRouter.html#event:peerpid">peerpid</a></li><li><a href="P2PRouter.html#event:update">update</a></li><li><a href="WebRTCClient.html#event:answer">answer</a></li><li><a href="WebRTCClient.html#event:icecandidate">icecandidate</a></li><li><a href="WebRTCClient.html#event:message">message</a></li><li><a href="WebRTCClient.html#event:offer">offer</a></li><li><a href="WebRTCClient.html#event:peerconnect">peerconnect</a></li><li><a href="WebRTCClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WebRTCClient.html#event:privateid">privateid</a></li><li><a href="WebRTCClient.html#event:remotechannel">remotechannel</a></li><li><a href="WSSClient.html#event:message">message</a></li><li><a href="WSSClient.html#event:peerconnect">peerconnect</a></li><li><a href="WSSClient.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSClient.html#event:peerpid">peerpid</a></li><li><a href="WSSClient.html#event:privateid">privateid</a></li><li><a href="WSSClient.html#event:update">update</a></li><li><a href="WSSTunnel.html#event:message">message</a></li><li><a href="WSSTunnel.html#event:peerconnect">peerconnect</a></li><li><a href="WSSTunnel.html#event:peerdisconnect">peerdisconnect</a></li><li><a href="WSSTunnel.html#event:peerpid">peerpid</a></li><li><a href="WSSTunnel.html#event:privateid">privateid</a></li><li><a href="WSSTunnel.html#event:update">update</a></li></ul><h3>Mixins</h3><ul><li><a href="EventDispatcher.html">EventDispatcher</a></li><li><a href="EventPromise.html">EventPromise</a></li></ul><h3>Global</h3><ul><li><a href="global.html#appName">appName</a></li><li><a href="global.html#appTitle">appTitle</a></li><li><a href="global.html#appVersion">appVersion</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#handleRPCResponses">handleRPCResponses</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#ipcID">ipcID</a></li><li><a href="global.html#ipcRenderer">ipcRenderer</a></li><li><a href="global.html#IPCSend">IPCSend</a></li><li><a href="global.html#isDesktop">isDesktop</a></li><li><a href="global.html#parseURLParameters">parseURLParameters</a></li><li><a href="global.html#platform">platform</a></li><li><a href="global.html#RPC">RPC</a></li><li><a href="global.html#uniqueRPCID">uniqueRPCID</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed May 29 2019 21:51:57 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
