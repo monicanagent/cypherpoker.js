@@ -3,7 +3,7 @@
 * CypherPoker.JS. Also provides functionality for dynamic loading of additional
 * scripts and JSON data.
 *
-* @version 0.4.1
+* @version 0.5.0
 */
 
 /**

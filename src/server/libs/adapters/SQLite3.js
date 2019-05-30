@@ -6,8 +6,9 @@
 * @copyright MIT License
 */
 
-const {spawn} = require('child_process');
-const filesystem = require('fs');
+const {spawn} = require("child_process");
+const filesystem = require("fs");
+const path = require("path");
 
 /**
 * @class Adapter for SQLite 3 database functionality using the native binary.
@@ -91,7 +92,7 @@ module.exports = class SQLite3 {
    * @readonly
    */
    get EORDelimiter() {
-      return (String.fromCharCode(174)+"<!--@ END RESULT @-->"+String.fromCharCode(175));
+      return ("<!--END RESULT -->");
    }
 
    /**
@@ -703,6 +704,10 @@ module.exports = class SQLite3 {
             this._outputID = 0;
          }
          var outputFile = baseFileName.split("%id%").join(String(this._outputID));
+         if (this.server.hostEnv.embedded == true) {
+            outputFile = path.resolve(this.server.hostEnv.dir.server + outputFile);
+            outputFile = outputFile.split("\\").join("\\\\"); //fix windows path
+         }
          var queryObject = new Object();
          queryObject.schema = schemaArray;
          queryObject.outputFile = outputFile;
@@ -730,13 +735,13 @@ module.exports = class SQLite3 {
    * watching, a <code>deleteOnResult</code> specifying if the file should be deleted once successfully processed,
    * and the associated Promise <code>resolve</code> and <code>reject</code> functions.
    * @param {Event} event The event that triggered this file change.
-   * @param {String} fileName The file name associated with the change (this should match the
+   * @param {String} fileName The file name associated with the change (this may not necessarily match the
    * <code>queryObject.outputFile</code> property).
    */
    onResultFileChange(queryObject, event, fileName) {
       try {
-         filesystem.openSync(fileName, "r+");
-         var queryResult = filesystem.readFileSync(fileName, {encoding: "utf8"});
+         filesystem.openSync(queryObject.outputFile, "r+");
+         var queryResult = filesystem.readFileSync(queryObject.outputFile, {encoding: "utf8"});
          if (queryResult.indexOf(this.EORDelimiter) > -1) {
             //remove end-of-result delimiter
             queryResult = queryResult.split(this.EORDelimiter)[0];
@@ -748,10 +753,11 @@ module.exports = class SQLite3 {
          queryObject.resolve.call(this, results);
          queryObject.watch.close();
          if (queryObject.deleteOnResult == true) {
-            filesystem.unlinkSync(fileName);
+            filesystem.unlinkSync(queryObject.outputFile);
          }
       } catch (err) {
          //file still open / being written to
+         console.error(err);
       }
    }
 

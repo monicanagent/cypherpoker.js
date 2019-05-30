@@ -1170,7 +1170,7 @@ async function createAccountSystem(onCreateCB=null) {
          console.log ("Database functionality is ENABLED.");
          //the second parameter is there to provide a value for the HMAC
          try {
-            var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});
+            var walletStatusObj = await namespace.cp.callAccountDatabase("walletstatus", {"random":String(Math.random())});            
          } catch (err) {
             console.error ("Could not get current wallet status.");
             console.error (err);

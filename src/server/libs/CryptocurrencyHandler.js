@@ -384,14 +384,13 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
    * are typically added to the <code>stdout</code> and <code>stderr</code> outputs to monitor
    * the process' status.
    */
-   startNativeClient(executablePath, paramaters, workingDir=null) {
-      console.log (">>>>>>>>>>>>>>>>>>> startNativeClient: "+executablePath);
+   startNativeClient(executablePath, paramaters, workingDir=null) {      
       var options = new Object();
       if (workingDir != null) {
          options.cwd = workingDir;
       } else {
          options.cwd = ".";
-      }      
+      }
       options.windowsHide = true; //hide console window
       if (this.server.hostEnv.embedded == true) {
          options.cwd = path.resolve(this.server.hostEnv.dir.server + options.cwd);

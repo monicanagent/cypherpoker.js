@@ -1,6 +1,6 @@
 /**
 * @file Entry point for CypherPoker.JS desktop (Electron) that launches bundled server and client processes.
-* @version 0.4.1
+* @version 0.5.0
 * @author Patrick Bay
 * @copyright MIT License
 */

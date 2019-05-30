@@ -142,7 +142,11 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
    */
    async initialize() {
       var installDirectory = this.handlerConfig.installDir;
-      var dataDirectory = path.resolve(this.handlerConfig.dataDir);
+      if (this.server.hostEnv.embedded == true) {
+         var dataDirectory = path.resolve(this.server.hostEnv.dir.server + this.handlerConfig.dataDir);
+      } else {
+         dataDirectory = path.resolve(this.handlerConfig.dataDir);
+      }
       process.stdin.resume();
       process.on("SIGINT", this.onServerExit.bind(this));
       switch (process.platform) {
@@ -216,6 +220,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
       this.nativeProcess["regtest"].on('close', this.onProcessClose.bind(this, "regtest"));
       var result = await this.waitForOutput("regtest");
       */
+      return (true);
    }
 
    /**
