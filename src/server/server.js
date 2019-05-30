@@ -1,6 +1,6 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.4.1
+* @version 0.5.0
 * @author Patrick Bay
 * @copyright MIT License
 *
@@ -1280,8 +1280,8 @@ async function startDatabase(dbAdapter=null) {
    if (hostEnv.embedded == true) {
       scriptPath = path.resolve(hostEnv.dir.server + scriptPath);
       adapterConfig.bin = path.resolve(hostEnv.dir.server + adapterConfig.bin);
-      dbFilePath = hostEnv.dir.server + dbFilePath;
-      dbFilePath = dbFilePath.split("/./").join("/");
+      dbFilePath = path.resolve(hostEnv.dir.server + dbFilePath);
+      dbFilePath = dbFilePath.split("\\").join("\\\\"); //fix windows path
    }
    var DatabaseAdapter = require(scriptPath);
    var adapter = new DatabaseAdapter(rpc_options.exposed_library_objects);
@@ -1332,7 +1332,11 @@ async function loadHandlers(type="all") {
                   }
                   delete currentHandler.handler;
                }
-               var handlerClass = require(currentHandler.handlerClass);
+               var handlerClassFile = currentHandler.handlerClass;
+               if (hostEnv.embedded == true) {
+                  handlerClassFile = path.resolve(hostEnv.dir.server + handlerClassFile);
+               }
+               var handlerClass = require(handlerClassFile);
                var handler = new handlerClass(rpc_options.exposed_library_objects, currentHandler);
                console.log ("   Loaded handler: "+handlerName);
                if (typeof(handler.initialize) == "function") {

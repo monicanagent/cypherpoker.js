@@ -149,7 +149,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
          case "linux":
             //process.arch == ia32 (for 32-bit Linux)
             installDirectory = installDirectory.split("%os%").join("linux");
-            var binFiles = ["bitcoind"];
+            var binFiles = ["./bitcoind"];
             break;
          case "win32":
             installDirectory = installDirectory.split("%os%").join("win");
@@ -157,7 +157,7 @@ module.exports = class BitcoinCashNative extends CryptocurrencyHandler {
             break;
          case "darwin":
             installDirectory = installDirectory.split("%os%").join("macOS");
-            binFiles = ["bitcoind"];
+            binFiles = ["./bitcoind"];
             break;
          default:
             throw (new Error("Unsupported platform: "+process.platform));

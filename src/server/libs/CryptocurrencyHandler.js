@@ -8,9 +8,11 @@
 
 const EventEmitter = require("events");
 const request = require("request");
+const progress = require("request-progress");
 const {spawn} = require("child_process");
 const fs = require("fs");
 const JSZip = require("jszip");
+const tar = require("tar");
 const url = require("url");
 const path = require("path");
 const homeDir = require("os").homedir();
@@ -176,7 +178,7 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
 
    /**
    * Checks the installation of the native client and optionally (re-)installs it
-   * if not found from the root URL specified in [downloadRootURL]{@link BitcoinCoreNative#downloadRootURL}.
+   * if not found from the root URL specified in the extending class' <code>downloadRootURL</code>.
    *
    * @param {Array} installFiles Indexed array of files to check for and optionally install, excluding
    * any path information.
@@ -196,6 +198,9 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
       if (installDirectory == null) {
          throw (new Error("Installation directory not specified (null)."));
       }
+      if (this.server.hostEnv.embedded == true) {
+         installDirectory = path.resolve(this.server.hostEnv.dir.server + installDirectory);
+      }
       //check installation directory
       if (fs.existsSync(installDirectory) == false) {
          if (autoInstall == false) {
@@ -213,12 +218,12 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
             var fileName = path.basename(parsed.pathname);
             var downloadPath = path.join (homeDir, fileName);
             var result = await this.downloadFile(sourceURL, downloadPath);
-            var zipData = fs.readFileSync(downloadPath);
-            result = await this.unzipFiles(installFiles, zipData, installDirectory);
+            var result = await this.unzipFiles(installFiles, downloadPath, installDirectory);
             if (result == false) {
                return (false);
             }
          } catch (err) {
+            console.error(err);
             return (false);
          }
       }
@@ -253,7 +258,7 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
    *
    * @param {String} sourceURL The source or remote URL from which to download the
    * file.
-   * @param {String} targetPath The local pathm, including the filename, to download
+   * @param {String} targetPath The local path, including the filename, to download
    * the file to.
    *
    * @return {Promise} The returned promise resolves when the file has been fully downloaded
@@ -262,54 +267,103 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
    */
    downloadFile(sourceURL, targetPath) {
       var promise = new Promise((resolve, reject) => {
-         request(sourceURL, function (error, response, body) {
-            if (error) {
-               reject(error);
-            } else {
-               resolve(true);
-            }
+         progress(request(sourceURL, (error, response, body) => {
+         })).on("progress", (infoObj) => {
+            infoObj.sourceURL = sourceURL;
+            infoObj.targetPath = targetPath;
+            infoObj.phase = "download";
+            this.emit("progress", infoObj);
+         }).on("error", (error) => {
+            reject(error);
+         }).on("end", (error) => {
+            resolve(true);
          }).pipe(fs.createWriteStream(targetPath));
       });
       return (promise);
    }
 
    /**
-   * Unzips specified files in a ZIP archive to an output location.
+   * Unzips/extracts specified files in a zip, gzip, or tarball archive to an output location.
    *
-   * @param {Array} fileList A list of files to extract from the <code>zipData</code>.
-   * Each file in this array can contain a full path (i.e. include folders) or
-   * only the file name(s).
-   * @param {Buffer} zipData The ZIP (file) data from which to extract the file(s)
-   * specified in the <code>fileList</code> parameter.
-   * @param {String} outputPath The local filesystem path to extract the files to.
+   * @param {Array} fileList A list of files to extract from the <code>archPath</code> file.
+   * Each file in this array should contain a full path (i.e. include folders) unless it's
+   * a zip file in which case only the file name(s) are also accepted.
+   * @param {String} archPath The path to the archive file to decompress. Should be either a zip,
+   * gzip, or tar formatted file.
+   * @param {String} outputPath The local filesystem path to extract the files to. For consistency,
+   * all files in the archive are treated as being in a flat directory structure, even if found
+   * within subdirectories (i.e. the directory structure in the archive is not maintained in the
+   * output).
    *
-   * @return {Promise} The promise resolves with <code>true</code> if the unzip operation
+   * @return {Promise} The promise resolves with <code>true</code> if the unzip / extract operation
    * succeeded successfully and rejects with an <code>Error</code> object if an
    * error was encountered.
    */
-   unzipFiles(fileList, zipData, outputPath) {
+   unzipFiles(fileList, archPath, outputPath) {
       var promise = new Promise((resolve, reject) => {
          try {
-            JSZip.loadAsync(zipData).then(function (zip) {
-               zip.forEach(function (filePath, fileObj){
-                  var fileName = path.basename(filePath);
-                  var match = false;
+            var extension = path.extname(archPath);
+            extension = extension.split(".").join("").toLowerCase();
+            if ((extension == "tar") || (extension == "gz")) {
+               //tarballs are handled in the same way as gzip archives
+               extension = "gzip";
+            }
+            switch (extension) {
+               case "zip":
+                  var zipData = fs.readFileSync(archPath);
+                  JSZip.loadAsync(zipData).then((zip) => {
+                     zip.forEach((filePath, fileObj) => {
+                        var fileName = path.basename(filePath);
+                        var match = false;
+                        for (var count=0; count < fileList.length; count++) {
+                           var currentFile = fileList[count];
+                           if ((currentFile == fileName) || (currentFile == filePath)) {
+                              match = true;
+                              break;
+                           }
+                        }
+                        if (match == true) {
+                           var extractPath = path.join (outputPath, fileName);
+                           var infoObj = new Object();
+                           infoObj.fileName = fileName;
+                           infoObj.targetPath = outputPath;
+                           infoObj.phase = "install";
+                           this.emit("progress", infoObj);
+                           fileObj.async("nodebuffer").then((buff) => {
+                              fs.writeFileSync(extractPath, buff);
+                              infoObj = new Object();
+                              infoObj.fileName = fileName;
+                              infoObj.targetPath = outputPath;
+                              infoObj.phase = "complete";
+                              this.emit("progress", infoObj);
+                              resolve(true);
+                           });
+                        }
+                     });
+                  });
+                  break;
+               case "gzip":
+                  var completedFiles = 0;
+                  //extract files individually, stripping out any path information as we go
                   for (var count=0; count < fileList.length; count++) {
                      var currentFile = fileList[count];
-                     if ((currentFile == fileName) || (currentFile == filePath)) {
-                        match = true;
-                        break;
-                     }
+                     var options = new Object();
+                     options.cwd = outputPath;
+                     options.file = archPath;
+                     options.strip = currentFile.split("/").length - 1; //strip out path data
+                     tar.x (options, [currentFile], () => {
+                        completedFiles++;
+                        if (completedFiles == fileList.length) {
+                           resolve(true);
+                           return;
+                        }
+                     })
                   }
-                  if (match == true) {
-                     var extractPath = path.join (outputPath, fileName);
-                     fileObj.async("nodebuffer").then((buff) => {
-                        fs.writeFileSync(extractPath, buff);
-                        resolve(true);
-                     });
-                  }
-               });
-            });
+                  break;
+               default:
+                  reject (new Error("Unrecognized archive format \""+extension+"\"."));
+                  break;
+            }
          } catch (err) {
             reject (err);
          }
@@ -331,13 +385,17 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
    * the process' status.
    */
    startNativeClient(executablePath, paramaters, workingDir=null) {
+      console.log (">>>>>>>>>>>>>>>>>>> startNativeClient: "+executablePath);
       var options = new Object();
       if (workingDir != null) {
          options.cwd = workingDir;
       } else {
          options.cwd = ".";
-      }
+      }      
       options.windowsHide = true; //hide console window
+      if (this.server.hostEnv.embedded == true) {
+         options.cwd = path.resolve(this.server.hostEnv.dir.server + options.cwd);
+      }
       try {
          var childProc = spawn(executablePath, paramaters, options);
       } catch (err) {
