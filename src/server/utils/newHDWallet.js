@@ -2,7 +2,7 @@
 * @file Command line utility to generate a HD (Hierarchical Deterministic) wallet
 * from which addresses can be generated.
 *
-* @version 0.2.0
+* @version 0.5.0
 */
 // one time code to generate the master key
 const bip39 = require('bip39');
