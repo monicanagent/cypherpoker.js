@@ -25,4 +25,6 @@ Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.5.0/](htt
 Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.5.0/](https://monicanagent.github.io/cypherpoker.js/server/0.5.0/)<br/>
 Desktop (Electron): [https://monicanagent.github.io/cypherpoker.js/desktop/0.5.0/](https://monicanagent.github.io/cypherpoker.js/desktop/0.5.0/)
 ***
+Something you can't find? Just feel like chatting? Drop by the Telegram group: [https://t.me/cypherpokerjs](https://t.me/cypherpokerjs)
+***
 CypherPoker.JS uses [semantic versioning](https://semver.org/).
