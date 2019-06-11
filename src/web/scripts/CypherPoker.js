@@ -4,7 +4,7 @@
 * manages accounts and tables, launches games, and provides accesss to other shared
 * functionality.
 *
-* @version 0.4.1
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -707,6 +707,9 @@ class CypherPoker extends EventDispatcher {
       if (tableInfo == null) {
          tableInfo = new Object();
       }
+      tableInfo.currency = new Object();
+      tableInfo.currency.type = ui.selectedAccount.type;
+      tableInfo.currency.network = ui.selectedAccount.network;
       newTableObj.tableInfo = tableInfo;
       newTableObj.toString = function () {
         return ("[object TableObject]");

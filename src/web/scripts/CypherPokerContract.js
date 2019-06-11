@@ -1,7 +1,7 @@
 /**
 * @file A virtual smart contract implementation using the API interface.
 *
-* @version 0.4.1
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 */

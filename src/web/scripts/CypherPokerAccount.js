@@ -330,6 +330,7 @@ class CypherPokerAccount extends EventDispatcher {
          params.amount = String(amount);
       }
       var JSONObj = await this.callAccountAPI("transfer", params);
+      console.dir(JSONObj);
       if (JSONObj.error != undefined) {
          throw (new Error(JSONObj.error.message));
       }

@@ -2,7 +2,7 @@
 * @file Manages cryptocurrency accounts using remote, local, or in-memory database(s),
 * and provides live blockchain interaction functionality.
 *
-* @version 0.5.0
+* @version 0.5.1
 */
 async function CP_Account (sessionObj) {
    if ((namespace.wss == null) || (namespace.wss == undefined)) {
@@ -384,6 +384,14 @@ async function CP_Account (sessionObj) {
             }
             if (targetAccountRes.length < 1) {
                sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Target account not found.", sessionObj);
+               return (false);
+            }
+            if (sourceAccountRes[0].type != targetAccountRes[0].type) {
+               sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Incompatible currencies: \""+sourceAccountRes[0].type+"\" and \""+targetAccountRes[0].type+"\"", sessionObj);
+               return (false);
+            }
+            if (sourceAccountRes[0].network != targetAccountRes[0].network) {
+               sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Incompatible currency networks: \""+sourceAccountRes[0].network+"\" and \""+targetAccountRes[0].network+"\"", sessionObj);
                return (false);
             }
             try {

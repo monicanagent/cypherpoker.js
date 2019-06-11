@@ -1,6 +1,6 @@
 /**
 * @file A JSON-RPC 2.0 WebSocket and HTTP server. The full specification (<a href="http://www.jsonrpc.org/specification">http://www.jsonrpc.org/specification</a>), including batched requests is supported.
-* @version 0.5.0
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 *

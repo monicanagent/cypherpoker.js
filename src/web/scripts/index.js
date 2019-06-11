@@ -3,14 +3,14 @@
 * CypherPoker.JS. Also provides functionality for dynamic loading of additional
 * scripts and JSON data.
 *
-* @version 0.5.0
+* @version 0.5.1
 */
 
 /**
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle}.
 */
-var appVersion = "0.5.0";
+var appVersion = "0.5.1";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle}.

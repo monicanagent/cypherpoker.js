@@ -1,6 +1,6 @@
 /**
 * @file Entry point for CypherPoker.JS desktop (Electron) that launches bundled server and client processes.
-* @version 0.5.0
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -33,7 +33,7 @@ const path = require("path");
 * @property {String} appVersion The version of the application. This information
 * is appended to the {@link appTitle} and may be used in other places in the application.
 */
-const appVersion = "0.5.0";
+const appVersion = "0.5.1";
 /**
 * @property {String} appName The name of the application. This information
 * is prepended to the {@link appTitle} and may be used in other places in the application.

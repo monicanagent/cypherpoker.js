@@ -1,7 +1,7 @@
 /**
 * @file Manages proxy CypherPoker smart contracts and defines a number of related utility functions.
 *
-* @version 0.4.1
+* @version 0.5.1
 */
 
 /**
@@ -98,6 +98,9 @@ async function CP_SmartContract (sessionObj) {
          var newContract = new Object();
          newContract = requestParams.contract;
          newContract.ownerPID = privateID;
+         //overwrite currency settings for contract in case user mis-reported them
+         newContract.table.tableInfo.currency.type = requestParams.account.type;
+         newContract.table.tableInfo.currency.network = requestParams.account.network;
          //sanitize private tokens!
          newContract.user_token = "";
          newContract.server_token = "";
@@ -181,6 +184,26 @@ async function CP_SmartContract (sessionObj) {
          if (playerBalance.greater(0)) {
             //this is similar to re-depositing into contract
             sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Can't agree to contract more than once.", sessionObj);
+            return(false);
+         }
+         var contractCurrencyType = gameContract.table.tableInfo.currency.type;
+         var contractCurrencyNetwork = gameContract.table.tableInfo.currency.network;
+         if (playerAccount[0].type != contractCurrencyType) {
+            var payloadObj = new Object();
+            payloadObj.error = new Object();
+            payloadObj.error.message = "Attempt to agree using an incompatible currency (\""+playerAccount[0].type+"\").";
+            //notify other contract players of the failure
+            sendContractMessage("contractagreefail", gameContract, privateID, null, payloadObj);
+            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Can't use currency \""+playerAccount[0].type+"\" to agree to contract using currency \""+contractCurrencyType+"\".", sessionObj);
+            return(false);
+         }
+         if (playerAccount[0].network != contractCurrencyNetwork) {
+            payloadObj = new Object();
+            payloadObj.error = new Object();
+            payloadObj.error.message = "Attempt to agree using an incompatible currency network (\""+playerAccount[0].network+"\").";
+            //notify other contract players of the failure
+            sendContractMessage("contractagreefail", gameContract, privateID, null, payloadObj);
+            sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Can't use currency network \""+playerAccount[0].network+"\" to agree to contract using currency network \""+contractCurrencyNetwork+"\".", sessionObj);
             return(false);
          }
          player.account = new Object();
@@ -1840,7 +1863,7 @@ function getNextBettingPlayer(contract, privateID) {
          firstNonFoldedPlayer = startingPlayer;
          if ((startingPlayer.hasBet == false) || bigInt(startingPlayer.totalBet).lesser(largestPlayerBet)) {
             return (startingPlayer);
-      getNextP   }
+         }
       }
       var startingID = startingPlayer.privateID;
       startingPlayer = getNextPlayer(contract, startingPlayer.privateID);

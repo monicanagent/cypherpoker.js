@@ -1,6 +1,6 @@
 {
   "name": "CypherPokerJS-ServicesServer",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A JSON-RPC 2.0-compliant API server for providing CypherPoker.JS services.",
   "engines": {
     "node": ">=8.0.0"

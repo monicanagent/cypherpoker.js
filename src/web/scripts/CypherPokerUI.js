@@ -1,7 +1,7 @@
 /**
 * @file Basic user interface management for CypherPoker.JS.
 *
-* @version 0.5.0
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -1982,6 +1982,9 @@ class CypherPokerUI {
       var containerElement = document.querySelector(templateInfo.target);
       var metaTags = new Object();
       metaTags.tableName = tableData.tableName;
+      metaTags.currencyType = tableData.tableInfo.currency.type;
+      metaTags.currencyNetwork = tableData.tableInfo.currency.network;
+      metaTags.timeout = tableData.tableInfo.timeout;
       metaTags.tableOwnerPID = tableData.ownerPID;
       //can also use just tableData.restorePID.length as of v0.4.0...
       metaTags.numPlayers = String(tableData.requiredPID.length + tableData.joinedPID.length);

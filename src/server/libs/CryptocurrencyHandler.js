@@ -198,7 +198,7 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
       if (installDirectory == null) {
          throw (new Error("Installation directory not specified (null)."));
       }
-      if (this.server.hostEnv.embedded == true) {
+      if (this.server.hostEnv["embedded"] == true) {
          installDirectory = path.resolve(this.server.hostEnv.dir.server + installDirectory);
       }
       //check installation directory
@@ -384,7 +384,7 @@ module.exports = class CryptocurrencyHandler extends EventEmitter {
    * are typically added to the <code>stdout</code> and <code>stderr</code> outputs to monitor
    * the process' status.
    */
-   startNativeClient(executablePath, paramaters, workingDir=null) {      
+   startNativeClient(executablePath, paramaters, workingDir=null) {
       var options = new Object();
       if (workingDir != null) {
          options.cwd = workingDir;
