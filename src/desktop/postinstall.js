@@ -648,7 +648,7 @@ function configPrompt(index) {
          });
          break;
       case 16:
-         rl.question('\nEnter a Bitcoin Cash mainnet server-originating miner fee, in satoshis: (default: '+fees.bitcoin.mainnet.miner+')', (answer) => {
+         rl.question('\nEnter a Bitcoin Cash mainnet server-originating miner fee, in satoshis: (default: '+fees.bitcoincash.mainnet.miner+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -663,7 +663,7 @@ function configPrompt(index) {
          });
          break;
       case 17:
-         rl.question('\nEnter Bitcoin Cash mainnet deposit fee, in satoshis: (default: '+fees.bitcoin.mainnet.deposit+')', (answer) => {
+         rl.question('\nEnter Bitcoin Cash mainnet deposit fee, in satoshis: (default: '+fees.bitcoincash.mainnet.deposit+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -678,7 +678,7 @@ function configPrompt(index) {
          });
          break;
       case 18:
-         rl.question('\nEnter Bitcoin Cash testnet server-originating miner fee, in satoshis: (default: '+fees.bitcoin.testnet.miner+')', (answer) => {
+         rl.question('\nEnter Bitcoin Cash testnet server-originating miner fee, in satoshis: (default: '+fees.bitcoincash.testnet.miner+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -693,7 +693,7 @@ function configPrompt(index) {
          });
          break;
       case 19:
-         rl.question('\nEnter Bitcoin Cash testnet deposit fee, in satoshis: (default: '+fees.bitcoin.testnet.deposit+')', (answer) => {
+         rl.question('\nEnter Bitcoin Cash testnet deposit fee, in satoshis: (default: '+fees.bitcoincash.testnet.deposit+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
