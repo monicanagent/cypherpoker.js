@@ -62,17 +62,31 @@
          "handlers":[
             {
                "type": "cryptocurrency",
-               "name": "BlockCypher API Cryptocurrency Handler",
+               "name": "Blockstream API Bitcoin Handler",
                "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
-               "handlerClass": "./libs/adapters/BlockCypherAPI.js",
+               "handlerClass": "./libs/adapters/BlockstreamAPI.js",
                "enabled": true
             },
             {
                "type": "cryptocurrency",
-               "name": "Bitcoin.com Bitcoin Cash Handler",
+               "name": "Bitcoin.com API Bitcoin Cash Handler",
                "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
                "handlerClass": "./libs/adapters/BitcoinComAPI.js",
                "enabled": true
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "BlockCypher API Cryptocurrency Handler",
+               "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
+               "handlerClass": "./libs/adapters/BlockCypherAPI.js",
+               "enabled": false
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "CryptoAPIs Bitcoin Cash Handler",
+               "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "handlerClass": "./libs/adapters/CryptoAPIs.js",
+               "enabled": false
             },
             {
                "type": "cryptocurrency",
@@ -102,13 +116,6 @@
                "types": ["bch", "bitcoincash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
                "handlerClass": "./libs/adapters/BitcoinCashNative.js",
                "showOutput": true,
-               "enabled": false
-            },
-            {
-               "type": "cryptocurrency",
-               "name": "CryptoAPIs Bitcoin Cash Handler",
-               "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
-               "handlerClass": "./libs/adapters/CryptoAPIs.js",
                "enabled": false
             }
          ],
@@ -163,6 +170,13 @@
                }
             },
             "urls": {
+               "blockstream": {
+                  "balance": "https://blockstream.info/%network%/api/address/%address%",
+                  "getutxos": "https://blockstream.info/%network%/api/address/%address%/utxo",
+                  "gettxs": "https://blockstream.info/%network%/api/tx/%txid%",
+                  "sendtx": "https://blockstream.info/%network%/api/tx",
+                  "fees": "https://blockstream.info/%network%/api/fee-estimates"
+               },
                "blockcypher": {
                   "newaddr": "https://api.blockcypher.com/v1/btc/%network%/addrs",
                   "balance": "https://api.blockcypher.com/v1/btc/%network%/addrs/%address%/full",

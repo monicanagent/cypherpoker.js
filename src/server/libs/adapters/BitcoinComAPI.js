@@ -374,7 +374,7 @@ module.exports = class BitcoinComAPI extends BitcoinCashNative {
             utxo.address = targetAddress,
             utxo.scriptPubKey = scriptPubKey,
             utxo.satoshis = parseInt(satoshiAmount, 10),
-            utxo.conformations = currentTx.confirmations,
+            utxo.confirmations = currentTx.confirmations,
             utxo.spendable = true;
          } else {
             utxo = new bitcoreCash.Transaction.UnspentOutput({
@@ -383,7 +383,7 @@ module.exports = class BitcoinComAPI extends BitcoinCashNative {
                address: targetAddress,
                scriptPubKey: scriptPubKey,
                satoshis: parseInt(satoshiAmount, 10),
-               conformations: currentTx.confirmations,
+               confirmations: currentTx.confirmations,
                spendable:true
             });
          }

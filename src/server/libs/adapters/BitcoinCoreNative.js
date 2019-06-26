@@ -2,7 +2,7 @@
 * @file Native Bitcoin (bitcoind) Core adapter for blockchain interactions such as balance retrieval and
 * transaction posting.
 *
-* @version 0.5.0
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -141,7 +141,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    */
    async initialize() {
       var installDirectory = this.handlerConfig.installDir;
-      if (this.server.hostEnv.embedded == true) {         
+      if (this.server.hostEnv.embedded == true) {
          var dataDirectory = path.resolve(this.server.hostEnv.dir.data, this.handlerConfig.dataDir);
          if (filesystem.existsSync(dataDirectory) == false) {
             try {
@@ -344,7 +344,6 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
          return (null);
       }
       var result = await rpc.importAddress(toAddress, "", true); //import and rescan all transactions
-      //console.log ("Address import result: "+result);
       var result = await rpc.generateToAddress(numBlocks, toAddress);
       return (result);
    }
@@ -376,7 +375,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
             }
             //address index 0 is reserved for the cashout address
             if (this.server.config.CP.API.wallets.bitcoin.startIndex < 0) {
-               this.server.config.CP.API.wallets.bitcoin.startIndex = 0;
+               this.server.config.CP.API.wallets.bitcoin.startIndex = 2;
             }
             //currently we simply increment the index:
             this.server.config.CP.API.wallets.bitcoin.startIndex++;
@@ -389,7 +388,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
             }
             //address index 0 is reserved for the cashout address
             if (this.server.config.CP.API.wallets.test3.startIndex < 0) {
-               this.server.config.CP.API.wallets.test3.startIndex = 0;
+               this.server.config.CP.API.wallets.test3.startIndex = 2;
             }
             this.server.config.CP.API.wallets.test3.startIndex++;
             startChain = this.server.config.CP.API.wallets.test3.startChain;
@@ -730,7 +729,6 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
             var tx = await this.buildRawTransaction(UTXOList, fromAddress, toAddress, signingKey, network, amount, fee);
             var txHex = tx.build().toHex();
             var txHash = await this.nativeRPC(network).sendRawTransaction(txHex, true); //alow high transaction fees (if included)
-            console.log ("Transaction hash: "+txHash);
             //create expected response object
             var txObject = new Object();
             txObject.tx = new Object();
@@ -785,7 +783,7 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
    * @async
    */
    async buildRawTransaction(UTXOList, fromAddress, toAddress, signingKey, network, amountSat, feeSat) {
-      if ((network == "test3") || (network == "regtest")) {
+      if ((network == "testnet") || (network == "test") || (network == "test3") || (network == "regtest")) {
          var tx = new this.server.bitcoin.TransactionBuilder(this.server.bitcoin.networks.testnet);
       } else {
          tx = new this.server.bitcoin.TransactionBuilder();
@@ -946,19 +944,18 @@ module.exports = class BitcoinCoreNative extends CryptocurrencyHandler {
   * @async
   */
   async onServerExit(code) {
-     console.log ("onServerExit");
      this._exitOnProcessClose = new Object();
      try {
         var result = this.nativeRPC("main").stop();
         this._exitOnProcessClose.main = true;
      } catch (err) {
-        console.log (err);
+        console.error (err);
      }
      try {
         var result = this.nativeRPC("test3").stop();
         this._exitOnProcessClose.test3 = true;
      } catch (err) {
-        console.log (err);
+        console.error (err);
      }
      try {
         var result = this.nativeRPC("regtest").stop();

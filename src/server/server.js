@@ -1550,6 +1550,17 @@ loadConfig().then (configObj => {
       }
       gateways = new Gateways(rpc_options.exposed_library_objects, config.CP.API.gateways);
       gateways.initialize();
+      try {
+         //start updating transaction fees, if enabled
+         namespace.cp.updateAllTxFees().then(result => {
+            //update syccessfully started
+         }).catch (err => {
+            console.error (err);
+         })
+      } catch (err) {
+         // updateAllTxFees may not exist or be registered in the global namespace;
+         // usually defined in CP_Account API endpoint
+      }
    }).catch (error => {
       console.error ("Couldn't complete configuration post-load initialization.");
       console.error (error);

@@ -136,7 +136,6 @@ async function CP_Account (sessionObj) {
                return (false);
             }
             if (accountResults.length < 1) {
-               console.log ("No results...");
                sendError(JSONRPC_ERRORS.ACTION_DISALLOWED, "Account does not exist.", sessionObj);
                return (false);
             }
@@ -864,77 +863,9 @@ async function estimateTxFee (txData=null, priority=1, APIType="bitcoin", networ
 }
 
 /**
-* Updates the internal transaction fee(s) for a specific cryptocurrency and sub-network if
-* not already updated within its configured time limit. The fee(s) currently stored for the cryptocurrency
-* in the main <code>config</code> is/are updated if successfully retrieved or calculated.
-*
-* @param {String} [APIType="bitcoin"] The main cryptocurrency API type.
-* @param {String} [network=null] The cryptocurrency sub-network, if applicable, for the
-* transaction. Current <code>network</code> types include: "main" and "test3". If <code>null</code>,
-* the default network specified in <code>config.CP.API[APIType].default.network</code> is used.
-* @param {Boolean} [forceUpdate=false] If true, an update is forced even if the configured time limit
-* has not yet elapsed.
-*
-* @return {Promise} Resolves with the string "updated" if the fees for the API/network were succesfully updated or
-* "skipped" the configured time limit for updates has not yet elapsed. The promise is rejected with a standard
-* <code>Error</code> object if an update could not be successfully completed (any existing fees data is not changed).
-* @private
-*/
-function updateTxFees(APIType="bitcoin", network=null, forceUpdate=false) {
-   var promise = new Promise(function(resolve, reject) {
-      var API = config.CP.API[APIType];
-      if ((network == null) || (network == "")) {
-         network = API.default.network;
-      }
-      if (API.default[network].feeUpdateEnabled == false) {
-         reject (new Error("Fee updates for \""+APIType+"/"+network+"\" disabled."));
-         return;
-      }
-      var url = API.urls.blockcypher.fees;
-      var updateSeconds = API.default[network].feeUpdateSeconds;
-      if ((updateSeconds > 0) && (forceUpdate == false)) {
-         var lastUpdate = API.default[network]["lastUpdated"];
-         if ((lastUpdate != undefined) && (lastUpdate != null) && (lastUpdate != "")) {
-            var lastUpdateCheck = new Date(API.default[network].lastUpdated); //this date/time must be relative to local date/time
-            var currentDateTime = new Date();
-            var deltaMS = currentDateTime.valueOf() - lastUpdateCheck.valueOf();
-            var deltaSec = deltaMS / 1000;
-            if (deltaSec < updateSeconds) {
-               resolve("skipped");
-               return;
-            }
-         }
-      }
-      url = url.split("%network%").join(network);
-      request({
-         url: url,
-         method: "GET",
-         json: true
-      }, (error, response, body) => {
-         var currentDateTime = new Date();
-         API.default[network].lastUpdated = currentDateTime.toISOString();
-         if ((body == undefined) || (body == null)) {
-            var errorObj = new Error(response);
-            reject (errorObj);
-            return;
-         }
-         if (error) {
-            errorObj = new Error(error);
-            reject(errorObj);
-         } else {
-            API.default[network].minerFee = String(body.high_fee_per_kb); //should be a string
-            resolve("updated");
-            //resolve(body);
-         }
-      });
-   });
-   return (promise);
-}
-
-/**
 * Updates the internal transaction fees for all cryptocurrencies and sub-networks defined
-* in the global <code>config</code> object using the {@link updateTxFees} function (i.e. some updates
-* may be omitted if the update time limits have not elapsed).
+* in the global <code>config</code> object using the cryptocurrency handlers' <code>updateTxFees</code>
+* functions (i.e. some updates may be omitted if the update time limits have not elapsed).
 *
 * @param {Boolean} [startAutoUpdate=true] If true, the automatic update interval defined in the
 * global <code>config</code> object for each cryptocurrency/network is (independently) started.
@@ -952,9 +883,15 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
       var network = btcNetworks[networkName];
       if (sequential) {
          try {
-            var result = await updateTxFees(APIType, network);
+            var ccHandler = getHandler("cryptocurrency", APIType);
+            if (ccHandler == null) {
+               console.error(`Currency ${APIType} network ${networkName} has no registered handler.`);
+            } else {
+               var result = await ccHandler.updateTxFees(APIType, network);
+            }
          } catch (err) {
             //failed or disabled
+            console.error (err);
          }
          if (startAutoUpdate) {
             if (btcAPI.default[network].feeUpdateEnabled == false) {
@@ -967,7 +904,7 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
                console.log("Updating "+APIType+"/"+network+" transaction fees every "+updateSeconds+" seconds / "+(updateSeconds / 60)+" minutes.");
                var updateInterval = updateSeconds * 1000;
                btcAPI.default[network].timeout = setInterval((APIType, network) => {
-                  updateTxFees(APIType, network, true).then(result => {
+                  ccHandler.updateTxFees(APIType, network, true).then(result => {
                   }).catch(err => {
                      //failed or disabled
                   })
@@ -978,24 +915,30 @@ async function updateAllTxFees(startAutoUpdate=true, sequential=true) {
          if (btcAPI.default[network].feeUpdateEnabled == false) {
             console.log ("Transaction fee updates for \""+APIType+"/"+network+"\" disabled.");
          } else {
-            updateTxFees(APIType, network).then(result => {
-               //updated
-            }).catch(err => {
-               //failed or disabled
-            });
-            if (btcAPI.default[network].feeUpdateSeconds < 30) {
-               console.warn ("*WARNING* A transaction fee updates interval of at least 30 seconds is advised in order to deal with possible network latency.");
-            }
-            updateSeconds = btcAPI.default[network].feeUpdateSeconds;
-            console.log("Updating "+APIType+"/"+network+" transaction fees every "+updateSeconds+" seconds / "+(updateSeconds / 60)+" minutes.");
-            var updateInterval = updateSeconds * 1000;
-            btcAPI.default[network].timeout = setInterval((APIType, network) => {
-               updateTxFees(APIType, network, true).then(result => {
+            var ccHandler = getHandler("cryptocurrency", APIType);
+            if (ccHandler == null) {
+               console.error(`Currency ${APIType} network ${networkName} has no registered handler.`);
+            } else {
+               ccHandler.updateTxFees(APIType, network).then(result => {
                   //updated
                }).catch(err => {
                   //failed or disabled
-               })
-            }, updateInterval, APIType, network);
+                  console.error (err);
+               });
+               if (btcAPI.default[network].feeUpdateSeconds < 30) {
+                  console.warn ("*WARNING* A transaction fee updates interval of at least 30 seconds is advised in order to deal with possible network latency.");
+               }
+               updateSeconds = btcAPI.default[network].feeUpdateSeconds;
+               console.log("Updating "+APIType+"/"+network+" transaction fees every "+updateSeconds+" seconds / "+(updateSeconds / 60)+" minutes.");
+               var updateInterval = updateSeconds * 1000;
+               btcAPI.default[network].timeout = setInterval((APIType, network) => {
+                  ccHandler.updateTxFees(APIType, network, true).then(result => {
+                     //updated
+                  }).catch(err => {
+                     //failed or disabled
+                  })
+               }, updateInterval, APIType, network);
+            }
          }
       }
    }
@@ -1028,6 +971,7 @@ namespace.cp.callAccountDatabase = callAccountDatabase;
 namespace.cp.cashoutIsPending = cashoutIsPending;
 namespace.cp.MySQLDateTime = MySQLDateTime;
 namespace.cp.buildCPMessage = buildCPMessage;
+namespace.cp.updateAllTxFees = updateAllTxFees;
 if (namespace.cp.wallets == undefined) {
    namespace.cp.wallets = new Object();
 }
@@ -1048,9 +992,4 @@ if (namespace.cp.wallets.bitcoincash.main == undefined) {
 }
 if (namespace.cp.wallets.bitcoincash.test == undefined) {
    namespace.cp.wallets.bitcoincash.test = null;
-}
-if (namespace.cp._txFeesUpdating == undefined) {
-   namespace.cp._txFeesUpdating = true;
-   //automatically update transaction fee estimates at startup
-   updateAllTxFees();
 }
