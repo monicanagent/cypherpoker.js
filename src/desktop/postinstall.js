@@ -139,6 +139,13 @@ function updateServerConfig(configDataStr) {
                handler.enabled = false;
             }
             break;
+         case "./libs/adapters/BlockstreamAPI.js":
+            if (configOptions.blockstreamAPI == true) {
+               handler.enabled = true;
+            } else {
+               handler.enabled = false;
+            }
+            break;
          case "./libs/adapters/BitcoinCoreNative.js":
             if (configOptions.bitcoinCore == true) {
                handler.enabled = true;
@@ -330,17 +337,17 @@ function configPrompt(index) {
          });
          break;
       case 4:
-         rl.question('\nEnable BlockCypher (API) Bitcoin blockchain handler (you will need an access token)? (Y/n)', (answer) => {
-            configOptions.blockcypherAPI = false;
+         rl.question('\nEnable Blockstream (API) Bitcoin blockchain handler? (Y/n)', (answer) => {
+            configOptions.blockstreamAPI = false;
             answer = new String(answer);
             answer = answer.trim().toLowerCase().substring(0,1);
             switch (answer) {
                case "y":
-                  configOptions.blockcypherAPI = true;
+                  configOptions.blockstreamAPI = true;
                   configPrompt(5);
                   break;
                case "":
-                  configOptions.blockcypherAPI = true;
+                  configOptions.blockstreamAPI = true;
                   configPrompt(5);
                   break;
                case "n":
@@ -354,15 +361,39 @@ function configPrompt(index) {
          });
          break;
       case 5:
+         rl.question('\nEnable BlockCypher (API) Bitcoin blockchain handler (you will need an access token)? (Y/n)', (answer) => {
+            configOptions.blockcypherAPI = false;
+            answer = new String(answer);
+            answer = answer.trim().toLowerCase().substring(0,1);
+            switch (answer) {
+               case "y":
+                  configOptions.blockcypherAPI = true;
+                  configPrompt(6);
+                  break;
+               case "":
+                  configOptions.blockcypherAPI = true;
+                  configPrompt(6);
+                  break;
+               case "n":
+                  configPrompt(8);
+                  break;
+               default:
+                  rl.write("\nPlease enter either \"Y\" or \"N\" followed by the ENTER key.\n");
+                  configPrompt(5);
+                  break;
+            }
+         });
+         break;
+      case 6:
          rl.question('\nWould you like to launch the BlockCypher.com account page to create an API token? (Y/n)', (answer) => {
             answer = new String(answer);
             answer = answer.trim().toLowerCase().substring(0,1);
             switch (answer) {
                case "y":
-                  configPrompt(6);
+                  configPrompt(7);
                   break;
                case "":
-                  configPrompt(6);
+                  configPrompt(7);
                   break;
                case "n":
                   rl.question('\nPaste the BlockCypher API token here: ', (token) => {
@@ -371,10 +402,10 @@ function configPrompt(index) {
                      switch (APIToken) {
                         case "":
                            rl.write("\nPaste a valid BlockCypher API token and then press ENTER.\n");
-                           configPrompt(5);
+                           configPrompt(6);
                            break;
                         default:
-                           configPrompt(7);
+                           configPrompt(8);
                            break;
                      }
                   });
@@ -386,7 +417,7 @@ function configPrompt(index) {
             }
          });
          break;
-      case 6:
+      case 7:
          var url = "https://accounts.blockcypher.com/";
          var start = "";
          if (process.platform == 'darwin') {
@@ -403,15 +434,15 @@ function configPrompt(index) {
             switch (APIToken) {
                case "":
                   rl.write("\nPaste a valid BlockCypher API token and then press ENTER.\n");
-                  configPrompt(6);
+                  configPrompt(7);
                   break;
                default:
-                  configPrompt(7);
+                  configPrompt(8);
                   break;
             }
          });
          break;
-      case 7:
+      case 8:
          rl.question('\nEnable Blockchain.com (API) Bitcoin Cash blockchain handler? (Y/n)', (answer) => {
             configOptions.blockchaincomAPI = false;
             answer = new String(answer);
@@ -419,38 +450,14 @@ function configPrompt(index) {
             switch (answer) {
                case "y":
                   configOptions.blockchaincomAPI = true;
-                  configPrompt(8);
+                  configPrompt(9);
                   break;
                case "":
                   configOptions.blockchaincomAPI = true;
-                  configPrompt(8);
-                  break;
-               case "n":
-                  configPrompt(8);
-                  break;
-               default:
-                  rl.write("\nPlease enter either \"Y\" or \"N\" followed by the ENTER key.\n");
-                  configPrompt(7);
-                  break;
-            }
-         });
-         break;
-      case 8:
-         rl.question('\nDo you want to install and enable the native Bitcoin (Core) client? (Y/n)', (answer) => {
-            configOptions.bitcoinCore = false;
-            answer = new String(answer);
-            answer = answer.trim().toLowerCase();
-            switch (answer) {
-               case "y":
-                  configOptions.bitcoinCore = true;
-                  configPrompt(9);
-                  break
-               case "":
-                  configOptions.bitcoinCore = true;
                   configPrompt(9);
                   break;
                case "n":
-                  configPrompt(10);
+                  configPrompt(9);
                   break;
                default:
                   rl.write("\nPlease enter either \"Y\" or \"N\" followed by the ENTER key.\n");
@@ -460,6 +467,30 @@ function configPrompt(index) {
          });
          break;
       case 9:
+         rl.question('\nDo you want to install and enable the native Bitcoin (Core) client? (Y/n)', (answer) => {
+            configOptions.bitcoinCore = false;
+            answer = new String(answer);
+            answer = answer.trim().toLowerCase();
+            switch (answer) {
+               case "y":
+                  configOptions.bitcoinCore = true;
+                  configPrompt(10);
+                  break
+               case "":
+                  configOptions.bitcoinCore = true;
+                  configPrompt(10);
+                  break;
+               case "n":
+                  configPrompt(11);
+                  break;
+               default:
+                  rl.write("\nPlease enter either \"Y\" or \"N\" followed by the ENTER key.\n");
+                  configPrompt(9);
+                  break;
+            }
+         });
+         break;
+      case 10:
          rl.question('\nBitcoin (Core) version to download? (0.18.0)', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
@@ -505,36 +536,36 @@ function configPrompt(index) {
             var installer = new CryptocurrencyHandler(this, configObj);
             installer.on("progress", onInstallProgress);
             installer.checkInstall(binFiles, installDirectory, true).then(result => {
-               configPrompt(10);
+               configPrompt(11);
             }).catch (err => {
                console.error("Installation failed.");
                console.error(err);
             });
          });
          break;
-      case 10:
+      case 11:
          rl.question('\nDo you want to install and enable the native Bitcoin Cash (BitcoinABC) client? (Y/n)', (answer) => {
             configOptions.bitcoinCash = false;
             answer = new String(answer);
             answer = answer.trim().toLowerCase();
             switch (answer) {
                case "y":
-                  configPrompt(11);
+                  configPrompt(12);
                   break
                case "":
-                  configPrompt(11);
+                  configPrompt(12);
                   break
                case "n":
-                  configPrompt(12);
+                  configPrompt(13);
                   break;
                default:
                   rl.write("\nPlease enter either \"Y\" or \"N\" followed by the ENTER key.\n");
-                  configPrompt(10);
+                  configPrompt(11);
                   break;
             }
          });
          break;
-      case 11:
+      case 12:
          rl.question('\nBitcoin Cash client (BitcoinABC) version to download? (0.19.6)', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
@@ -580,30 +611,15 @@ function configPrompt(index) {
             var installer = new CryptocurrencyHandler(this, configObj);
             installer.on("progress", onInstallProgress);
             installer.checkInstall(binFiles, installDirectory, true).then(result => {
-               configPrompt(12);
+               configPrompt(13);
             }).catch (err => {
                console.error("Installation failed.");
                console.error(err);
             });
          });
          break;
-      case 12:
-         rl.question('\nEnter a Bitcoin mainnet server-originating miner fee, in satoshis: (default: '+fees.bitcoin.mainnet.miner+')', (answer) => {
-            answer = new String(answer);
-            answer = answer.trim();
-            switch (answer) {
-               case "":
-                  configPrompt(13);
-                  break;
-               default:
-                  fees.bitcoin.mainnet.miner = answer;
-                  configPrompt(13);
-                  break;
-            }
-         });
-         break;
       case 13:
-         rl.question('\nEnter Bitcoin mainnet deposit fee, in satoshis: (default: '+fees.bitcoin.mainnet.deposit+')', (answer) => {
+         rl.question('\nEnter a Bitcoin mainnet server-originating miner fee, in satoshis: (default: '+fees.bitcoin.mainnet.miner+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -611,14 +627,14 @@ function configPrompt(index) {
                   configPrompt(14);
                   break;
                default:
-                  fees.bitcoin.mainnet.deposit = answer;
+                  fees.bitcoin.mainnet.miner = answer;
                   configPrompt(14);
                   break;
             }
          });
          break;
       case 14:
-         rl.question('\nEnter Bitcoin testnet server-originating miner fee, in satoshis: (default: '+fees.bitcoin.testnet.miner+')', (answer) => {
+         rl.question('\nEnter Bitcoin mainnet deposit fee, in satoshis: (default: '+fees.bitcoin.mainnet.deposit+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -626,14 +642,14 @@ function configPrompt(index) {
                   configPrompt(15);
                   break;
                default:
-                  fees.bitcoin.testnet.miner = answer;
+                  fees.bitcoin.mainnet.deposit = answer;
                   configPrompt(15);
                   break;
             }
          });
          break;
       case 15:
-         rl.question('\nEnter Bitcoin testnet deposit fee, in satoshis: (default: '+fees.bitcoin.testnet.deposit+')', (answer) => {
+         rl.question('\nEnter Bitcoin testnet server-originating miner fee, in satoshis: (default: '+fees.bitcoin.testnet.miner+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -641,14 +657,14 @@ function configPrompt(index) {
                   configPrompt(16);
                   break;
                default:
-                  fees.bitcoin.testnet.deposit = answer;
+                  fees.bitcoin.testnet.miner = answer;
                   configPrompt(16);
                   break;
             }
          });
          break;
       case 16:
-         rl.question('\nEnter a Bitcoin Cash mainnet server-originating miner fee, in satoshis: (default: '+fees.bitcoincash.mainnet.miner+')', (answer) => {
+         rl.question('\nEnter Bitcoin testnet deposit fee, in satoshis: (default: '+fees.bitcoin.testnet.deposit+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -656,14 +672,14 @@ function configPrompt(index) {
                   configPrompt(17);
                   break;
                default:
-                  fees.bitcoin.mainnet.miner = answer;
+                  fees.bitcoin.testnet.deposit = answer;
                   configPrompt(17);
                   break;
             }
          });
          break;
       case 17:
-         rl.question('\nEnter Bitcoin Cash mainnet deposit fee, in satoshis: (default: '+fees.bitcoincash.mainnet.deposit+')', (answer) => {
+         rl.question('\nEnter a Bitcoin Cash mainnet server-originating miner fee, in satoshis: (default: '+fees.bitcoincash.mainnet.miner+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -671,14 +687,14 @@ function configPrompt(index) {
                   configPrompt(18);
                   break;
                default:
-                  fees.bitcoin.mainnet.deposit = answer;
+                  fees.bitcoin.mainnet.miner = answer;
                   configPrompt(18);
                   break;
             }
          });
          break;
       case 18:
-         rl.question('\nEnter Bitcoin Cash testnet server-originating miner fee, in satoshis: (default: '+fees.bitcoincash.testnet.miner+')', (answer) => {
+         rl.question('\nEnter Bitcoin Cash mainnet deposit fee, in satoshis: (default: '+fees.bitcoincash.mainnet.deposit+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -686,14 +702,14 @@ function configPrompt(index) {
                   configPrompt(19);
                   break;
                default:
-                  fees.bitcoin.testnet.miner = answer;
+                  fees.bitcoin.mainnet.deposit = answer;
                   configPrompt(19);
                   break;
             }
          });
          break;
       case 19:
-         rl.question('\nEnter Bitcoin Cash testnet deposit fee, in satoshis: (default: '+fees.bitcoincash.testnet.deposit+')', (answer) => {
+         rl.question('\nEnter Bitcoin Cash testnet server-originating miner fee, in satoshis: (default: '+fees.bitcoincash.testnet.miner+')', (answer) => {
             answer = new String(answer);
             answer = answer.trim();
             switch (answer) {
@@ -701,13 +717,28 @@ function configPrompt(index) {
                   configPrompt(20);
                   break;
                default:
-                  fees.bitcoin.testnet.deposit = answer;
+                  fees.bitcoin.testnet.miner = answer;
                   configPrompt(20);
                   break;
             }
          });
          break;
       case 20:
+         rl.question('\nEnter Bitcoin Cash testnet deposit fee, in satoshis: (default: '+fees.bitcoincash.testnet.deposit+')', (answer) => {
+            answer = new String(answer);
+            answer = answer.trim();
+            switch (answer) {
+               case "":
+                  configPrompt(21);
+                  break;
+               default:
+                  fees.bitcoin.testnet.deposit = answer;
+                  configPrompt(21);
+                  break;
+            }
+         });
+         break;
+      case 21:
          rl.question('\nConfiguration complete! Would you like to (S)ave the configuration, only (d)isplay it, or (r)estart the configuration process? ', (answer) => {
             answer = new String(answer);
             answer = answer.trim().toLowerCase().substring(0,1);
@@ -718,7 +749,7 @@ function configPrompt(index) {
                   rl.write("\nSaving configuration data...\n");
                   fs.writeFileSync(serverConfigPath, JSON.stringify(configData, null, 3), {encoding:"utf-8"});
                   rl.write("\nConfiguration data saved to: "+serverConfigPath+"\n");
-                  configPrompt(21);
+                  configPrompt(22);
                   break;
                case "":
                   var currentConfig = fs.readFileSync(serverConfigPath, {encoding:"utf-8"});
@@ -726,14 +757,14 @@ function configPrompt(index) {
                   rl.write("\nSaving configuration data...\n");
                   fs.writeFileSync(serverConfigPath, JSON.stringify(configData, null, 3), {encoding:"utf-8"});
                   rl.write("\nConfiguration data saved to: "+serverConfigPath+"\n");
-                  configPrompt(21);
+                  configPrompt(22);
                   break;
                case "d":
                   var currentConfig = fs.readFileSync(serverConfigPath, {encoding:"utf-8"});
                   var configData = updateServerConfig(currentConfig);
                   rl.write("\nConfiguration JSON data:\n");
                   console.log (JSON.stringify(configData, null, 3)+"\n");
-                  configPrompt(21);
+                  configPrompt(22);
                   rl.close();
                   break;
                case "r":
@@ -742,12 +773,12 @@ function configPrompt(index) {
                   break;
                default:
                   rl.write("\nPlease enter either \"S\", \"D\" or \"R\" followed by the ENTER key.\n");
-                  configPrompt(20);
+                  configPrompt(21);
                   break;
             }
          });
          break;
-      case 21:
+      case 22:
          var walletInfo = "Bitcoin HD Wallets\r\n";
          walletInfo += "------------------\r\n";
          walletInfo += "Mainnet wallet mnemonic: "+wallets.bitcoin.mainnet.mnemonic;
