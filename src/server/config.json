@@ -30,7 +30,7 @@
             "WSSTunnel": {
                "enable": false,
                "start": false,
-               "host": "wss://cypherpokerjs-servicesserver-zehxipjszu.now.sh",
+               "host": "wss://cypherpokerjs-servicesserver-divmuetczz.now.sh",
                "tunnels": [
                   {"alias":null, "allow":"*", "socketOptions":null},
                   {"alias":null, "allow":"*", "socketOptions":null},
