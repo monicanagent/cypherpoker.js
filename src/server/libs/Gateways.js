@@ -161,7 +161,7 @@ module.exports = class Gateways {
             //start the instance
             var result =await  gatewayInstObj.gateway.start();
             if (gatewayInstObj.gateway.started == true) {
-               console.log (gatewayInstObj.gateway.name+" gateway started.");
+               console.log (gatewayClassObj.gateway.name+" gateway started.");
             }
          }
       }

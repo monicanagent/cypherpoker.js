@@ -1,7 +1,7 @@
 /**
 * @file A SQLite 3 adapter for data storage and retrieval in CypherPoker.JS
 *
-* @version 0.5.0
+* @version 0.5.1
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -458,6 +458,7 @@ module.exports = class SQLite3 {
          var elapsedUpdateSeconds = Math.floor((now.valueOf() - latestUpdate.valueOf()) / 1000);
          resultObj.db.elapsedUpdateSeconds = elapsedUpdateSeconds;
       } catch (err) {
+         console.log (err);
          var jsonObj = this.buildJSONRPC("2.0", false);
          jsonObj.error.code = -32603;
          jsonObj.error.message = err.stack;
@@ -689,10 +690,10 @@ module.exports = class SQLite3 {
    * @param {Array} [schemaArray=null] A parsed table schema array to apply to to the query result.
    * If omitted, each result row's column is returned as an indexed element rather than
    * a named one.
-   * @param {String} [baseFileName="queryResult%id%.txt"] The base or prototype file name to use
+   * @param {String} [baseFileName="sqlr%id%.dat"] The base or prototype file name to use
    * for the unique query result file. The metastring "%id%" must be included and will be replaced
    * with a unique identifier for the result.
-   * @param {Boolean} [deleteOnResult=true] Defines whether or not the unique file generated for the
+   * @param {Boolean} [deleteOnResult=false] Defines whether or not the unique file generated for the
    * query result should be deleted once the result is fully processed. Set this value to false to
    * retain a history of query results.
    *
@@ -700,13 +701,17 @@ module.exports = class SQLite3 {
    * a result row. Each result row will either contain indexed (anonymous) column values if
    * <code>schema</code> is null or name-value pairs if a matching table <code>schema</code> is
    * supplied. A standard <code>Error</code> object is included with a rejection.
+   *
+   * @todo Investigate why some file handles are not properly released by SQLite client so that
+   * we can enable <code>deleteOnResult</code>
    */
-   query(SQL, schemaArray=null, baseFileName="queryResult%id%.txt", deleteOnResult=true) {
+   query(SQL, schemaArray=null, baseFileName="sqlr%id%.dat", deleteOnResult=false) {
       var promise = new Promise((resolve, reject) => {
          if (typeof(this._outputID) != "number") {
             this._outputID = 0;
          }
-         var baseOutputFile = baseFileName.split("%id%").join(String(this._outputID));
+         var idStr = parseInt(String(Math.random()).split(".")[1]).toString(16)+"_seq"+String(this._outputID);
+         var baseOutputFile = baseFileName.split("%id%").join(idStr);
          if (this.server.hostEnv.embedded == true) {
             //use writeable temp directory
             var outputFile = path.resolve(this.server.hostEnv.dir.temp, baseOutputFile);
@@ -757,7 +762,7 @@ module.exports = class SQLite3 {
          var results = this.collateResults(queryResult, queryObject.schema);
          queryObject.resolve.call(this, results);
          queryObject.watch.close();
-         if (queryObject.deleteOnResult == true) {
+         if (queryObject.deleteOnResult == true) {            
             filesystem.unlinkSync(queryObject.outputFile);
          }
       } catch (err) {

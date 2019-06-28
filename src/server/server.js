@@ -1215,7 +1215,7 @@ async function createAccountSystem(onCreateCB=null) {
             setTimeout(5000, createAccountSystem, onCreateCB);
             return (false);
          }
-         var resultObj = walletStatusObj.result;
+         var resultObj = walletStatusObj.result;         
          //force-convert values in case the database returned them as strings
          var btcStartChain = Number(String(resultObj.bitcoin.main.startChain));
          var btcStartIndex = Number(String(resultObj.bitcoin.main.startIndex));
@@ -1274,7 +1274,9 @@ async function createAccountSystem(onCreateCB=null) {
       return (false);
    }
    console.log ("... account system initialized.");
-   onCreateCB();
+   if (onCreateCB != null) {
+      onCreateCB();
+   }
    return (true);
 }
 
@@ -1506,7 +1508,7 @@ async function postLoadConfig() {
    loadAPIFunctions(startHTTPServer, startWSServer); //load available API functions and then start servers
    try {
       var result = await loadHandlers("all");
-      result = await createAccountSystem(invokeHostOnInit);
+      result = await createAccountSystem();
       result = checkBalances();
    } catch(error) {
       return (false);
@@ -1560,6 +1562,8 @@ loadConfig().then (configObj => {
       } catch (err) {
          // updateAllTxFees may not exist or be registered in the global namespace;
          // usually defined in CP_Account API endpoint
+      } finally {
+         invokeHostOnInit();
       }
    }).catch (error => {
       console.error ("Couldn't complete configuration post-load initialization.");

@@ -162,6 +162,12 @@ function updateServerConfig(configDataStr) {
             break;
       }
    }
+   //enable all gateways at startup by default
+   for (var gatewayName in dataObj.CP.API.gateways) {
+      var gateway = dataObj.CP.API.gateways[gatewayName];
+      gateway.enable = true;
+      gateway.start = true;
+   }
    return (dataObj);
 }
 
