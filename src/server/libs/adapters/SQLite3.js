@@ -710,7 +710,7 @@ module.exports = class SQLite3 {
          if (typeof(this._outputID) != "number") {
             this._outputID = 0;
          }
-         var idStr = parseInt(String(Math.random()).split(".")[1]).toString(16)+"_seq"+String(this._outputID);
+         var idStr = String(Math.random()).split(".")[1] + "Q" + String(this._outputID);
          var baseOutputFile = baseFileName.split("%id%").join(idStr);
          if (this.server.hostEnv.embedded == true) {
             //use writeable temp directory
@@ -735,6 +735,25 @@ module.exports = class SQLite3 {
    }
 
    /**
+   * Timeout function invoked when a query file has not registered a change but does not yet contain a valid
+   * result. The {@link SQLite3#onResultFileChange} function is automatically invoked again to re-check
+   * the file contents.
+   *
+   * @param {Object} queryObject An object containing details of the asynchronous query including
+   * properties such as the original query <code>sql</code>, the associated table <code>schema</code>,
+   * the <code>outputFile</code> into which the result is written, the <code>watch</code> object doing the
+   * watching, a <code>deleteOnResult</code> specifying if the file should be deleted once successfully processed,
+   * and the associated Promise <code>resolve</code> and <code>reject</code> functions.
+   * @param {String} fileName The file name associated with the change (this may not necessarily match the
+   * <code>queryObject.outputFile</code> property).
+   *
+   * @private
+   */
+   onResultTimeout(queryObject, fileName) {
+      this.onResultFileChange(queryObject, null, fileName);
+   }
+
+   /**
    * Event listener invoked when a query result file changes (is written to, renamed, or deleted).
    * When a full result is detected as being received, it's parsed, the associated promise is resolved,
    * the file watch is removed, and the file is deleted.
@@ -747,6 +766,8 @@ module.exports = class SQLite3 {
    * @param {Event} event The event that triggered this file change.
    * @param {String} fileName The file name associated with the change (this may not necessarily match the
    * <code>queryObject.outputFile</code> property).
+   *
+   * @private
    */
    onResultFileChange(queryObject, event, fileName) {
       try {
@@ -755,14 +776,19 @@ module.exports = class SQLite3 {
          if (queryResult.indexOf(this.EORDelimiter) > -1) {
             //remove end-of-result delimiter
             queryResult = queryResult.split(this.EORDelimiter)[0];
+            try {
+               clearTimeout(queryObject.timeout);
+            } catch (err) {
+            }
          } else {
             //end-of-result delimiter not found in data (yet)
+            queryObject.timeout = setTimeout(this.onResultTimeout.bind(this), 1000, queryObject, fileName);
             return;
          }
          var results = this.collateResults(queryResult, queryObject.schema);
          queryObject.resolve.call(this, results);
          queryObject.watch.close();
-         if (queryObject.deleteOnResult == true) {            
+         if (queryObject.deleteOnResult == true) {
             filesystem.unlinkSync(queryObject.outputFile);
          }
       } catch (err) {
