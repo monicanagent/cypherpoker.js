@@ -538,31 +538,38 @@ class ConnectivityManager extends EventDispatcher {
       requestObj.gateway = gatewayObj;
       if (cbRef.checked == true) {
          if (gatewayStarted == true) {
-            //gateway is already started, UI is probably mismatched
-             console.error ("Can't start \""+gatewayObj.configName+"\". Gateway is already started.");
-             serverSDBElement.innerHTML = restoreSDB;
-             ui.enable(listElement);
-         } else {
-            serverSDBElement.innerHTML = "[ Starting ]";
-            var result = await IPCSend("start-gateway", requestObj, true);
-            if (result.data == "ok") {
-               gatewayObj.started = true;
-            }
-            serverSDBElement.innerHTML = "[ Started ]";
+            //gateway is already started (probably enabled at startup)
+            serverSDBElement.innerText = "[ Started ]";
             this.populateServerSDB(gatewayObj);
+            ui.enable(listElement);
+         } else {
+            serverSDBElement.innerText = "[ Starting ]";
+            try {
+               var result = await IPCSend("start-gateway", requestObj, true);
+               if (result.data == "ok") {
+                  gatewayObj.started = true;
+                  serverSDBElement.innerText = "[ Started ]";
+                  this.populateServerSDB(gatewayObj);
+               } else {
+                  serverSDBElement.innerText = "[ Error Starting Services Connectivity ]";
+               }
+            } catch (err) {
+               serverSDBElement.innerText = "[ Error Starting Services Connectivity ]";
+               ui.enable(listElement);
+            }
          }
       } else {
          if (gatewayStarted == false) {
             //gateway isn't started, UI is probably mismatched
             console.error ("Can't stop \""+gatewayObj.configName+"\". Gateway isn't started.");
-            serverSDBElement.innerHTML = restoreSDB;
+            serverSDBElement.innerText = restoreSDB;
             ui.enable(listElement);
          } else {
-            serverSDBElement.innerHTML = "[ Stopping ]";
-            result = await IPCSend("stop-gateway", gatewayObj, true);
+            serverSDBElement.innerText = "[ Stopping ]";
+            var result = await IPCSend("stop-gateway", gatewayObj, true);
             if (result.data == "ok") {
                gatewayObj.started = false;
-               serverSDBElement.innerHTML = "[ Stopped ]";
+               serverSDBElement.innerText = "[ Stopped ]";
                ui.enable(listElement);
                ui.enable(cbRef);
             }
@@ -607,7 +614,7 @@ class ConnectivityManager extends EventDispatcher {
          }
       }
       var serverSDBElement = manageElement.querySelector(this.selectors.serverSDB);
-      serverSDBElement.innerHTML = sdbString;
+      serverSDBElement.innerText = sdbString;
       return (true);
    }
 
