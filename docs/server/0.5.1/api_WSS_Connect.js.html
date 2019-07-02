@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: api/WSS_Connect.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: api/WSS_Connect.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+* @file WebSocket Session connection API endpoint. The handshake MUST be established prior to attempting
+* a connection.
+*
+* @example
+* Client Request -> {"jsonrpc":"2.0","method":"WSS_Connect","id":"2,"params":{"user_token":"7060939278321507","server_token":"9789091435706088"}}
+* Server Response -> {"jsonrpc":"2.0","result":{"message":"open","options":{},"private_id":"021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d"},"id":"2"}
+* Note: SHA256("9789091435706088:7060939278321507") = "021b92efb9954fa4244c729190e05d2d9b55530d5e4f18da2d3615fdbad9c44d";
+*
+* @version 0.4.1
+*/
+async function WSS_Connect (sessionObj) {
+   if (sessionObj.endpoint.startsWith("ws") == false) {
+      sendError(JSONRPC_ERRORS.WRONG_TRANSPORT, "Session must be created through a WebSocket connection.", sessionObj);
+      return (false);
+   }
+   try {
+      if ((namespace.wss["connections"] == undefined) || (namespace.wss["connections"] == null)) {
+         namespace.wss.connections = new Array();
+      }
+   } catch (err) {
+      console.error(err.stack);
+   }
+   var requestData = sessionObj.requestObj;
+   var requestParams = requestData.params;
+   if (typeof(requestParams["options"]) != "object") {
+      sendError(JSONRPC_ERRORS.INVALID_PARAMS_ERROR, "Connection options not supplied or not an object.", sessionObj);
+      return (false);
+   }
+   var responseObj = new Object();
+   var connectionID = namespace.wss.makeConnectionID(sessionObj); //makeConnectionID defined in WebSocket_Handshake.js
+   var resultObj = new Object(); //result to send in response
+   resultObj.message = null; //single word response message
+   resultObj.connect = new Array(); //list of already connected peers (may be empty)
+   resultObj.options = new Array(); //associated list of peer options (as of v0.4.1)
+   if ((namespace.wss.connections[connectionID] == null) || (namespace.wss.connections[connectionID] == undefined)) {
+      sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
+      return (false);
+   }
+   if (namespace.wss.connections[connectionID].length == 0) {
+      sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Session handshake not established.", sessionObj);
+      return (false);
+   }
+   for (var count = 0; count &lt; namespace.wss.connections[connectionID].length; count++) {
+      var connectionObj = namespace.wss.connections[connectionID][count];
+      if (connectionObj.user_token == requestParams.user_token) {
+         if (connectionObj.server_token == requestParams.server_token) {
+            if (connectionObj.socket == null) {
+               connectionObj.last_update = new Date();
+               connectionObj.private_id = namespace.wss.makePrivateID(sessionObj); //as of v0.4.1
+               connectionObj.options = requestParams.options; //as of v0.4.1
+               connectionObj.socket = sessionObj.serverResponse; //assign outgoing WebSockket instance
+               connectionObj.socket.addEventListener("close", handleWebSocketClose);
+               resultObj.message = "open";
+               resultObj.private_id = connectionObj.private_id;
+               //notify other peers of new connection
+               var activeSessions = namespace.wss.allSessions(true);
+               for (var count = 0; count &lt; activeSessions.length; count++) {
+                  //don't include sender in broadcast
+                  if (activeSessions[count].user_token != requestParams.user_token) {
+                     var messageObj = buildJSONRPC();
+                     messageObj.result.type = "session";
+                     messageObj.result.connect = connectionObj.private_id;
+                     messageObj.result.options = requestParams.options;
+                     activeSessions[count].socket.send(JSON.stringify(messageObj));
+                     resultObj.connect.push(activeSessions[count].private_id);
+                     resultObj.options.push(activeSessions[count].options);
+                  }
+               }
+               sendResult(resultObj, sessionObj);
+               return(true);
+            } else {
+               //socket already exists! do nothing except return error
+               sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Socket session exists.", sessionObj);
+               return(false);
+            }
+         } else {
+            //server tokens match but user tokens do not (send generic error)
+            sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Token mismatch.", sessionObj);
+            return(false);
+         }
+      }
+   }
+   //something else went wrong
+   sendError(JSONRPC_ERRORS.SESSION_CLOSE, "Socket session can't be established at this time.", sessionObj);
+   return(false);
+}
+
+/**
+* Handles a WebSocket close / disconnect event and notifies all active / live
+* sessions of the disconnection.
+*
+* @param {Event} event A standard WebSocket close event.
+*/
+function handleWebSocketClose(event) {
+   try {
+      for (var connectionID in namespace.wss.connections) {
+         if ((namespace.wss.connections[connectionID] != undefined) &amp;&amp; (namespace.wss.connections[connectionID] != null)) {
+            for (var count = 0; count &lt; namespace.wss.connections[connectionID].length; count++) {
+               var connectionObj = namespace.wss.connections[connectionID][count];
+               if (connectionObj.socket == event.target) {
+                  namespace.wss.connections[connectionID].splice(count, 1); //remove disconnected session
+                  var activeSessions = namespace.wss.allSessions(true); //get all remaining sessions to notify them
+                  for (var count2 = 0; count2 &lt; activeSessions.length; count2++) {
+                     var messageObj = buildJSONRPC();
+                     messageObj.result.type = "session";
+                     messageObj.result.disconnect = connectionObj.private_id;
+                     //readyState == 1 = OPEN
+                     if (activeSessions[count2].socket.readyState == 1) {
+                        activeSessions[count2].socket.send(JSON.stringify(messageObj));
+                     }
+                  }
+                  if (namespace.wss.connections[connectionID].length == 0) {
+                     //no more connections for IP, clear entire entry
+                     namespace.wss.connections[connectionID] = undefined;
+                     delete namespace.wss.connections[connectionID];
+                  }
+                  return;
+               }
+            }
+         }
+      }
+   } catch (err) {
+      console.error(err.stack);
+   }
+}
+
+if (namespace.wss == undefined) {
+   namespace.wss = new Object();
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#_APIFunctions">_APIFunctions</a></li><li><a href="global.html#addPendingCashout">addPendingCashout</a></li><li><a href="global.html#adjustEnvironment">adjustEnvironment</a></li><li><a href="global.html#allSessions">allSessions</a></li><li><a href="global.html#buildCPMessage">buildCPMessage</a></li><li><a href="global.html#buildJSONRPC">buildJSONRPC</a></li><li><a href="global.html#callAccountDatabase">callAccountDatabase</a></li><li><a href="global.html#cashoutIsPending">cashoutIsPending</a></li><li><a href="global.html#checkPassword">checkPassword</a></li><li><a href="global.html#config">config</a></li><li><a href="global.html#configFile">configFile</a></li><li><a href="global.html#connectTunnel">connectTunnel</a></li><li><a href="global.html#disconnectTunnel">disconnectTunnel</a></li><li><a href="global.html#estimateTxFee">estimateTxFee</a></li><li><a href="global.html#gateways">gateways</a></li><li><a href="global.html#getAccount">getAccount</a></li><li><a href="global.html#getAddress">getAddress</a></li><li><a href="global.html#getConfigByPath">getConfigByPath</a></li><li><a href="global.html#getConnectionByAlias">getConnectionByAlias</a></li><li><a href="global.html#getConnectionByCID">getConnectionByCID</a></li><li><a href="global.html#getConnectionByPID">getConnectionByPID</a></li><li><a href="global.html#getConnectionBySocket">getConnectionBySocket</a></li><li><a href="global.html#getHandler">getHandler</a></li><li><a href="global.html#getPrivateID">getPrivateID</a></li><li><a href="global.html#handleHTTPRequest">handleHTTPRequest</a></li><li><a href="global.html#handleWebSocketClose">handleWebSocketClose</a></li><li><a href="global.html#handleWSDisconnect">handleWSDisconnect</a></li><li><a href="global.html#handleWSRequest">handleWSRequest</a></li><li><a href="global.html#handshakeOK">handshakeOK</a></li><li><a href="global.html#heartbeat">heartbeat</a></li><li><a href="global.html#hostEnv">hostEnv</a></li><li><a href="global.html#http_server">http_server</a></li><li><a href="global.html#invokeAPIFunction">invokeAPIFunction</a></li><li><a href="global.html#isExcluded">isExcluded</a></li><li><a href="global.html#JSONRPC_ERRORS">JSONRPC_ERRORS</a></li><li><a href="global.html#loadAPIFunctions">loadAPIFunctions</a></li><li><a href="global.html#loadConfig">loadConfig</a></li><li><a href="global.html#loadHandlers">loadHandlers</a></li><li><a href="global.html#makeConnectionID">makeConnectionID</a></li><li><a href="global.html#makeConnectionToken">makeConnectionToken</a></li><li><a href="global.html#makePrivateID">makePrivateID</a></li><li><a href="global.html#mkdirSync">mkdirSync</a></li><li><a href="global.html#MySQLDateTime">MySQLDateTime</a></li><li><a href="global.html#namespace">namespace</a></li><li><a href="global.html#noop">noop</a></li><li><a href="global.html#onStartHTTPServer">onStartHTTPServer</a></li><li><a href="global.html#onStartWSServer">onStartWSServer</a></li><li><a href="global.html#onTunnelClose">onTunnelClose</a></li><li><a href="global.html#onTunnelMessage">onTunnelMessage</a></li><li><a href="global.html#onWSConnection">onWSConnection</a></li><li><a href="global.html#paramExists">paramExists</a></li><li><a href="global.html#ping">ping</a></li><li><a href="global.html#processRPCRequest">processRPCRequest</a></li><li><a href="global.html#registerAPIFunction">registerAPIFunction</a></li><li><a href="global.html#removePendingCashout">removePendingCashout</a></li><li><a href="global.html#rpc_options">rpc_options</a></li><li><a href="global.html#saveAccount">saveAccount</a></li><li><a href="global.html#sendBroadcast">sendBroadcast</a></li><li><a href="global.html#sendDirect">sendDirect</a></li><li><a href="global.html#sendError">sendError</a></li><li><a href="global.html#sendIntercept">sendIntercept</a></li><li><a href="global.html#sendResult">sendResult</a></li><li><a href="global.html#sendTunnelMessage">sendTunnelMessage</a></li><li><a href="global.html#sendUpdate">sendUpdate</a></li><li><a href="global.html#setDefaultHeaders">setDefaultHeaders</a></li><li><a href="global.html#startDatabase">startDatabase</a></li><li><a href="global.html#startHTTPServer">startHTTPServer</a></li><li><a href="global.html#startWSServer">startWSServer</a></li><li><a href="global.html#updateAccount">updateAccount</a></li><li><a href="global.html#updateAllTxFees">updateAllTxFees</a></li><li><a href="global.html#validateJSONRPC">validateJSONRPC</a></li><li><a href="global.html#ws_ping_interval">ws_ping_interval</a></li><li><a href="global.html#ws_ping_intervalID">ws_ping_intervalID</a></li><li><a href="global.html#ws_server">ws_server</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jul 02 2019 14:07:19 GMT-0500 (GMT-05:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
