@@ -1,4 +1,4 @@
-<p align="center"><img src="https://user-images.githubusercontent.com/9059336/53623709-de91ae80-3bcb-11e9-88ec-e3395fd06152.png"></p>
+/0.5.1/<p align="center"><img src="https://user-images.githubusercontent.com/9059336/53623709-de91ae80-3bcb-11e9-88ec-e3395fd06152.png"></p>
 <p align="center"><a href="https://github.com/monicanagent/cypherpoker.js/commits/master"><img src="https://img.shields.io/github/last-commit/monicanagent/cypherpoker.js.svg"/></a> <a href="https://github.com/monicanagent/cypherpoker.js/releases"><img src="https://img.shields.io/github/release/monicanagent/cypherpoker.js.svg"/></a> <a href="https://github.com/monicanagent/cypherpoker.js/issues"><img src="https://img.shields.io/github/issues/monicanagent/cypherpoker.js.svg?style=flat-square"/></a> <a href="https://www.codetriage.com/monicanagent/cypherpoker.js"><img src="https://www.codetriage.com/monicanagent/cypherpoker.js/badges/users.svg"/></a>
 </p>
 <p>CypherPoker.JS is a complete, white label, peer-to-peer poker platform that incorporates a flexible and highly customizable web / desktop game client, powerful P2P communication capabilities, account management system with database integration and extensible API services, automated cryptocurrency and wallet functionality, and much more.</p>
@@ -22,9 +22,9 @@ The [CypherPoker.JS wiki](https://github.com/monicanagent/cypherpoker.js/wiki) i
 
 When you're ready to customize the software further, the latest code documentation can be found here:
 
-Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.5.0/](https://monicanagent.github.io/cypherpoker.js/web/0.5.0/)<br/>
-Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.5.0/](https://monicanagent.github.io/cypherpoker.js/server/0.5.0/)<br/>
-Desktop (Electron): [https://monicanagent.github.io/cypherpoker.js/desktop/0.5.0/](https://monicanagent.github.io/cypherpoker.js/desktop/0.5.0/)
+Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.5.1/](https://monicanagent.github.io/cypherpoker.js/web/0.5.1/)<br/>
+Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.5.1/](https://monicanagent.github.io/cypherpoker.js/server/0.5.1/)<br/>
+Desktop (Electron): [https://monicanagent.github.io/cypherpoker.js/desktop/0.5.1/](https://monicanagent.github.io/cypherpoker.js/desktop/0.5.1/)
 ***
 <p align="center">Something you can't find? Just feel like chatting? Drop by the Telegram group!<br/>
 <a href="https://t.me/cypherpokerjs" target="_blank"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&logo=telegram&label=TELEGRAM&message=CypherPoker.JS%20Group&color=blue" /></a></p>
