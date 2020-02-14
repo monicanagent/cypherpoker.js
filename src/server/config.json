@@ -30,7 +30,7 @@
             "WSSTunnel": {
                "enable": false,
                "start": false,
-               "host": "wss://cypherpokerjs-servicesserver-divmuetczz.now.sh",
+               "host": "wss://cypherpokerjs-servicesserver-sawmlcgsuw.now.sh",
                "tunnels": [
                   {"alias":null, "allow":"*", "socketOptions":null},
                   {"alias":null, "allow":"*", "socketOptions":null},
@@ -48,15 +48,21 @@
             }
          },
          "database":{
-            "enabled":false,
-            "url":"http://localhost/rdb.php",
+            "enabled":true,
+            "url":"fsdb://./db/cypherpoker.js.fsdb",
+            "url_sqlite":"sqlite3://./db/cypherpoker.js.sqlite3",
+            "url_rdb":"http://localhost/rdb.php",
             "host":"localhost",
             "accessKey":"DATABASE_ACCESS_KEY",
             "adapters": {
-               "sqlite3": {
-                  "script": "./libs/adapters/SQLite3.js",
-                  "bin": "./bin/sqlite/%os%/%bin%"
-               }
+              "fsdb": {
+                 "script": "./libs/adapters/FSDB.js",
+                 "compact": false
+              },
+              "sqlite3": {
+                "script": "./libs/adapters/SQLite3.js",
+                "bin": "./bin/sqlite/%os%/%bin%"
+              }
             }
          },
          "handlers":[
