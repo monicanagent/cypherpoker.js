@@ -1,7 +1,7 @@
 /**
 * @file Bitcoin adapter for blockchain interactions via the Blockstream API
 *
-* @version 0.5.1
+* @version 0.5.2
 * @author Patrick Bay
 * @copyright MIT License
 */
@@ -605,8 +605,8 @@ module.exports = class BlockstreamAPI extends BitcoinCoreNative {
         }, (error, response, body) => {
            var currentDateTime = new Date();
            API.default[network].lastUpdated = currentDateTime.toISOString();
-           if ((body == undefined) || (body == null)) {
-              var errorObj = new Error(response);
+           if ((body == undefined) || (body == null) && (response != undefined)) {
+              var errorObj = new Error("No response received (timeout or network error).");
               reject (errorObj);
               return;
            }
@@ -620,7 +620,7 @@ module.exports = class BlockstreamAPI extends BitcoinCoreNative {
               this._fees[network].confs = blockCount;
               this._fees[network].satPerByte = satPerByte;
               var txSize = 270; //bytes (average)
-              API.default[network].minerFee = String(Math.ceil(satPerByte * txSize)); //should be a string              
+              API.default[network].minerFee = String(Math.ceil(satPerByte * txSize)); //should be a string
               resolve("updated");
            }
         });
