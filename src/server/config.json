@@ -123,29 +123,44 @@
                "handlerClass": "./libs/adapters/BitcoinCashNative.js",
                "showOutput": true,
                "enabled": false
+            },
+            {
+               "type": "cryptocurrency",
+               "name": "Native Monero (monerod) Handler",
+               "installDir":"./bin/monero/%os%/",
+               "dataDir":"./bin/monero/data/",
+               "downloads":{
+                  "darwin":"https://dlsrc.getmonero.org/cli/monero-mac-x64-v0.15.0.1.tar.bz2",
+                  "linux":"https://dlsrc.getmonero.org/cli/monero-linux-x64-v0.15.0.1.tar.bz2",
+                  "win32":"https://dlsrc.getmonero.org/cli/monero-win-x86-v0.15.0.1.zip"
+               },
+               "types": ["xmr", "monero"],
+               "handlerClass": "./libs/adapters/MoneroNative.js",
+               "showOutput": true,
+               "enabled": false
             }
          ],
          "wallets":{
-            "bitcoin":{
-               "xprv":"xprv...",
-               "startChain":0,
-               "startIndex":2
-            },
-            "test3":{
-               "tprv":"tprv...",
-               "startChain":0,
-               "startIndex":2
-            },
-            "bitcoincash":{
-               "xprv":"xprv...",
-               "startChain":0,
-               "startIndex":2
-            },
-            "bchtest":{
-               "tprv":"tprv...",
-               "startChain":0,
-               "startIndex":2
-            }
+           "bitcoin":{
+              "xprv":"xprv...",
+              "startChain":0,
+              "startIndex":2
+           },
+           "test3":{
+              "tprv":"tprv...",
+              "startChain":0,
+              "startIndex":2
+           },
+           "bitcoincash":{
+              "xprv":"xprv...",
+              "startChain":0,
+              "startIndex":2
+           },
+           "bchtest":{
+              "tprv":"tprv...",
+              "startChain":0,
+              "startIndex":2
+           }
          },
          "tokens": {
             "blockcypher":"BLOCKCYPHER_TOKEN",
