@@ -25,9 +25,6 @@ When you're ready to customize the software further, the latest code documentati
 Browser (client): [https://monicanagent.github.io/cypherpoker.js/web/0.5.1/](https://monicanagent.github.io/cypherpoker.js/web/0.5.1/)<br/>
 Node.js (server): [https://monicanagent.github.io/cypherpoker.js/server/0.5.1/](https://monicanagent.github.io/cypherpoker.js/server/0.5.1/)<br/>
 Desktop (Electron): [https://monicanagent.github.io/cypherpoker.js/desktop/0.5.1/](https://monicanagent.github.io/cypherpoker.js/desktop/0.5.1/)
-***
-<p align="center">Something you can't find? Just feel like chatting? Drop by the Telegram group!<br/>
-<a href="https://t.me/cypherpokerjs" target="_blank"><img src="https://img.shields.io/static/v1.svg?style=for-the-badge&logo=telegram&label=TELEGRAM&message=CypherPoker.JS%20Group&color=blue" /></a></p>
 
 ***
 CypherPoker.JS uses [semantic versioning](https://semver.org/).
