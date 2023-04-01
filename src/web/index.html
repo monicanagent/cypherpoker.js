@@ -1,34 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+   <head>
+      <!-- window title is set dynamically by index.js -->
+      <link
+         rel="shortcut icon"
+         href="cypherpoker_icon.ico"
+         type="image/x-icon"
+      />
+      <link rel="icon" href="cypherpoker_icon.png" type="image/png" />
+      <!-- Inline favicon -->
+      <!-- link href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggJFjYAS5da1QAAARdJREFUOMuVk62OwkAUhT/KgsIRsEhA4DBU8gQYDIpgwKD2ETap2myC4QkQFQRVLE+AxIEhPAGO3TY5K9pJd+k0wCQn83Pv+SZzZwbgA/gGonsVCkSum11P9AN4JBPZtN2i6xU5jj2eeO2AxQJJsQ6HFwHTaWo28v0nAf1+1mw0GDwAtFr5ZqNqNQdQqTw2SygMUblsAZxOzwEkFAR3gG73ebNRux0DHIDRiJfbZBL3DkCjYU86HuF8tsc6nT8A388mSLDbwWplBwRBOo4AXS7/z9jrof0ebTZoPM7WoFSyvINmEw2HqF6P5xK63eKx66L1Gs1m2WsMbe/c89Ld5vP8v/AGfALvph6mFYuwXMa1qNWsZRDw9Qsb9Wg3w+A8tgAAAABJRU5ErkJggg==" rel="icon" type="image/x-icon" / -->
 
-  <head>
+      <!-- Meta definitions -->
+      <meta charset="UTF-8" />
+      <meta name="application-name" content="CypherPoker.JS" />
+      <meta
+         name="description"
+         content="Cryptographic peer-to-peer poker (Mental Poker)."
+      />
+      <meta name="author" content="Patrick Bay (Monican Agent)" />
+      <meta
+         name="keywords"
+         content="CypherPoker.JS, poker, mental, peer-to-peer, p2p, crypto, cryptography, SRA, cryptocurrency, Bitcoin, Ethereum, Ether, gaming, online, web, javascript"
+      />
 
-    <!-- window title is set dynamically by index.js -->
-    <link rel="shortcut icon" href="cypherpoker_icon.ico" type="image/x-icon" />
-    <link rel="icon" href="cypherpoker_icon.png" type="image/png" />
-    <!-- Inline favicon -->
-    <!-- link href="data:image/x-icon;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggJFjYAS5da1QAAARdJREFUOMuVk62OwkAUhT/KgsIRsEhA4DBU8gQYDIpgwKD2ETap2myC4QkQFQRVLE+AxIEhPAGO3TY5K9pJd+k0wCQn83Pv+SZzZwbgA/gGonsVCkSum11P9AN4JBPZtN2i6xU5jj2eeO2AxQJJsQ6HFwHTaWo28v0nAf1+1mw0GDwAtFr5ZqNqNQdQqTw2SygMUblsAZxOzwEkFAR3gG73ebNRux0DHIDRiJfbZBL3DkCjYU86HuF8tsc6nT8A388mSLDbwWplBwRBOo4AXS7/z9jrof0ebTZoPM7WoFSyvINmEw2HqF6P5xK63eKx66L1Gs1m2WsMbe/c89Ld5vP8v/AGfALvph6mFYuwXMa1qNWsZRDw9Qsb9Wg3w+A8tgAAAABJRU5ErkJggg==" rel="icon" type="image/x-icon" / -->
+      <!-- Styles -->
+      <script
+         src="./scripts/changes.js"
+         type="text/javascript"
+         language="javascript"
+      ></script>
 
-    <!-- Meta definitions -->
-    <meta charset="UTF-8" />
-    <meta name="application-name" content="CypherPoker.JS" />
-    <meta name="description" content="Cryptographic peer-to-peer poker (Mental Poker)." />
-    <meta name="author" content="Patrick Bay (Monican Agent)" />
-    <meta name="keywords" content="CypherPoker.JS, poker, mental, peer-to-peer, p2p, crypto, cryptography, SRA, cryptocurrency, Bitcoin, Ethereum, Ether, gaming, online, web, javascript" />
+      <link href="./styles/index.css" rel="stylesheet" />
+      <!-- Index script (others are dynamically loaded and added below by index.js)  -->
+      <script
+         src="./scripts/index.js"
+         type="text/javascript"
+         language="javascript"
+      ></script>
+   </head>
 
-    <!-- Styles -->
-    <link href="./styles/index.css" rel="stylesheet">
-    <!-- Index script (others are dynamically loaded and added below by index.js)  -->
-    <script src="./scripts/index.js" type="text/javascript" language="javascript"></script>
-
-  </head>
-
-  <body>
-
+   <body>
       <!--
          CypherPoker.JS logo.
       -->
-      <div class="logo"><span id="cypherpoker"><span id="text">CypherPoker</span></span><span id="JS"><span id="text">.JS</span></span></div>
+      <div class="logo">
+         <span id="cypherpoker"><span id="text">CypherPoker</span></span
+         ><span id="JS"><span id="text">.JS</span></span>
+      </div>
 
       <!--
         Main / default dialog element.
@@ -64,6 +83,19 @@
       <div id="games" class="gamesContainer"></div>
 
       <!-- Proxy data container for global copy-to-clipboard commands. This element should almost always remain off-screen (but not hidden!). -->
-      <input id="clipboardData" name="clipboardData" type="text" style="width:1px;height:1px;position:absolute;left:-9999px;top:-9999px;opacity:0;" value="" />
+      <input
+         id="clipboardData"
+         name="clipboardData"
+         type="text"
+         style="
+            width: 1px;
+            height: 1px;
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            opacity: 0;
+         "
+         value=""
+      />
    </body>
 </html>

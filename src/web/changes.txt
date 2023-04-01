@@ -1,0 +1,70 @@
+added  npm install cardsJS --save
+
+changed assignplayerroles to have random dealing so far it works but sometimes the deal bugs out i think
+
+//from cypherpokerui.js I bypassed this
+         // var validationError =
+            //    this.validateTableCreateForm(createGameElement);
+            // if (validationError != null) {
+            //    this.showDialog(validationError);
+            //    this.hideDialog(4000);
+            //    return false;
+            // }
+
+onLobbyButtonClick >> validateTableCreateForm  >>createTable
+
+cypherpokerui.onTableReady calls>>>>>  cypherpoker.creategame  which calls>>>>:
+ var newGame = new CypherPokerGame(this, tableObj, playerInfo); 
+
+ and then dispatches: 
+       var event = new Event("newgame");
+
+cypherpokergame init calls:
+
+        this._contract = new CypherPokerContract(this);
+
+        where this is a reference to the cypherpokergame init
+
+
+        cypherpokercontracts has callContractAPI
+
+
+
+****************
+
+onNewGameDeck has the newcontract creation and this.getplayers from cypherpokercontract
+is returning players objects with accounts null
+
+from cypherpokergame.players
+
+
+
+//"failed to create contract"
+this fails @ cp_smartcontracts server code line 127:
+
+ var result = await addToAccountBalance(playerAccount[0], buyIn, newContract);
+
+
+ cypherpoker.js handles these:
+
+ handleP2PMessage
+------------
+tablenew
+ tablejoin will dispatch tableready 
+tablejoinrequest will dispatch tableready 
+tablemsg
+tableleave
+
+from cypherpokercontract.js
+processDeferredActions
+__________________
+contractnew
+contractnewfail
+contractagreefail
+contractencryptstore
+contractselectstore
+contractdecryptstore
+contractbet
+contractkeychainstore
+contracttimeout
+contractend

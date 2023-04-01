@@ -1,17 +1,105 @@
 <div id="game" class="gameContainer" hidden="true">
-   <div id="publicCards" class="publicCardsContainer"></div>
-   <div id="privateCards" class="privateCardsContainer"></div>
-   <span id="totalBetLabel" class="gameLabel">Total bet for this hand: </span><span id="totalBet" name="totalBet" class="gameAmount">0</span><br/>
-   <span id="balanceLabel" class="gameLabel">Game balance: </span><span id="balance" name="balance" class="gameAmount">0</span><br/>
-   <span id="potLabel" class="gameLabel">Pot: </span><span id="potAmount" name="potAmount" class="gameAmount">0</span><br/>
-   <span id="timeoutLabel" class="timeoutLabel">⏱&nbsp;</span><span id="timeoutAmount" name="timeoutAmount" class="gameAmount"><span id="timeout">0</span></span><br/>
-   <br/>
-   <input type="number" id="betAmount" name="betAmount" class="betAmountInput" placeholder="Bet Amount" step="1" />
-   <button id="betButton" class="gameButton" disabled="true">BET</button>
-   <button id="foldButton" class="gameButton" disabled="true">FOLD</button>
-   <button id="newHandButton" class="newHandButton" disabled="true">NEW HAND</button>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('game_buttons')">?</button><br/>
-   <div id="handHistory" name="handHistory" class="handHistoryContainer">
-      <span class="header">Hand History</span>&nbsp;&nbsp;<button class="helpButton" onclick="ui.onHelpButtonClick('game_hand_history')">?</button><br/>
-      <!-- history items are dynamically appended here using the handHistoryItem.html template -->
+   <div id="villainCardsRow">
+      <div id="villainCardsDiv" class="">
+         <img class="card"></img>
+         <img class="card"></img>
+      </div>
+      </div>
+      <div id="villainRow">
+         <div id="villianBetsDiv">
+            <div id="villianBetsLabel">Villian Bets:</div>
+            <div id="villianBetsValue">0</div>
+         </div>
+         <div id="villainDealerButton" style="display:none">D</div>
+      </div>
+
+      <div id="publicCards" class="publicCardsContainer"></div>
+      <div id="potRowDiv">
+         <!-- <div id="streetPotDisplay">
+         <div id="streetPotLabel">Street Pot:</div>
+         <div id="streetPotValue">0</div>
+      </div> -->
+         <div id="totalPotDisplay">
+            <div id="totalPotLabel">Pot:</div>
+            <div id="totalPotValue">0</div>
+         </div>
+
+         <div></div>
+      </div>
+      <div id="heroHudRow">
+         <div id="herosBetsDiv">
+            <div id="heroBetsLabel">Heros Bets:</div>
+            <div id="heroBetsValue">0</div>
+         </div>
+         <div id="dealerButton"  style="display:none">D</div>
+      </div>
+
+      <div id="privateDiv">
+         <div id="privateCards" class="privateCardsContainer"></div>
+
+         <div id="tableInfo">
+            <span id="puckLabel" class="gameLabel">Dealer: </span
+            ><span id="dealerPuck" name="puck" class="gameAmount">0</span><br />
+            <span id="totalBetLabel" class="gameLabel"
+               >Total bet for this hand: </span
+            ><span id="totalBet" name="totalBet" class="gameAmount">0</span
+            ><br />
+            <span id="balanceLabel" class="gameLabel">Game balance: </span
+            ><span id="balance" name="balance" class="gameAmount">0</span><br />
+            <span id="potLabel" class="gameLabel">Pot: </span
+            ><span id="potAmount" name="potAmount" class="gameAmount">0</span
+            ><br />
+            <span id="timeoutLabel" class="timeoutLabel">⏱&nbsp;</span
+            ><span
+               id="timeoutAmount"
+               name="timeoutAmount"
+               class="gameAmount"
+               style="display: none"
+               ><span id="timeout">0</span></span
+            >
+         </div>
+         <div id="buttonsDiv">
+            <input
+               type="number"
+               id="betAmount"
+               name="betAmount"
+               class="betAmountInput"
+               placeholder=""
+               step="1"
+            />
+
+            <button id="betButton" class="gameButton" disabled="true">
+               BET
+            </button>
+            <button id="callButton" class="gameButton" disabled="true">
+               Check
+            </button>
+            <button id="foldButton" class="gameButton" disabled="true">
+               FOLD
+            </button>
+            <button id="newHandButton" class="newHandButton" disabled="true">
+               NEW HAND</button
+            >&nbsp;&nbsp;<button
+               class="helpButton"
+               onclick="ui.onHelpButtonClick('game_buttons')"
+            >
+               ?
+            </button>
+            <div
+               id="handHistory"
+               name="handHistory"
+               class="handHistoryContainer"
+            >
+               <span class="header">Hand History</span>&nbsp;&nbsp;<button
+                  class="helpButton"
+                  onclick="ui.onHelpButtonClick('game_hand_history')"
+               >
+                  ?
+               </button>
+            </div>
+         </div>
+
+         <!-- history items are dynamically appended here using the handHistoryItem.html template -->
+      </div>
    </div>
 </div>
