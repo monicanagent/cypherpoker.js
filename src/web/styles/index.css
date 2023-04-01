@@ -1,68 +1,80 @@
-@import url('./controls/button.css');
-@import url('./controls/select.css');
-@import url('./controls/input.css');
-@import url('./controls/textarea.css');
-@import url('./controls/slideSwitch.css');
-@import url('./controls/dropdownMenu.css');
+@import url("./controls/button.css");
+@import url("./controls/select.css");
+@import url("./controls/input.css");
+/*@import url("./controls/textarea.css");*/
+@import url("./controls/slideSwitch.css");
+@import url("./controls/dropdownMenu.css");
 
 /* cyrillic */
 @font-face {
-  font-family: 'Prosto One';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Prosto One'), local('ProstoOne-Regular'), url(./fonts/ProstoOne-Regular-ext.woff2) format('woff2');
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+   font-family: "Prosto One";
+   font-style: normal;
+   font-weight: 400;
+   src: local("Prosto One"), local("ProstoOne-Regular"),
+      url(./fonts/ProstoOne-Regular-ext.woff2) format("woff2");
+   unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 /* latin-ext */
 @font-face {
-  font-family: 'Prosto One';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Prosto One'), local('ProstoOne-Regular'), url(./fonts/ProstoOne-Regular-ext.woff2) format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+   font-family: "Prosto One";
+   font-style: normal;
+   font-weight: 400;
+   src: local("Prosto One"), local("ProstoOne-Regular"),
+      url(./fonts/ProstoOne-Regular-ext.woff2) format("woff2");
+   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+      U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 /* latin */
 @font-face {
-  font-family: 'Prosto One';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Prosto One'), local('ProstoOne-Regular'), url(./fonts/ProstoOne-Regular.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+   font-family: "Prosto One";
+   font-style: normal;
+   font-weight: 400;
+   src: local("Prosto One"), local("ProstoOne-Regular"),
+      url(./fonts/ProstoOne-Regular.woff2) format("woff2");
+   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
 }
 /* cyrillic */
 @font-face {
-  font-family: 'Exo 2';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Exo 2'), local('Exo2-Regular'), url(./fonts/Exo2-Cyrillic.woff2) format('woff2');
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+   font-family: "Exo 2";
+   font-style: normal;
+   font-weight: 400;
+   src: local("Exo 2"), local("Exo2-Regular"),
+      url(./fonts/Exo2-Cyrillic.woff2) format("woff2");
+   unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 /* latin-ext */
 @font-face {
-  font-family: 'Exo 2';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Exo 2'), local('Exo2-Regular'), url(./fonts/Exo2-Latin-ext.woff2) format('woff2');
-  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+   font-family: "Exo 2";
+   font-style: normal;
+   font-weight: 400;
+   src: local("Exo 2"), local("Exo2-Regular"),
+      url(./fonts/Exo2-Latin-ext.woff2) format("woff2");
+   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB,
+      U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 /* latin */
 @font-face {
-  font-family: 'Exo 2';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Exo 2'), local('Exo2-Regular'), url(./fonts/Exo2-Latin.woff2) format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+   font-family: "Exo 2";
+   font-style: normal;
+   font-weight: 400;
+   src: local("Exo 2"), local("Exo2-Regular"),
+      url(./fonts/Exo2-Latin.woff2) format("woff2");
+   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+      U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212,
+      U+2215, U+FEFF, U+FFFD;
 }
 
 body {
-  /* Update on mobile devices */
-  /* zoom: 150%; */
-  font-family: 'Exo 2', sans-serif;
-  font-size: 14px;
-  background-color: #000000;
-  color: #ffffff;
-  height: 100%;
-  margin: 0;
+   /* Update on mobile devices */
+   /* zoom: 150%; */
+   font-family: "Exo 2", sans-serif;
+   font-size: 14px;
+   background-color: #000000;
+   color: #ffffff;
+   height: 100%;
+   margin: 0;
 }
 
 .helpContent {
@@ -87,17 +99,16 @@ body {
 }
 
 .dialogContent > #okButton {
-   color: #00FF00;
+   color: #00ff00;
 }
 
 .dialogContent > #yesButton {
-   color: #00FF00;
+   color: #00ff00;
 }
 
 .dialogContent > #noButton {
-   color: #FF0000;
+   color: #ff0000;
 }
-
 
 .connectSDBLabel {
    position: relative;
@@ -121,7 +132,7 @@ body {
 }
 
 .connectivityTableContainer {
-   width:100%;
+   width: 100%;
 }
 
 #serverSDBTypeRadioGroup {
@@ -129,7 +140,7 @@ body {
 }
 
 #copyServerSDBToClipboardButton {
-   position:relative;
+   position: relative;
    top: -30px;
 }
 
@@ -150,12 +161,12 @@ body {
 }
 
 #apiTableDivider {
-   width:50%;
+   width: 50%;
    height: 150px;
 }
 
 #p2pTableDivider {
-   width:50%;
+   width: 50%;
    height: 150px;
 }
 
@@ -179,7 +190,7 @@ body {
    width: 450px;
 }
 
-.joinTableButton > .tableName{
+.joinTableButton > .tableName {
    font-weight: bolder;
 }
 
@@ -202,64 +213,67 @@ body {
 }
 
 .logo {
-  position: absolute;
-  right: 0px;
-  font-family: 'Prosto One', sans-serif;
-  font-size: 3em;
-  padding-top: 10px;
-  padding-left: 10px;
-  padding-bottom: 20px;
+   position: absolute;
+   right: 0px;
+   font-family: "Prosto One", sans-serif;
+   font-size: 3em;
+   padding-top: 10px;
+   padding-left: 10px;
+   padding-bottom: 20px;
 }
 
 .logo > #cypherpoker {
-    background: #000000;
-    padding: 10px 5px 10px 15px;
-    border-radius: 15px 0px 0px 15px;
+   background: #000000;
+   padding: 10px 5px 10px 15px;
+   border-radius: 15px 0px 0px 15px;
 }
 
 .logo > #cypherpoker > #text {
-    color: #FFFFFF;
-    filter: drop-shadow(0px 0px 4px white);
+   color: #ffffff;
+   filter: drop-shadow(0px 0px 4px white);
 }
 
 .logo > #JS {
-    background: #ffd400;
-    padding: 10px 15px 10px 5px;
-    border-radius: 0px 15px 15px 0px;
+   background: #ffd400;
+   padding: 10px 15px 10px 5px;
+   border-radius: 0px 15px 15px 0px;
 }
 
 .logo > #JS > #text {
-    color: #000000;
-    filter: drop-shadow(0px 0px 3px white);
+   color: #000000;
+   filter: drop-shadow(0px 0px 3px white);
 }
 
 #mainDialog {
    z-index: 1000;
    background-color: #000000;
-   color: #FFFFFF;
-   font-family: 'Exo 2', sans-serif;
+   color: #ffffff;
+   font-family: "Exo 2", sans-serif;
    border-width: 1px;
    border-radius: 10px 10px 10px 10px;
 }
 
 .manualConnectionDataInput {
-   width:300px;
-   height:100px;
+   width: 300px;
+   height: 100px;
 }
 
 .gameContainer > .publicCardsContainer {
    width: 555px;
    height: 135px;
-   background: center / contain no-repeat url("../assets/public_cards_placeholders.svg");
+   margin-top: 25px;
+   /* background: center / contain no-repeat
+      url("../assets/public_cards_placeholders.svg"); */
 }
 
 .gameContainer > .privateCardsContainer {
-   width: 225px;
-   height: 135px;
-   background: center / contain no-repeat url("../assets/private_cards_placeholders.svg");
+   /* width: 225px;
+   height: 135px; */
+   /* background: center / contain no-repeat
+      url("../assets/private_cards_placeholders.svg"); */
 }
 
-.gameContainer > #betAmount {
+/* .gameContainer > #betAmount {
    font-weight: bold;
    font-size: 16px;
    width: 150px;
@@ -268,13 +282,26 @@ body {
    top: -4px;
 }
 
+.gameContainer > #callButton {
+   font-weight: bold;
+   color: green;
+   width: 75;
+   height: 55px;
+   font-family: "Exo 2", sans-serif;
+   font-size: 20px;
+   background-color: #000000;
+   border-width: 1px;
+   border-radius: 0px 10px 10px 0px;
+   padding: 5px 5px 5px 5px;
+}
+
 .gameContainer > #betButton {
    font-weight: bold;
-   color:green;
-   width: 100px;
+   color: green;
+   width: 75px;
    height: 55px;
-   font-family: 'Exo 2', sans-serif;
-   font-size: 24px;
+   font-family: "Exo 2", sans-serif;
+   font-size: 20px;
    background-color: #000000;
    border-width: 1px;
    border-radius: 0px 10px 10px 0px;
@@ -283,23 +310,23 @@ body {
 
 .gameContainer > #foldButton {
    font-weight: bold;
-   color:red;
-   width: 100px;
+   color: red;
+   width: 75px;
    height: 55px;
-   font-family: 'Exo 2', sans-serif;
-   font-size: 24px;
+   font-family: "Exo 2", sans-serif;
+   font-size: 20px;
    background-color: #000000;
    border-width: 1px;
    border-radius: 0px 10px 10px 0px;
    padding: 5px 5px 5px 5px;
-}
+} */
 
 .gameContainer > #newHandButton {
    font-weight: bold;
-   color:blue;
+   color: blue;
    width: 200px;
    height: 55px;
-   font-family: 'Exo 2', sans-serif;
+   font-family: "Exo 2", sans-serif;
    font-size: 24px;
    background-color: #000000;
    border-width: 1px;
@@ -308,41 +335,41 @@ body {
 }
 
 .gameContainer > #betButton:disabled {
-   color:gray;
+   color: gray;
 }
 
 .gameContainer > #foldButton:disabled {
-   color:gray;
+   color: gray;
 }
 
 .gameContainer > #newHandButton:disabled {
-   color:gray;
+   color: gray;
 }
 
 .gameContainer > #timeoutAmount > #timeout {
-   color:blue;
+   color: blue;
 }
 
 .gameContainer > #timeoutAmount > #timeoutCritical {
-   color:red;
+   color: red;
 }
 
 .card {
-   margin-top:-145px;
-   margin-bottom:-145px;
-   margin-left:-95px;
-   margin-right:-95px;
-   width:300px;
-   height:auto;
+   margin-top: -145px;
+   margin-bottom: -145px;
+   margin-left: -95px;
+   margin-right: -95px;
+   width: 300px;
+   height: auto;
 }
 
 .historyCard {
-   margin-top:-65px;
-   margin-bottom:-65px;
-   margin-left:-51px;
-   margin-right:-51px;
-   width:150px;
-   height:auto;
+   margin-top: -65px;
+   margin-bottom: -65px;
+   margin-left: -51px;
+   margin-right: -51px;
+   width: 150px;
+   height: auto;
 }
 
 .historyHandName {
@@ -355,16 +382,171 @@ body {
 }
 
 .header {
-   font-size:16px;
+   font-size: 16px;
 }
 
 .handHistoryContainer {
+   border: 1px solid white;
    z-index: 2000;
-   overflow-x: scroll;
-   overflow-y: scroll;
-   width: 400px;
-   height: 100%;
-   top: 0px;
-   right: 0px;
+   width: 200px;
+   height: 400px;
+   bottom: 150px;
+   right: 20px;
    position: absolute;
+   overflow: auto;
+}
+
+#privateDiv {
+   margin-top: 5px;
+   display: flex;
+   flex-direction: row;
+   align-items: flex-end;
+}
+
+.privateCardsContainer {
+   order: 1;
+   width: 35%;
+   margin-right: 0px;
+}
+
+.gameContainer {
+   display: flex;
+   flex-direction: column;
+}
+
+#buttonsDiv {
+   order: 2;
+   font-size: 2em;
+}
+
+.gameButton {
+   font-weight: bold;
+   width: 90px;
+   height: 55px;
+   font-family: "Exo 2", sans-serif;
+   font-size: 15px;
+   background-color: #000000;
+   border-width: 1px;
+   border-radius: 0px 10px 10px 0px;
+   padding: 5px 5px 5px 5px;
+}
+
+.betAmountInput {
+   font-weight: bold;
+   font-size: 16px;
+   width: 75px;
+   height: 40px;
+   top: -4px;
+}
+
+#publicCards {
+   padding-left: 50px;
+}
+
+.card {
+   height: 400px;
+}
+.gameButton[disabled="true"] {
+   color: gray;
+}
+
+#potRowDiv {
+   display: flex;
+   flex-direction: row;
+   justify-content: space-evenly;
+}
+
+#dealerButton {
+   align-self: center;
+   margin-top: 10px;
+   width: 50px;
+   height: 50px;
+   border: #ffffff solid 3px;
+   text-align: center;
+   font-size: 38px;
+   font-weight: bold;
+   color: #ffffff;
+   background-color: #000000;
+   border-radius: 50%;
+}
+#totalPotDisplay {
+   display: flex;
+   flex-direction: row;
+   font-size: 25px;
+   font-weight: bold;
+   color: #ffffff;
+   background-color: #000000;
+}
+#potLabel {
+   margin-right: 5px;
+}
+#herosBetsDiv {
+   display: flex;
+   flex-direction: row;
+   font-size: 18px;
+   font-weight: bold;
+   color: #ffffff;
+   background-color: #000000;
+}
+#villianBetsDiv {
+   display: flex;
+   flex-direction: row;
+   font-size: 18px;
+   font-weight: bold;
+   color: #ffffff;
+   background-color: #000000;
+}
+
+#heroHudRow {
+   margin-top: 15px;
+   display: flex;
+   flex-direction: row;
+}
+
+#herosBetsDiv {
+   padding-top: 40px;
+   margin-left: 220px;
+   margin-right: 60px;
+}
+#villainRow {
+   display: flex;
+}
+#villianBetsDiv {
+   margin-left: 210px;
+   margin-top: 20px;
+}
+
+#villainDealerButton {
+   margin-left: 60px;
+   margin-top: 10px;
+   width: 50px;
+   height: 50px;
+   border: #ffffff solid 3px;
+   text-align: center;
+   font-size: 38px;
+   font-weight: bold;
+   color: #ffffff;
+   background-color: #000000;
+   border-radius: 50%;
+}
+
+#villainCardsRow {
+   margin-top: 15px;
+   display: flex;
+   flex-direction: row;
+   align-items: center;
+}
+#villainCardsDiv {
+   height: 120px;
+   width: 220px;
+   margin-left: 200px;
+   padding: 0;
+}
+#villainCardsDiv > .card {
+   margin-top: 0px;
+   margin-bottom: 0px;
+   margin-left: 0px;
+   margin-right: 0px;
+   width: 90px;
+   height: 110px;
 }
