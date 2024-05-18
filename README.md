@@ -5,7 +5,7 @@
 
 <p>NOTE: Development on CypherPoker.JS has been suspended (but not forgotten!), so no further updates are planned for the current time.</p>
 
-<p>The open-source software stack makes extensive use of modern<a href="https://www.ecma-international.org/ecma-262/8.0/">browser technologies</a> and desktop (<a href="https://nodejs.org/en/">Node.js</a> / <a href="https://electronjs.org/">Electron</a>) runtime environments.</p>
+<p>The open-source software stack makes extensive use of modern <a href="https://www.ecma-international.org/ecma-262/8.0/">browser technologies</a> and desktop (<a href="https://nodejs.org/en/">Node.js</a> / <a href="https://electronjs.org/">Electron</a>) runtime environments.</p>
 
 <p>CypherPoker.JS is written by <a href=https://github.com/monicanagent/">the same author</a> as the <a href="https://github.com/monicanagent/cypherpoker">original ActionScript CypherPoker project</a> and employs many of the same features including the SRA cryptosystem and game / peer protocols as <a href="https://github.com/monicanagent/cypherpoker/wiki">described in the original wiki</a>.</p>
 
