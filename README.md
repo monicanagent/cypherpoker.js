@@ -1,9 +1,9 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/9059336/53623709-de91ae80-3bcb-11e9-88ec-e3395fd06152.png"></p>
 <p align="center"><a href="https://github.com/monicanagent/cypherpoker.js/commits/master"><img src="https://img.shields.io/github/last-commit/monicanagent/cypherpoker.js.svg"/></a> <a href="https://github.com/monicanagent/cypherpoker.js/releases"><img src="https://img.shields.io/github/release/monicanagent/cypherpoker.js.svg"/></a> <a href="https://github.com/monicanagent/cypherpoker.js/issues"><img src="https://img.shields.io/github/issues/monicanagent/cypherpoker.js.svg?style=flat-square"/></a> <a href="https://www.codetriage.com/monicanagent/cypherpoker.js"><img src="https://www.codetriage.com/monicanagent/cypherpoker.js/badges/users.svg"/></a>
 </p>
-<p>CypherPoker.JS is a complete, white label, peer-to-peer poker platform that incorporates a flexible and highly customizable web / desktop game client, P2P communication system, account management with database integration, extensible API services, automated cryptocurrency and wallet functionality, and more.</p>
+<p><b>NOTE: Development on CypherPoker.JS has been suspended (but not forgotten!), so no further updates are planned for the current time.</b></p>
 
-<p>NOTE: Development on CypherPoker.JS has been suspended (but not forgotten!), so no further updates are planned for the current time.</p>
+<p>CypherPoker.JS is a complete, white label, peer-to-peer poker platform that incorporates a flexible and highly customizable web / desktop game client, P2P communication system, account management with database integration, extensible API services, automated cryptocurrency and wallet functionality, and more.</p>
 
 <p>The open-source software stack makes extensive use of modern <a href="https://www.ecma-international.org/ecma-262/8.0/">browser technologies</a> and desktop (<a href="https://nodejs.org/en/">Node.js</a> / <a href="https://electronjs.org/">Electron</a>) runtime environments.</p>
 
