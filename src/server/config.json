@@ -1,26 +1,26 @@
 {
    "CP": {
       "rootPeers": {
-         "bitcoin":[
-            {"address":"18H1HYoNGVW11X8xhQmPNCuZ5rbd4pJaF3"},
-            {"address":"1DKKp72YvUzWWSF9fR3qErg4EkH9uAvH6s"},
-            {"address":"136vTdtTvoNkxuYVQHBU8g4b38o6MZNHJQ"}
+         "bitcoin": [
+            { "address": "18H1HYoNGVW11X8xhQmPNCuZ5rbd4pJaF3" },
+            { "address": "1DKKp72YvUzWWSF9fR3qErg4EkH9uAvH6s" },
+            { "address": "136vTdtTvoNkxuYVQHBU8g4b38o6MZNHJQ" }
          ],
-         "test3":[
-            {"address":"n22LEtuzgniSXeMBoUjgpqkDm6Nf7SEMi4"},
-            {"address":"mpeC1sTb7titSPgraQu6YATfz4LanUPfFv"},
-            {"address":"mypRLS9ZYugjsEEotTHkXckMMHucWKhX12"}
+         "test3": [
+            { "address": "n22LEtuzgniSXeMBoUjgpqkDm6Nf7SEMi4" },
+            { "address": "mpeC1sTb7titSPgraQu6YATfz4LanUPfFv" },
+            { "address": "mypRLS9ZYugjsEEotTHkXckMMHucWKhX12" }
          ]
       },
       "API": {
-         "RPC":{
+         "RPC": {
             "wss": {
-               "enabled":true,
-               "port":8090
+               "enabled": true,
+               "port": 8090
             },
             "http": {
-               "enabled":false,
-               "port":8080
+               "enabled": true,
+               "port": 8080
             },
             "webrtc": {
                "enabled": true
@@ -32,11 +32,11 @@
                "start": false,
                "host": "wss://cypherpokerjs-servicesserver-sawmlcgsuw.now.sh",
                "tunnels": [
-                  {"alias":null, "allow":"*", "socketOptions":null},
-                  {"alias":null, "allow":"*", "socketOptions":null},
-                  {"alias":null, "allow":"*", "socketOptions":null},
-                  {"alias":null, "allow":"*", "socketOptions":null},
-                  {"alias":null, "allow":"*", "socketOptions":null}
+                  { "alias": null, "allow": "*", "socketOptions": null },
+                  { "alias": null, "allow": "*", "socketOptions": null },
+                  { "alias": null, "allow": "*", "socketOptions": null },
+                  { "alias": null, "allow": "*", "socketOptions": null },
+                  { "alias": null, "allow": "*", "socketOptions": null }
                ],
                "path": "./gateways/WSSTunnel.js"
             },
@@ -47,64 +47,101 @@
                "path": "./gateways/SSHTunnel.js"
             }
          },
-         "database":{
-            "enabled":true,
-            "url":"fsdb://./db/cypherpoker.js.fsdb",
-            "url_sqlite":"sqlite3://./db/cypherpoker.js.sqlite3",
-            "url_rdb":"http://localhost/rdb.php",
-            "host":"localhost",
-            "accessKey":"DATABASE_ACCESS_KEY",
+         "database": {
+            "enabled": true,
+            "url": "fsdb://./db/cypherpoker.js.fsdb",
+            "url_sqlite": "sqlite3://./db/cypherpoker.js.sqlite3",
+            "url_rdb": "http://localhost/rdb.php",
+            "host": "localhost",
+            "accessKey": "DATABASE_ACCESS_KEY",
             "adapters": {
-              "fsdb": {
-                 "script": "./libs/adapters/FSDB.js",
-                 "compact": false
-              },
-              "sqlite3": {
-                "script": "./libs/adapters/SQLite3.js",
-                "bin": "./bin/sqlite/%os%/%bin%"
-              }
+               "fsdb": {
+                  "script": "./libs/adapters/FSDB.js",
+                  "compact": false
+               },
+               "sqlite3": {
+                  "script": "./libs/adapters/SQLite3.js",
+                  "bin": "./bin/sqlite/%os%/%bin%"
+               }
             }
          },
-         "handlers":[
+         "handlers": [
             {
                "type": "cryptocurrency",
                "name": "Blockstream API Bitcoin Handler",
-               "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
+               "types": [
+                  "btc",
+                  "bitcoin",
+                  "tbtc",
+                  "testnet3",
+                  "test3",
+                  "testnet bitcoin"
+               ],
                "handlerClass": "./libs/adapters/BlockstreamAPI.js",
                "enabled": true
             },
             {
                "type": "cryptocurrency",
                "name": "Bitcoin.com API Bitcoin Cash Handler",
-               "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "types": [
+                  "bch",
+                  "bitcoincash",
+                  "bitcoin cash",
+                  "tbch",
+                  "bchtestnet",
+                  "bchtest",
+                  "testnet bitcoin cash"
+               ],
                "handlerClass": "./libs/adapters/BitcoinComAPI.js",
                "enabled": true
             },
             {
                "type": "cryptocurrency",
                "name": "BlockCypher API Cryptocurrency Handler",
-               "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
+               "types": [
+                  "btc",
+                  "bitcoin",
+                  "tbtc",
+                  "testnet3",
+                  "test3",
+                  "testnet bitcoin"
+               ],
                "handlerClass": "./libs/adapters/BlockCypherAPI.js",
                "enabled": false
             },
             {
                "type": "cryptocurrency",
                "name": "CryptoAPIs Bitcoin Cash Handler",
-               "types": ["bch", "bitcoincash", "bitcoin cash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "types": [
+                  "bch",
+                  "bitcoincash",
+                  "bitcoin cash",
+                  "tbch",
+                  "bchtestnet",
+                  "bchtest",
+                  "testnet bitcoin cash"
+               ],
                "handlerClass": "./libs/adapters/CryptoAPIs.js",
                "enabled": false
             },
             {
                "type": "cryptocurrency",
                "name": "Native Bitcoin Core (bitcoind) Handler",
-               "installDir":"./bin/bitcoind/%os%/",
-               "dataDir":"./bin/bitcoind/data/",
-               "downloads":{
-                  "darwin":"https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-osx.dmg",
-                  "linux":"https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-x86_64-linux-gnu.tar.gz",
-                  "win32":"https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-win64.zip"
+               "installDir": "./bin/bitcoind/%os%/",
+               "dataDir": "./bin/bitcoind/data/",
+               "downloads": {
+                  "darwin": "https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-osx.dmg",
+                  "linux": "https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-x86_64-linux-gnu.tar.gz",
+                  "win32": "https://bitcoin.org/bin/bitcoin-core-0.18.0/bitcoin-0.18.0-win64.zip"
                },
-               "types": ["btc", "bitcoin", "tbtc", "testnet3", "test3", "testnet bitcoin"],
+               "types": [
+                  "btc",
+                  "bitcoin",
+                  "tbtc",
+                  "testnet3",
+                  "test3",
+                  "testnet bitcoin"
+               ],
                "handlerClass": "./libs/adapters/BitcoinCoreNative.js",
                "showOutput": true,
                "enabled": false
@@ -112,14 +149,21 @@
             {
                "type": "cryptocurrency",
                "name": "Native Bitcoin Cash (bitcoind) Handler",
-               "installDir":"./bin/bitcoincash/%os%/",
-               "dataDir":"./bin/bitcoincash/data/",
-               "downloads":{
-                  "darwin":"https://download.bitcoinabc.org/0.19.6/osx/bitcoin-abc-0.19.6-osx-unsigned.dmg",
-                  "linux":"https://download.bitcoinabc.org/0.19.6/linux/bitcoin-abc-0.19.6-x86_64-linux-gnu.tar.gz",
-                  "win32":"https://download.bitcoinabc.org/0.19.6/windows/bitcoin-abc-0.19.6-win64.zip"
+               "installDir": "./bin/bitcoincash/%os%/",
+               "dataDir": "./bin/bitcoincash/data/",
+               "downloads": {
+                  "darwin": "https://download.bitcoinabc.org/0.19.6/osx/bitcoin-abc-0.19.6-osx-unsigned.dmg",
+                  "linux": "https://download.bitcoinabc.org/0.19.6/linux/bitcoin-abc-0.19.6-x86_64-linux-gnu.tar.gz",
+                  "win32": "https://download.bitcoinabc.org/0.19.6/windows/bitcoin-abc-0.19.6-win64.zip"
                },
-               "types": ["bch", "bitcoincash", "tbch", "bchtestnet", "bchtest", "testnet bitcoin cash"],
+               "types": [
+                  "bch",
+                  "bitcoincash",
+                  "tbch",
+                  "bchtestnet",
+                  "bchtest",
+                  "testnet bitcoin cash"
+               ],
                "handlerClass": "./libs/adapters/BitcoinCashNative.js",
                "showOutput": true,
                "enabled": false
@@ -127,12 +171,12 @@
             {
                "type": "cryptocurrency",
                "name": "Native Monero (monerod) Handler",
-               "installDir":"./bin/monero/%os%/",
-               "dataDir":"./bin/monero/data/",
-               "downloads":{
-                  "darwin":"https://dlsrc.getmonero.org/cli/monero-mac-x64-v0.15.0.1.tar.bz2",
-                  "linux":"https://dlsrc.getmonero.org/cli/monero-linux-x64-v0.15.0.1.tar.bz2",
-                  "win32":"https://dlsrc.getmonero.org/cli/monero-win-x86-v0.15.0.1.zip"
+               "installDir": "./bin/monero/%os%/",
+               "dataDir": "./bin/monero/data/",
+               "downloads": {
+                  "darwin": "https://dlsrc.getmonero.org/cli/monero-mac-x64-v0.15.0.1.tar.bz2",
+                  "linux": "https://dlsrc.getmonero.org/cli/monero-linux-x64-v0.15.0.1.tar.bz2",
+                  "win32": "https://dlsrc.getmonero.org/cli/monero-win-x86-v0.15.0.1.zip"
                },
                "types": ["xmr", "monero"],
                "handlerClass": "./libs/adapters/MoneroNative.js",
@@ -140,50 +184,50 @@
                "enabled": false
             }
          ],
-         "wallets":{
-           "bitcoin":{
-              "xprv":"xprv...",
-              "startChain":0,
-              "startIndex":2
-           },
-           "test3":{
-              "tprv":"tprv...",
-              "startChain":0,
-              "startIndex":2
-           },
-           "bitcoincash":{
-              "xprv":"xprv...",
-              "startChain":0,
-              "startIndex":2
-           },
-           "bchtest":{
-              "tprv":"tprv...",
-              "startChain":0,
-              "startIndex":2
-           }
+         "wallets": {
+            "bitcoin": {
+               "xprv": "xprv...",
+               "startChain": 0,
+               "startIndex": 2
+            },
+            "test3": {
+               "tprv": "tprv8ZgxMBicQKsPeuzJqp2dhCQTszhfZwcbqLa1sdXZsLT9ymkCC5D1pdboU91owpH74p38Suf98Ce5GY3HDj8uaFcrTQqiPmxAmwnsiFn7RUX",
+               "startChain": 0,
+               "startIndex": 2
+            },
+            "bitcoincash": {
+               "xprv": "xprv...",
+               "startChain": 0,
+               "startIndex": 2
+            },
+            "bchtest": {
+               "tprv": "tprv...",
+               "startChain": 0,
+               "startIndex": 2
+            }
          },
          "tokens": {
-            "blockcypher":"BLOCKCYPHER_TOKEN",
-            "cryptoapis":"CRYPTOAPIS_TOKEN"
+            "blockcypher": "BLOCKCYPHER_TOKEN",
+            "cryptoapis": "CRYPTOAPIS_TOKEN"
          },
-         "bitcoin":{
-            "networks":{
-               "main:":"main",
-               "test3":"test3"
+         "bitcoin": {
+            "networks": {
+               "main:": "main",
+               "test3": "test3"
             },
             "default": {
                "network": "test3",
                "updateLimitSeconds": 120,
                "baseDenom": "satoshi",
-               "main":{
-                  "cashOutAddrPath":"m/0/1",
+               "main": {
+                  "cashOutAddrPath": "m/0/1",
                   "minerFee": "50000",
                   "depositFee": "10000",
                   "feeUpdateSeconds": 1200,
                   "feeUpdateEnabled": true
                },
-               "test3":{
-                  "cashOutAddrPath":"m/0/1",
+               "test3": {
+                  "cashOutAddrPath": "m/0/1",
                   "minerFee": "50000",
                   "depositFee": "10000",
                   "feeUpdateSeconds": 1200,
@@ -207,24 +251,24 @@
                }
             }
          },
-         "bitcoincash":{
-            "networks":{
-               "main:":"main",
-               "test":"test"
+         "bitcoincash": {
+            "networks": {
+               "main:": "main",
+               "test": "test"
             },
             "default": {
                "network": "test",
                "updateLimitSeconds": 120,
                "baseDenom": "satoshi",
-               "main":{
-                  "cashOutAddrPath":"m/0/1",
+               "main": {
+                  "cashOutAddrPath": "m/0/1",
                   "minerFee": "50000",
                   "depositFee": "10000",
                   "feeUpdateSeconds": 1200,
                   "feeUpdateEnabled": true
                },
-               "test":{
-                  "cashOutAddrPath":"m/0/1",
+               "test": {
+                  "cashOutAddrPath": "m/0/1",
                   "minerFee": "50000",
                   "depositFee": "10000",
                   "feeUpdateSeconds": 1200,
@@ -246,8 +290,8 @@
                }
             }
          },
-         "contract":{
-            "timeoutDefault":20
+         "contract": {
+            "timeoutDefault": 20
          }
       }
    }
